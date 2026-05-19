@@ -16,7 +16,7 @@ export function CtaSection() {
   return (
     <Section
       spacing="xl"
-      className="relative overflow-hidden bg-brown-gradient text-primary-foreground"
+      className="texture-grain relative overflow-hidden bg-brown-gradient text-primary-foreground"
     >
       <div
         aria-hidden

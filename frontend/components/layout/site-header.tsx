@@ -17,16 +17,15 @@ const navLinks = [
 ];
 
 export function SiteHeader() {
-  const [scrolled,    setScrolled]    = useState(false);
-  const [menuOpen,    setMenuOpen]    = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* lock body scroll when mobile menu is open */
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -36,53 +35,48 @@ export function SiteHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-          scrolled
-            ? "bg-background/95 backdrop-blur-md shadow-warm-sm border-b border-border"
-            : "bg-transparent",
+          "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out",
+          scrolled ? "glass-nav-solid" : "glass-nav",
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
+        <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[4.75rem] lg:px-8">
           <Link
             href="/"
-            className="group flex flex-col leading-none"
+            className="group flex flex-col gap-0.5 leading-none"
             onClick={() => setMenuOpen(false)}
           >
-            <span className="text-lg font-bold text-foreground transition-colors group-hover:text-accent">
+            <span className="text-lg font-extrabold tracking-tight text-foreground transition-colors group-hover:text-accent lg:text-xl">
               تازارزيت بيو
             </span>
-            <span className="text-2xs text-muted-foreground">
+            <span className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               من قلب سوس
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav
-            className="hidden items-center gap-6 lg:flex"
+            className="hidden items-center gap-1 lg:flex"
             aria-label="التنقل الرئيسي"
           >
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:-bottom-0.5 after:start-0 after:h-px after:w-0 after:bg-accent after:transition-all hover:after:w-full"
+                className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary/80 hover:text-foreground"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               aria-label="سلة التسوق"
-              className="relative"
+              className="relative rounded-full hover:bg-secondary/80"
             >
-              <ShoppingBag className="size-5" />
-              <span className="absolute -top-0.5 -end-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-2xs font-bold text-foreground">
+              <ShoppingBag className="size-5" strokeWidth={1.75} />
+              <span className="absolute -top-0.5 -end-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-gold-gradient px-1 text-[0.6rem] font-bold text-foreground shadow-gold">
                 0
               </span>
             </Button>
@@ -90,58 +84,56 @@ export function SiteHeader() {
             <Button
               variant="gold"
               size="sm"
-              className="hidden lg:inline-flex"
+              className="hidden rounded-full px-6 shadow-gold lg:inline-flex"
             >
               تسوق الآن
             </Button>
 
-            {/* Mobile hamburger */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="rounded-full lg:hidden"
               aria-label={menuOpen ? "أغلق القائمة" : "افتح القائمة"}
               onClick={() => setMenuOpen((v) => !v)}
             >
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </Button>
           </div>
-        </div>
+          </div>
       </header>
 
-      {/* Mobile menu overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="fixed inset-x-0 top-16 z-40 border-b border-border bg-background/98 backdrop-blur-md shadow-warm-lg"
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="glass-surface fixed inset-x-0 top-[4.25rem] z-40 border-b-0 shadow-warm-xl lg:top-[4.75rem]"
           >
-            <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5">
+            <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.href}
-                  initial={{ opacity: 0, x: 16 }}
+                  initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.06, duration: 0.25 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
                 >
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className="block rounded-lg px-4 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary hover:text-accent"
+                    className="block rounded-xl px-4 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-secondary/60"
                   >
                     {link.label}
                   </Link>
                 </motion.div>
               ))}
-              <div className="mt-4 border-t border-border pt-4">
+              <div className="mt-4 border-t border-border/50 pt-4">
                 <Button
                   variant="gold"
                   size="lg"
-                  className="w-full"
+                  className="w-full rounded-full shadow-gold"
                   onClick={() => setMenuOpen(false)}
                 >
                   تسوق الآن

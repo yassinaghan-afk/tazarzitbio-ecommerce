@@ -44,7 +44,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={tajawal.variable}>
       <body className="min-h-screen font-sans selection:bg-accent/20">
         <SiteHeader />
-        <main className="pt-16">{children}</main>
+        <main className="pt-[4.25rem] lg:pt-[4.75rem]">{children}</main>
         <SiteFooter />
       </body>
     </html>

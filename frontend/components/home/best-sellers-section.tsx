@@ -12,7 +12,7 @@ import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
 export function BestSellersSection() {
   return (
-    <Section id="products" spacing="lg" bg="alt">
+    <Section id="products" spacing="lg" bg="alt" className="texture-grain">
       <Container>
         <div className="flex flex-col items-end justify-between gap-6 md:flex-row md:items-end">
           <SectionHeader
@@ -33,7 +33,7 @@ export function BestSellersSection() {
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT}
-          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
           {bestSellers.map((product) => (
             <motion.div key={product.id} variants={staggerItem}>

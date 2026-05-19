@@ -28,20 +28,22 @@ export function SectionHeader({
       viewport={VIEWPORT}
       variants={fadeUp}
       className={cn(
-        "mb-12 md:mb-16",
+        "mb-14 md:mb-20",
         isCenter && "mx-auto max-w-2xl text-center",
         className,
       )}
     >
       {label && (
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+        <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-accent">
+          <span className="h-px w-6 bg-accent/50" aria-hidden />
           {label}
+          {isCenter && <span className="h-px w-6 bg-accent/50" aria-hidden />}
         </p>
       )}
       <h2
         className={cn(
-          "mt-2 font-bold text-foreground text-balance",
-          isCenter ? "text-3xl md:text-4xl lg:text-5xl" : "text-2xl md:text-3xl",
+          "mt-3 text-balance font-extrabold tracking-tight text-foreground",
+          isCenter ? "text-3xl md:text-4xl lg:text-[2.75rem]" : "text-2xl md:text-3xl",
         )}
       >
         {title}
@@ -49,7 +51,7 @@ export function SectionHeader({
       {description && (
         <p
           className={cn(
-            "mt-4 text-base leading-relaxed text-muted-foreground md:text-lg",
+            "mt-4 text-base leading-[1.85] text-muted-foreground md:text-lg",
             isCenter && "mx-auto max-w-xl",
           )}
         >
@@ -60,9 +62,9 @@ export function SectionHeader({
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
         viewport={VIEWPORT}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "mt-6 h-0.5 w-16 origin-center rounded-full bg-gold-gradient",
+          "mt-8 h-[3px] w-20 origin-center rounded-full bg-gold-gradient shadow-gold",
           isCenter && "mx-auto",
         )}
       />

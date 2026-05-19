@@ -43,8 +43,8 @@ interface SectionProps extends React.HTMLAttributes<HTMLElement> {
 const spacings = {
   sm: "py-10 md:py-14",
   md: "py-14 md:py-20",
-  lg: "py-20 md:py-28",
-  xl: "py-24 md:py-36",
+  lg: "py-22 md:py-30",
+  xl: "py-28 md:py-40",
 };
 
 const bgs = {

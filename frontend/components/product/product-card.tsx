@@ -44,25 +44,27 @@ export function ProductCard({
     <motion.article
       {...cardHoverProps}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-warm-sm",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md ring-1 ring-white/50",
+        "transition-shadow duration-300 hover:shadow-warm-xl",
         !inStock && "opacity-70",
         className,
       )}
     >
       <div
         className={cn(
-          "relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br",
+          "relative flex aspect-[4/5] items-center justify-center overflow-hidden bg-gradient-to-br sm:aspect-square",
           gradient,
         )}
       >
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-30" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,hsl(0_0%_100%/0.4),transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-radial-gold opacity-25" />
         <span
-          className="relative text-6xl drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+          className="relative z-[1] text-6xl drop-shadow-[0_8px_16px_hsl(20_30%_10%/0.12)] transition-transform duration-500 ease-out group-hover:scale-110"
           aria-hidden
         >
           {emoji}
         </span>
-        <div className="absolute start-3 top-3 flex flex-col gap-1.5">
+        <div className="absolute start-3 top-3 z-[2] flex flex-col gap-1.5">
           {soldLabel && <Badge variant="premium">{soldLabel}</Badge>}
           {isNew && <Badge variant="gold">جديد</Badge>}
           {!inStock && <Badge variant="sand">نفذ المخزون</Badge>}
@@ -72,9 +74,9 @@ export function ProductCard({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3.5 p-5 pt-4">
         {rating !== undefined && (
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
             <StarRating rating={rating} showValue />
             {reviewCount !== undefined && (
               <span className="flex items-center gap-1 text-2xs text-muted-foreground">
@@ -85,8 +87,8 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="flex-1">
-          <h3 className="text-base font-bold leading-snug text-foreground">
+        <div>
+          <h3 className="text-base font-bold leading-snug tracking-tight text-foreground">
             {name}
           </h3>
           {weight && (
@@ -95,9 +97,9 @@ export function ProductCard({
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold tabular-nums text-accent">
+          <span className="text-xl font-extrabold tabular-nums text-accent">
             {price}
-            <span className="ms-1 text-sm font-medium">د.م.</span>
+            <span className="ms-1 text-sm font-semibold">د.م.</span>
           </span>
           {comparePrice && (
             <span className="text-sm text-muted-foreground line-through tabular-nums">
@@ -106,14 +108,14 @@ export function ProductCard({
           )}
         </div>
 
-        <p className="text-2xs font-medium text-primary/70">
-          ✓ طبيعي 100% · الدفع عند الاستلام
+        <p className="text-2xs font-medium tracking-wide text-primary/60">
+          طبيعي 100% · COD
         </p>
 
         <Button
           variant="gold"
           size="default"
-          className="w-full gap-2"
+          className="mt-auto w-full gap-2 rounded-xl"
           disabled={!inStock}
         >
           <ShoppingBag className="size-4" />

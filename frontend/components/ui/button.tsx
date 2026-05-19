@@ -23,11 +23,11 @@ const buttonVariants = cva(
 
         /** Argan gold — hero CTA, conversion */
         gold:
-          "bg-gold-gradient text-foreground hover:opacity-90 active:scale-[0.98] shadow-gold hover:shadow-warm-lg",
+          "bg-gold-gradient text-foreground shadow-gold ring-1 ring-amber-900/10 hover:brightness-105 hover:shadow-warm-lg active:scale-[0.98]",
 
         /** Outlined — secondary */
         outline:
-          "border border-border bg-transparent text-foreground hover:bg-secondary hover:border-foreground/30 active:scale-[0.98]",
+          "border border-foreground/12 bg-card/40 text-foreground backdrop-blur-sm hover:border-accent/30 hover:bg-card/80 active:scale-[0.98]",
 
         /** Ghost — low emphasis */
         ghost:
