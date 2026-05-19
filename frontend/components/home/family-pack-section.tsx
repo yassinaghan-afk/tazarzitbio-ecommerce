@@ -6,7 +6,7 @@ import { Coffee, Gift, Heart } from "lucide-react";
 import { Container, Section } from "@/components/layout/container";
 import { BundleCard } from "@/components/product/bundle-card";
 import { SectionHeader } from "@/components/sections/section-header";
-import { PlaceholderImage } from "@/components/ui/placeholder-image";
+import { PremiumImage } from "@/components/ui/premium-image";
 import { familyPacks } from "@/lib/home-data";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
@@ -55,11 +55,11 @@ export function FamilyPackSection() {
             viewport={VIEWPORT}
             className="lg:col-span-2"
           >
-            <PlaceholderImage
-              emoji="🎁"
-              label="تغليف فاخر للإهداء"
-              gradient="from-rose-50 via-amber-50 to-orange-50"
+            <PremiumImage
+              src="/products/pack.png"
+              alt="مجموعة تازارزيت بيو الفاخرة للعائلة والإهداء"
               aspect="portrait"
+              sizes="(max-width: 1024px) 100vw, 360px"
               className="shadow-warm-xl"
             />
           </motion.div>

@@ -1,4 +1,5 @@
 import { BestSellersSection } from "@/components/home/best-sellers-section";
+import { ProductShowcasesSection } from "@/components/home/product-showcases-section";
 import { CtaSection } from "@/components/home/cta-section";
 import { FamilyPackSection } from "@/components/home/family-pack-section";
 import { FaqSection } from "@/components/home/faq-section";
@@ -15,6 +16,7 @@ export default function HomePage() {
       <HeroSection />
       <TrustBadges />
       <StorySection />
+      <ProductShowcasesSection />
       <BestSellersSection />
       <FamilyPackSection />
       <ReviewSection />

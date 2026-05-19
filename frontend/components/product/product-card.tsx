@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShoppingBag, Users } from "lucide-react";
 
@@ -14,6 +15,8 @@ export interface ProductCardProps {
   price: number;
   comparePrice?: number;
   weight?: string;
+  imageSrc?: string;
+  imageAlt?: string;
   gradient?: string;
   emoji?: string;
   isNew?: boolean;
@@ -29,6 +32,8 @@ export function ProductCard({
   price,
   comparePrice,
   weight,
+  imageSrc,
+  imageAlt,
   gradient = "from-amber-50 via-orange-50 to-yellow-100",
   emoji = "🫙",
   isNew = false,
@@ -52,18 +57,39 @@ export function ProductCard({
     >
       <div
         className={cn(
-          "relative flex aspect-[4/5] items-center justify-center overflow-hidden bg-gradient-to-br sm:aspect-square",
-          gradient,
+          "relative flex aspect-[4/5] items-center justify-center overflow-hidden sm:aspect-square",
+          imageSrc
+            ? "bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810]"
+            : cn("bg-gradient-to-br", gradient),
         )}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,hsl(0_0%_100%/0.4),transparent_55%)]" />
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-25" />
-        <span
-          className="relative z-[1] text-6xl drop-shadow-[0_8px_16px_hsl(20_30%_10%/0.12)] transition-transform duration-500 ease-out group-hover:scale-110"
-          aria-hidden
-        >
-          {emoji}
-        </span>
+        {imageSrc ? (
+          <>
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,hsl(45_80%_55%/0.2)_0%,transparent_55%)]"
+            />
+            <Image
+              src={imageSrc}
+              alt={imageAlt ?? name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+              className="object-contain object-center p-3 transition-transform duration-500 ease-out group-hover:scale-[1.02] sm:p-4"
+              quality={88}
+            />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,hsl(0_0%_100%/0.4),transparent_55%)]" />
+            <div className="absolute inset-0 bg-gradient-radial-gold opacity-25" />
+            <span
+              className="relative z-[1] text-6xl drop-shadow-[0_8px_16px_hsl(20_30%_10%/0.12)] transition-transform duration-500 ease-out group-hover:scale-110"
+              aria-hidden
+            >
+              {emoji}
+            </span>
+          </>
+        )}
         <div className="absolute start-3 top-3 z-[2] flex flex-col gap-1.5">
           {soldLabel && <Badge variant="premium">{soldLabel}</Badge>}
           {isNew && <Badge variant="gold">جديد</Badge>}

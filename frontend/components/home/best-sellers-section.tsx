@@ -42,8 +42,8 @@ export function BestSellersSection() {
                 price={product.price}
                 comparePrice={product.comparePrice}
                 weight={product.weight}
-                gradient={product.gradient}
-                emoji={product.emoji}
+                imageSrc={product.imageSrc}
+                imageAlt={product.imageAlt}
                 rating={product.rating}
                 reviewCount={product.reviewCount}
                 soldLabel={product.soldLabel}

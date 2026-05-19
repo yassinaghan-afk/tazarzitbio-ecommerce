@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Award, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 
-import { HeroBundleComposition } from "@/components/home/hero-bundle-composition";
+import { HeroBundleImage } from "@/components/home/hero-bundle-image";
 import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,13 +35,50 @@ export function HeroSection() {
         className="pointer-events-none absolute bottom-0 start-[-5%] h-80 w-80 rounded-full bg-[radial-gradient(circle,hsl(96_33%_22%/0.12)_0%,transparent_70%)] blur-2xl"
       />
 
-      <Container className="relative z-[2] flex flex-col gap-10 pb-20 pt-28 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] md:items-center md:gap-12 md:pb-28 md:pt-36 lg:pt-40">
-        {/* Copy — first on mobile for CRO, balanced with visual weight below */}
+      <Container className="relative z-[2] flex flex-col gap-8 pb-20 pt-24 sm:gap-10 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] md:items-center md:gap-12 md:pb-28 md:pt-36 lg:pt-40">
+        {/* Bundle visual — dominant, above copy on mobile */}
+        <motion.div
+          variants={heroImage}
+          initial="hidden"
+          animate="visible"
+          className="order-1 relative w-full md:order-2"
+        >
+          <HeroBundleImage className="mx-auto max-w-[min(100%,26rem)] sm:max-w-[28rem] md:ms-auto md:max-w-none" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.5 }}
+            className="glass-card absolute -bottom-2 start-2 z-10 rounded-2xl p-3.5 shadow-warm-lg sm:-bottom-4 sm:start-0 sm:p-4 md:-start-6 md:p-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-sm font-bold text-foreground shadow-gold sm:h-11 sm:w-11 sm:text-base md:h-12 md:w-12 md:text-lg">
+                4.9
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">+2000 عميل</p>
+                <p className="text-xs text-muted-foreground">يثقون بجودتنا</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.95, duration: 0.45 }}
+            className="glass-card absolute end-2 top-4 z-10 rounded-full px-3 py-1.5 md:end-[-0.5rem] md:top-8 md:px-4 md:py-2"
+          >
+            <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
+              مجموعة هدايا فاخرة
+            </p>
+          </motion.div>
+        </motion.div>
+
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex flex-col gap-7 md:gap-9"
+          className="order-2 flex flex-col gap-6 sm:gap-7 md:order-1 md:gap-9"
         >
           <motion.div variants={staggerItem}>
             <Badge
@@ -109,46 +146,7 @@ export function HeroSection() {
           </motion.ul>
         </motion.div>
 
-        {/* Premium bundle composition — centerpiece */}
-        <motion.div
-          variants={heroImage}
-          initial="hidden"
-          animate="visible"
-          className="relative -mx-1 w-[calc(100%+0.5rem)] sm:mx-0 sm:w-full md:mx-0"
-        >
-          <HeroBundleComposition className="max-w-none md:max-w-[min(100%,32rem)] md:ms-auto" />
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.85, duration: 0.5 }}
-            className="glass-card absolute -bottom-4 start-0 z-10 rounded-2xl p-4 shadow-warm-lg sm:-start-4 md:-start-6 md:p-5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-base font-bold text-foreground shadow-gold md:h-12 md:w-12 md:text-lg">
-                4.9
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">+2000 عميل</p>
-                <p className="text-xs text-muted-foreground">يثقون بجودتنا</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.95, duration: 0.45 }}
-            className="glass-card absolute end-0 top-6 z-10 rounded-full px-3 py-1.5 md:end-[-0.5rem] md:top-8 md:px-4 md:py-2"
-          >
-            <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
-              مجموعة هدايا فاخرة
-            </p>
-          </motion.div>
-        </motion.div>
-
-        {/* Trust pills — mobile, below visual */}
-        <ul className="flex flex-wrap gap-2.5 md:hidden">
+        <ul className="order-3 flex flex-wrap gap-2.5 md:hidden">
           {trustPills.map(({ icon: Icon, text }) => (
             <li
               key={text}
