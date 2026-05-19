@@ -54,7 +54,7 @@ export function ReviewCard({
       </div>
 
       {/* Quote */}
-      <blockquote className="flex-1 text-sm leading-relaxed text-foreground/80 before:me-1 before:text-accent before:content-['"'] after:ms-1 after:text-accent after:content-['"']">
+      <blockquote className="flex-1 text-sm leading-relaxed text-foreground/80">
         {content}
       </blockquote>
 
