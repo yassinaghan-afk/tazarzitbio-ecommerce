@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Award, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 
+import { HeroBundleComposition } from "@/components/home/hero-bundle-composition";
 import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,31 +13,6 @@ import {
   staggerContainer,
   staggerItem,
 } from "@/lib/animations";
-
-const showcaseProducts = [
-  {
-    emoji: "🫙",
-    name: "أملو فاخر",
-    price: "89 د.م.",
-    gradient: "from-amber-100 via-orange-50 to-amber-50",
-    className: "col-span-2 row-span-2",
-    large: true,
-  },
-  {
-    emoji: "✨",
-    name: "زيت أركان",
-    price: "149 د.م.",
-    gradient: "from-yellow-50 to-amber-100",
-    className: "",
-  },
-  {
-    emoji: "🍯",
-    name: "عسل سوس",
-    price: "75 د.م.",
-    gradient: "from-amber-50 to-yellow-100",
-    className: "",
-  },
-];
 
 const trustPills = [
   { icon: ShieldCheck, text: "طبيعي 100%" },
@@ -59,12 +35,13 @@ export function HeroSection() {
         className="pointer-events-none absolute bottom-0 start-[-5%] h-80 w-80 rounded-full bg-[radial-gradient(circle,hsl(96_33%_22%/0.12)_0%,transparent_70%)] blur-2xl"
       />
 
-      <Container className="relative z-[2] grid items-center gap-14 pb-20 pt-32 md:grid-cols-[1fr_1.05fr] md:gap-12 md:pb-28 md:pt-36 lg:pt-40">
+      <Container className="relative z-[2] flex flex-col gap-10 pb-20 pt-28 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] md:items-center md:gap-12 md:pb-28 md:pt-36 lg:pt-40">
+        {/* Copy — first on mobile for CRO, balanced with visual weight below */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex flex-col gap-8 md:gap-9"
+          className="flex flex-col gap-7 md:gap-9"
         >
           <motion.div variants={staggerItem}>
             <Badge
@@ -92,11 +69,14 @@ export function HeroSection() {
             </p>
           </motion.div>
 
-          <motion.div variants={staggerItem} className="flex flex-wrap gap-3">
+          <motion.div
+            variants={staggerItem}
+            className="flex flex-wrap gap-3 md:flex"
+          >
             <Button
               variant="gold"
               size="xl"
-              className="min-w-[11rem] gap-2 rounded-full px-8 shadow-gold"
+              className="min-h-[3rem] flex-1 gap-2 rounded-full px-6 shadow-gold sm:flex-none sm:px-8"
             >
               <ShoppingBag className="size-5" strokeWidth={2} />
               اكتشف المجموعة
@@ -104,7 +84,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="xl"
-              className="gap-2 rounded-full border-foreground/15 bg-card/50 px-8 backdrop-blur-sm"
+              className="min-h-[3rem] gap-2 rounded-full border-foreground/15 bg-card/50 px-6 backdrop-blur-sm sm:px-8"
             >
               قصتنا
               <ArrowLeft className="size-5" />
@@ -113,7 +93,7 @@ export function HeroSection() {
 
           <motion.ul
             variants={staggerItem}
-            className="flex flex-wrap gap-3"
+            className="hidden flex-wrap gap-3 md:flex"
           >
             {trustPills.map(({ icon: Icon, text }) => (
               <li
@@ -129,54 +109,23 @@ export function HeroSection() {
           </motion.ul>
         </motion.div>
 
-        {/* Premium product showcase */}
+        {/* Premium bundle composition — centerpiece */}
         <motion.div
           variants={heroImage}
           initial="hidden"
           animate="visible"
-          className="relative mx-auto w-full max-w-lg"
+          className="relative -mx-1 w-[calc(100%+0.5rem)] sm:mx-0 sm:w-full md:mx-0"
         >
-          <div className="ambient-glow absolute inset-0 rounded-[2rem]" aria-hidden />
-
-          <div className="relative grid grid-cols-2 gap-3 p-2 sm:gap-4">
-            {showcaseProducts.map((p, i) => (
-              <motion.div
-                key={p.name}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.35 + i * 0.12,
-                  duration: 0.6,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className={`frame-premium relative overflow-hidden rounded-2xl bg-gradient-to-br ${p.gradient} ${p.className} ${p.large ? "min-h-[280px] sm:min-h-[320px]" : "aspect-square"}`}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,hsl(0_0%_100%/0.35),transparent_50%)]" />
-                <div className="relative z-[2] flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
-                  <span
-                    className={p.large ? "text-7xl sm:text-8xl" : "text-4xl sm:text-5xl"}
-                    aria-hidden
-                  >
-                    {p.emoji}
-                  </span>
-                  <p className="text-sm font-bold text-foreground/85">{p.name}</p>
-                  <p className="text-sm font-bold tabular-nums text-accent">
-                    {p.price}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <HeroBundleComposition className="max-w-none md:max-w-[min(100%,32rem)] md:ms-auto" />
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
-            className="glass-card absolute -bottom-5 -start-2 z-10 rounded-2xl p-5 md:-start-6"
+            transition={{ delay: 0.85, duration: 0.5 }}
+            className="glass-card absolute -bottom-4 start-0 z-10 rounded-2xl p-4 shadow-warm-lg sm:-start-4 md:-start-6 md:p-5"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-gradient text-lg font-bold text-foreground shadow-gold">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-base font-bold text-foreground shadow-gold md:h-12 md:w-12 md:text-lg">
                 4.9
               </div>
               <div>
@@ -187,14 +136,29 @@ export function HeroSection() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="glass-card absolute -end-2 top-8 z-10 rounded-full px-4 py-2 md:-end-4"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.95, duration: 0.45 }}
+            className="glass-card absolute end-0 top-6 z-10 rounded-full px-3 py-1.5 md:end-[-0.5rem] md:top-8 md:px-4 md:py-2"
           >
-            <p className="text-xs font-semibold text-primary">🌿 طبيعي 100%</p>
+            <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
+              مجموعة هدايا فاخرة
+            </p>
           </motion.div>
         </motion.div>
+
+        {/* Trust pills — mobile, below visual */}
+        <ul className="flex flex-wrap gap-2.5 md:hidden">
+          {trustPills.map(({ icon: Icon, text }) => (
+            <li
+              key={text}
+              className="glass-card flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium text-foreground/85"
+            >
+              <Icon className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
+              {text}
+            </li>
+          ))}
+        </ul>
       </Container>
 
       <div className="section-divider relative z-[2] mx-auto max-w-4xl" />
