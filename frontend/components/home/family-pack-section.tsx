@@ -85,7 +85,7 @@ export function FamilyPackSection() {
               </motion.div>
             ))}
           </motion.div>
-        </motion.div>
+        </div>
       </Container>
     </Section>
   );
