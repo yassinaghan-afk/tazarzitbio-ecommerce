@@ -1,115 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
-import { fadeUp, slideInEnd, slideInStart, VIEWPORT } from "@/lib/animations";
+import { SectionHeader } from "@/components/sections/section-header";
+import { PlaceholderImage } from "@/components/ui/placeholder-image";
+import { storyPillars } from "@/lib/home-data";
+import { slideInEnd, slideInStart, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
 const values = [
   "مكونات مختارة يدوياً من مزارعي سوس",
-  "تحضير تقليدي يحافظ على الطعم الأصيل",
-  "لا مواد حافظة ولا إضافات صناعية",
-  "تغليف صديق للبيئة ومناسب للإهداء",
-  "الدفع عند الاستلام — ثقة بلا مخاطرة",
-];
-
-const stats = [
-  { value: "+2000", label: "عميل سعيد" },
-  { value: "8",     label: "منتجات طبيعية" },
-  { value: "100%",  label: "من سوس" },
-  { value: "COD",   label: "الدفع عند الاستلام" },
+  "تحضير تقليدي دون مواد حافظة",
+  "شراكات مباشرة مع منتجين محليين",
+  "تغليف فاخر يليق بالإهداء والضيافة",
 ];
 
 export function StorySection() {
   return (
     <Section id="story" spacing="lg">
       <Container>
-        <div className="grid items-center gap-14 md:grid-cols-2">
-          {/* Text */}
+        <SectionHeader
+          label="قصتنا"
+          title="من قلب سوس إلى مائدتك"
+          description="في تازارزيت بيو نحمل موروثاً غذائياً أصيلاً — بجودة تليق بكرم الضيافة المغربية."
+          align="center"
+        />
+
+        <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           <motion.div
             variants={slideInStart}
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-            className="flex flex-col gap-6"
           >
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-accent">
-                قصتنا
-              </p>
-              <h2 className="mt-2 text-3xl font-bold leading-snug text-foreground md:text-4xl">
-                من قلب سوس
-                <br />
-                إلى مائدتك
-              </h2>
-            </div>
-
-            <p className="max-w-md text-base leading-relaxed text-muted-foreground">
-              تازارزيت بيو وُلدت من شغف بالموروث الغذائي المغربي. نختار
-              مكوناتنا من أفضل مزارعي منطقة سوس ونحضّر منتجاتنا بالطرق
-              التقليدية التي توارثناها جيلاً بعد جيل.
-            </p>
-
-            <p className="max-w-md text-base leading-relaxed text-muted-foreground">
-              هدفنا بسيط: أن تصل الجودة الحقيقية إلى كل بيت مغربي، بتغليف
-              يليق بها وبسعر عادل وبدفع عند الاستلام.
-            </p>
-
-            <ul className="space-y-3">
-              {values.map((v) => (
-                <li key={v} className="flex items-start gap-3">
-                  <CheckCircle className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden />
-                  <span className="text-sm text-foreground/80">{v}</span>
-                </li>
-              ))}
-            </ul>
+            <PlaceholderImage
+              emoji="🏔️"
+              label="سوس — أرض الأركان والعسل"
+              gradient="from-emerald-50 via-teal-50 to-amber-50"
+              aspect="portrait"
+              size="lg"
+              className="shadow-warm-xl"
+            />
           </motion.div>
 
-          {/* Visual */}
           <motion.div
             variants={slideInEnd}
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-8"
           >
-            {/* Image placeholder */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-border shadow-warm-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center">
-                <span className="text-7xl" aria-hidden>🫒</span>
-                <p className="text-lg font-bold text-foreground/80">
-                  من سوس — جودة حقيقية
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  صور المنتجات الحقيقية قريباً
-                </p>
-              </div>
-              {/* decorative corner */}
-              <div className="absolute end-0 top-0 h-20 w-20 rounded-bl-3xl bg-accent/20" />
-            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              وُلدت تازارزيت بيو من حبٍّ للأرض والتقاليد. في كل مرحلة — من الحصاد
+              إلى التغليف — نحرص على أن تبقى المنتجات <strong className="text-foreground">طبيعية 100%</strong>،
+              بلا اختصارات ولا إضافات صناعية.
+            </p>
 
-            {/* Stats grid */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={VIEWPORT}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="grid grid-cols-4 gap-3"
-            >
-              {stats.map((s) => (
-                <div
-                  key={s.label}
-                  className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card p-3 text-center shadow-warm-sm"
-                >
-                  <span className="text-xl font-bold text-accent">{s.value}</span>
-                  <span className="text-2xs font-medium text-muted-foreground">
-                    {s.label}
-                  </span>
-                </div>
+            <ul className="space-y-3">
+              {values.map((v) => (
+                <li key={v} className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-accent" />
+                  <span className="text-sm text-foreground/85">{v}</span>
+                </li>
               ))}
-            </motion.div>
+            </ul>
+
+            <motion.ol
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={VIEWPORT}
+              className="grid gap-4 sm:grid-cols-2"
+            >
+              {storyPillars.map((pillar) => (
+                <motion.li
+                  key={pillar.step}
+                  variants={staggerItem}
+                  className="rounded-xl border border-border bg-card p-4 shadow-warm-sm"
+                >
+                  <span className="text-xs font-bold text-accent">{pillar.step}</span>
+                  <p className="mt-1 font-bold text-foreground">{pillar.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {pillar.description}
+                  </p>
+                </motion.li>
+              ))}
+            </motion.ol>
           </motion.div>
         </div>
       </Container>

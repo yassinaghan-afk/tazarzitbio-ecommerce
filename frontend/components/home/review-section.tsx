@@ -5,82 +5,51 @@ import { Star } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
 import { ReviewCard } from "@/components/reviews/review-card";
+import { SectionHeader } from "@/components/sections/section-header";
+import { reviews } from "@/lib/home-data";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
-const reviews = [
-  {
-    id: "1",
-    author: "فاطمة الزهراء",
-    city:   "الدار البيضاء",
-    rating: 5,
-    date:   "مايو 2026",
-    content:
-      "أملو تازارزيت هو أفضل أملو جربته في حياتي. الطعم طبيعي 100% وأحس بالفرق الكبير مقارنة بما يُباع في السوق. التغليف أنيق جداً وجاء في الوقت المحدد.",
-    product: "أملو الكلاسيكي",
-    verified: true,
-  },
-  {
-    id: "2",
-    author: "يوسف بنعلي",
-    city:   "الرباط",
-    rating: 5,
-    date:   "أبريل 2026",
-    content:
-      "اشتريت علبة هدية لعيد الفطر وكانت مفاجأة رائعة للعائلة. الجودة عالية جداً والتغليف فاخر. سأكرر الطلب بالتأكيد.",
-    product: "علبة هدية فاخرة",
-    verified: true,
-  },
-  {
-    id: "3",
-    author: "نادية السوسي",
-    city:   "أكادير",
-    rating: 5,
-    date:   "مارس 2026",
-    content:
-      "أخيراً وجدت زيت أركان حقيقي! جربت الكثير من الماركات لكن تازارزيت بيو يتفوق على الجميع. الدفع عند الاستلام جعل الطلب سهلاً ومريحاً.",
-    product: "زيت أركان طبيعي",
-    verified: true,
-  },
+const moroccanCities = [
+  "الدار البيضاء", "الرباط", "مراكش", "أكادير", "طنجة", "فاس", "مكناس", "وجدة",
 ];
 
 export function ReviewSection() {
   return (
     <Section id="reviews" spacing="lg" bg="alt">
       <Container>
-        {/* Header */}
+        <SectionHeader
+          label="آراء العملاء"
+          title="مغاربة يثقون بتازارزيت بيو"
+          description="تجارب حقيقية من مدن مختلفة — جودة، توصيل، وضيافة في كل طلب."
+        />
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={VIEWPORT}
-          transition={{ duration: 0.5 }}
-          className="mb-12 text-center"
+          className="mb-10 flex flex-col items-center gap-4"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest text-accent">
-            آراء العملاء
-          </p>
-          <h2 className="mt-2 text-3xl font-bold text-foreground md:text-4xl">
-            ماذا يقولون عنّا
-          </h2>
-
-          {/* Rating summary */}
-          <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-5 py-2">
+          <div className="inline-flex items-center gap-3 rounded-full border border-accent/30 bg-card px-6 py-3 shadow-warm-sm">
             <div className="flex">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="size-4 fill-accent text-accent" />
+                <Star key={i} className="size-5 fill-accent text-accent" />
               ))}
             </div>
-            <span className="text-sm font-bold text-foreground">4.9 / 5</span>
-            <span className="text-xs text-muted-foreground">من 200+ تقييم</span>
+            <span className="text-lg font-bold">4.9</span>
+            <span className="text-sm text-muted-foreground">· +2000 تقييم</span>
           </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            عملاؤنا في: {moroccanCities.join(" · ")}
+          </p>
         </motion.div>
 
-        {/* Cards */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT}
-          className="grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-5 md:grid-cols-2"
         >
           {reviews.map((review) => (
             <motion.div key={review.id} variants={staggerItem}>
@@ -91,11 +60,36 @@ export function ReviewSection() {
                 date={review.date}
                 content={review.content}
                 product={review.product}
-                verified={review.verified}
-                className="h-full"
               />
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* UGC-ready strip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={VIEWPORT}
+          transition={{ delay: 0.2 }}
+          className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
+        >
+          <p className="text-sm font-semibold text-foreground">
+            شاركنا تجربتك على إنستغرام
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            @tazarzitbio · #تازارزيت_بيو · مساحة جاهزة لصور عملائكم (UGC)
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            {["📸", "🫙", "🍯", "🎁", "✨", "🌿"].map((e) => (
+              <span
+                key={e}
+                className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-2xl"
+                aria-hidden
+              >
+                {e}
+              </span>
+            ))}
+          </div>
         </motion.div>
       </Container>
     </Section>

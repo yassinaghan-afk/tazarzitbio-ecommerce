@@ -75,7 +75,7 @@ export const heroImage: Variants = {
 /* ── Card hover (for motion.div animate prop) ─────────── */
 
 export const cardHoverProps = {
-  whileHover: { y: -4, transition: { duration: 0.25, ease: "easeOut" } },
+  whileHover: { y: -4, transition: { duration: 0.25, ease: "easeOut" as const } },
   whileTap:   { scale: 0.985 },
 };
 

@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 
+import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Container } from "@/components/layout/container";
+import { PlaceholderImage } from "@/components/ui/placeholder-image";
 import {
   heroImage,
   heroText,
@@ -13,136 +14,113 @@ import {
   staggerItem,
 } from "@/lib/animations";
 
-const heroProducts = [
-  { emoji: "🫙", label: "أملو تازارزيت", price: "89 د.م.",  gradient: "from-amber-100 to-orange-100" },
-  { emoji: "✨", label: "زيت أركان",     price: "149 د.م.", gradient: "from-yellow-100 to-amber-100" },
-  { emoji: "🍯", label: "عسل طبيعي",    price: "75 د.م.",  gradient: "from-yellow-50 to-amber-50"  },
-  { emoji: "🎁", label: "علبة هدية",    price: "249 د.م.", gradient: "from-emerald-50 to-green-100" },
+const trustPills = [
+  { icon: ShieldCheck, text: "طبيعي 100%" },
+  { icon: Truck,        text: "الدفع عند الاستلام" },
+  { icon: ShoppingBag,  text: "توصيل لجميع المدن" },
 ];
 
 export function HeroSection() {
   return (
     <section
-      className="relative min-h-[90vh] overflow-hidden bg-cream-gradient pt-20 md:pt-24"
-      aria-label="قسم الترحيب"
+      className="relative min-h-[92vh] overflow-hidden bg-cream-gradient"
+      aria-label="الصفحة الرئيسية"
     >
-      {/* Decorative blobs */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 end-0 h-[500px] w-[500px] rounded-full bg-accent/10 blur-3xl"
+        className="pointer-events-none absolute -top-32 end-0 h-[560px] w-[560px] rounded-full bg-accent/12 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 start-0 h-[300px] w-[300px] rounded-full bg-primary/8 blur-2xl"
+        className="pointer-events-none absolute bottom-0 start-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl"
       />
 
-      <Container className="relative z-10 flex flex-col gap-14 py-16 md:flex-row md:items-center md:py-20 lg:py-28">
-        {/* ── Text column ─────────────────────────────── */}
+      <Container className="relative z-10 grid items-center gap-12 pb-16 pt-28 md:grid-cols-2 md:gap-16 md:pb-24 md:pt-32 lg:pt-36">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex flex-1 flex-col gap-6 md:max-w-lg"
+          className="flex flex-col gap-7"
         >
           <motion.div variants={staggerItem}>
-            <Badge variant="premium" className="gap-2">
+            <Badge variant="premium" className="gap-2 px-4 py-1.5 text-sm">
               <span aria-hidden>🌿</span>
-              100% طبيعي · من قلب المغرب
+              من قلب سوس · المغرب الأصيل
             </Badge>
           </motion.div>
 
-          <motion.h1
-            variants={heroText}
-            className="text-5xl font-bold leading-tight text-foreground md:text-6xl lg:text-7xl"
-          >
-            <span className="block text-gold-gradient">تازارزيت</span>
-            <span className="block">بيو</span>
-          </motion.h1>
+          <motion.div variants={heroText} className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
+              تازارزيت بيو
+            </p>
+            <h1 className="text-4xl font-extrabold leading-[1.15] text-foreground sm:text-5xl lg:text-6xl">
+              <span className="block text-gold-gradient">طعم سوس</span>
+              <span className="block mt-1">في كل لقمة</span>
+            </h1>
+            <p className="max-w-md text-lg font-medium leading-relaxed text-muted-foreground md:text-xl">
+              100% طبيعي من قلب سوس — أملو فاخر، زيت أركان، وعسل نقي
+              يحمل روح المغرب إلى مائدتك.
+            </p>
+          </motion.div>
 
-          <motion.p
-            variants={staggerItem}
-            className="text-xl font-medium text-foreground/70 md:text-2xl"
-          >
-            100% طبيعي من قلب سوس
-          </motion.p>
-
-          <motion.p
-            variants={staggerItem}
-            className="max-w-sm text-base leading-relaxed text-muted-foreground"
-          >
-            أملو، زيت أركان، عسل، ومكسرات مختارة بعناية من منطقة سوس.
-            جودة فاخرة، تغليف أنيق، والدفع عند الاستلام في جميع أنحاء المغرب.
-          </motion.p>
-
-          <motion.div
-            variants={staggerItem}
-            className="flex flex-wrap gap-3"
-          >
-            <Button variant="gold" size="xl" className="gap-2">
+          <motion.div variants={staggerItem} className="flex flex-wrap gap-3">
+            <Button variant="gold" size="xl" className="gap-2 shadow-gold">
               <ShoppingBag className="size-5" />
-              تسوق الآن
+              اكتشف مجموعتنا
             </Button>
             <Button variant="outline" size="xl" className="gap-2">
-              اكتشف مجموعتنا
+              قصتنا من سوس
               <ArrowLeft className="size-5" />
             </Button>
           </motion.div>
 
-          {/* Mini trust row */}
-          <motion.div
+          <motion.ul
             variants={staggerItem}
             className="flex flex-wrap gap-4 pt-2"
           >
-            {["الدفع عند الاستلام", "توصيل للمغرب", "طبيعي 100%"].map((t) => (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/60"
+            {trustPills.map(({ icon: Icon, text }) => (
+              <li
+                key={text}
+                className="flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-4 py-2 text-sm font-medium text-foreground/80 shadow-warm-sm backdrop-blur-sm"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                {t}
-              </span>
+                <Icon className="size-4 text-accent" aria-hidden />
+                {text}
+              </li>
             ))}
-          </motion.div>
+          </motion.ul>
         </motion.div>
 
-        {/* ── Visual column ────────────────────────────── */}
         <motion.div
           variants={heroImage}
           initial="hidden"
           animate="visible"
-          className="relative flex flex-1 justify-center md:justify-end"
+          className="relative"
         >
-          {/* Background circle */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-[340px] w-[340px] rounded-full bg-gradient-to-br from-accent/20 to-amber-100/40 blur-sm md:h-[420px] md:w-[420px]" />
-          </div>
-
-          {/* Product grid */}
-          <div className="relative grid grid-cols-2 gap-3 sm:gap-4">
-            {heroProducts.map((p, i) => (
-              <motion.div
-                key={p.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 + i * 0.1, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className={`flex flex-col items-center gap-2 rounded-2xl border border-white/60 bg-gradient-to-br ${p.gradient} p-4 shadow-warm-md backdrop-blur-sm sm:p-5`}
-              >
-                <span className="text-3xl sm:text-4xl" aria-hidden>{p.emoji}</span>
-                <span className="text-center text-xs font-semibold text-foreground/80 sm:text-sm">
-                  {p.label}
-                </span>
-                <span className="text-sm font-bold tabular-nums text-accent">
-                  {p.price}
-                </span>
-              </motion.div>
-            ))}
-          </div>
+          <PlaceholderImage
+            emoji="🫒"
+            label="منتجات طبيعية من سوس"
+            sublabel="تصوير احترافي قريباً"
+            gradient="from-amber-100 via-orange-50 to-yellow-50"
+            aspect="portrait"
+            size="lg"
+            className="mx-auto w-full max-w-md shadow-warm-xl"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="absolute -bottom-4 -start-4 rounded-2xl border border-border bg-card p-4 shadow-warm-lg md:-start-8"
+          >
+            <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+              تقييم العملاء
+            </p>
+            <p className="text-2xl font-bold text-accent">4.9 ★</p>
+            <p className="text-xs text-muted-foreground">+2000 عميل سعيد</p>
+          </motion.div>
         </motion.div>
       </Container>
 
-      {/* Bottom gradient fade */}
-      <div className="pointer-events-none absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

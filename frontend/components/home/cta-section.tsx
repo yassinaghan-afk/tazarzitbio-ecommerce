@@ -1,23 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Container, Section } from "@/components/layout/container";
-import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
+import {
+  fadeUp,
+  staggerContainer,
+  staggerItem,
+  VIEWPORT,
+} from "@/lib/animations";
+import { Button } from "@/components/ui/button";
 
 export function CtaSection() {
   return (
-    <Section spacing="xl" className="relative overflow-hidden bg-olive-gradient text-primary-foreground">
-      {/* Decorative blobs */}
+    <Section
+      spacing="xl"
+      className="relative overflow-hidden bg-brown-gradient text-primary-foreground"
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute -end-24 -top-24 h-80 w-80 rounded-full bg-white/5 blur-2xl"
+        className="pointer-events-none absolute -end-20 -top-20 h-96 w-96 rounded-full bg-accent/15 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -start-12 bottom-0 h-60 w-60 rounded-full bg-accent/10 blur-2xl"
+        className="pointer-events-none absolute -bottom-16 -start-16 h-72 w-72 rounded-full bg-white/5 blur-2xl"
       />
 
       <Container size="md" className="relative z-10">
@@ -26,61 +33,63 @@ export function CtaSection() {
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT}
-          className="flex flex-col items-center gap-6 text-center"
+          className="flex flex-col items-center gap-8 text-center"
         >
           <motion.p
             variants={staggerItem}
-            className="text-sm font-semibold uppercase tracking-widest text-white/60"
+            className="text-sm font-semibold uppercase tracking-[0.2em] text-white/50"
           >
-            الدفع عند الاستلام · توصيل لجميع المدن
+            ابدأ رحلتك مع سوس
           </motion.p>
 
           <motion.h2
             variants={fadeUp}
-            className="text-3xl font-bold leading-tight text-white md:text-5xl"
+            className="text-3xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl"
           >
-            جرّب الجودة الحقيقية
+            جرّب الطبيعة
             <br />
-            <span className="text-gold-gradient">من قلب سوس</span>
+            <span className="text-gold-gradient">كما يجب أن تكون</span>
           </motion.h2>
 
           <motion.p
             variants={staggerItem}
-            className="max-w-lg text-base leading-relaxed text-white/75"
+            className="max-w-lg text-base leading-relaxed text-white/75 md:text-lg"
           >
-            أكثر من ٢٠٠٠ عميل وثق في تازارزيت بيو. اطلب الآن بدون أي دفع
-            مسبق — تدفع نقداً عند استلام طلبك.
+            أكثر من ٢٠٠٠ عميل اختاروا تازارزيت بيو. اطلب الآن — الدفع عند
+            الاستلام، توصيل لجميع مدن المغرب، وضمان جودة في كل عبوة.
           </motion.p>
 
           <motion.div
             variants={staggerItem}
-            className="flex flex-wrap justify-center gap-3"
+            className="flex flex-wrap justify-center gap-4"
           >
             <Button variant="gold" size="xl" className="gap-2 shadow-gold">
               <ShoppingBag className="size-5" />
-              اطلب الآن — الدفع عند الاستلام
+              اطلب الآن
             </Button>
-            <Button variant="light" size="xl">
-              اكتشف المجموعة الكاملة
+            <Button variant="light" size="xl" className="gap-2">
+              تصفح المنتجات
+              <ArrowLeft className="size-5" />
             </Button>
           </motion.div>
 
-          {/* Mini trust row */}
-          <motion.div
+          <motion.ul
             variants={staggerItem}
-            className="flex flex-wrap justify-center gap-6 pt-2"
+            className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/60"
           >
             {[
-              "✓ لا دفع مسبق",
-              "✓ توصيل سريع",
-              "✓ طبيعي 100%",
-              "✓ ضمان الجودة",
-            ].map((t) => (
-              <span key={t} className="text-sm text-white/70">
-                {t}
-              </span>
+              "لا دفع مسبق",
+              "توصيل سريع",
+              "طبيعي 100%",
+              "من قلب سوس",
+              "ضمان الجودة",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span className="h-1 w-1 rounded-full bg-accent" />
+                {item}
+              </li>
             ))}
-          </motion.div>
+          </motion.ul>
         </motion.div>
       </Container>
     </Section>

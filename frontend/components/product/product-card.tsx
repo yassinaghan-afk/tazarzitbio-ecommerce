@@ -1,24 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/ui/star-rating";
 import { cardHoverProps } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 export interface ProductCardProps {
   name: string;
-  nameEn?: string;
   price: number;
   comparePrice?: number;
   weight?: string;
-  category?: string;
   gradient?: string;
   emoji?: string;
   isNew?: boolean;
   inStock?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  soldLabel?: string;
   className?: string;
 }
 
@@ -31,6 +33,9 @@ export function ProductCard({
   emoji = "🫙",
   isNew = false,
   inStock = true,
+  rating,
+  reviewCount,
+  soldLabel,
   className,
 }: ProductCardProps) {
   const savings = comparePrice ? comparePrice - price : 0;
@@ -44,27 +49,21 @@ export function ProductCard({
         className,
       )}
     >
-      {/* Image area */}
       <div
         className={cn(
-          "relative flex aspect-square items-center justify-center bg-gradient-to-br",
+          "relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br",
           gradient,
-          "overflow-hidden",
         )}
       >
-        {/* Decorative blob */}
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-40" />
-
-        {/* Emoji placeholder (swap with next/image when photos ready) */}
+        <div className="absolute inset-0 bg-gradient-radial-gold opacity-30" />
         <span
-          className="relative select-none text-6xl drop-shadow-md transition-transform duration-300 group-hover:scale-110"
+          className="relative text-6xl drop-shadow-md transition-transform duration-500 group-hover:scale-110"
           aria-hidden
         >
           {emoji}
         </span>
-
-        {/* Badges top-start */}
         <div className="absolute start-3 top-3 flex flex-col gap-1.5">
+          {soldLabel && <Badge variant="premium">{soldLabel}</Badge>}
           {isNew && <Badge variant="gold">جديد</Badge>}
           {!inStock && <Badge variant="sand">نفذ المخزون</Badge>}
           {savings > 0 && (
@@ -73,34 +72,47 @@ export function ProductCard({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        {rating !== undefined && (
+          <div className="flex items-center justify-between gap-2">
+            <StarRating rating={rating} showValue />
+            {reviewCount !== undefined && (
+              <span className="flex items-center gap-1 text-2xs text-muted-foreground">
+                <Users className="size-3" aria-hidden />
+                {reviewCount}+
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="flex-1">
           <h3 className="text-base font-bold leading-snug text-foreground">
             {name}
           </h3>
           {weight && (
-            <p className="mt-0.5 text-xs text-muted-foreground">{weight}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{weight}</p>
           )}
         </div>
 
-        {/* Price row */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold tabular-nums text-accent">
-              {price} <span className="text-sm font-medium">د.م.</span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-xl font-bold tabular-nums text-accent">
+            {price}
+            <span className="ms-1 text-sm font-medium">د.م.</span>
+          </span>
+          {comparePrice && (
+            <span className="text-sm text-muted-foreground line-through tabular-nums">
+              {comparePrice} د.م.
             </span>
-            {comparePrice && (
-              <span className="text-xs text-muted-foreground line-through tabular-nums">
-                {comparePrice} د.م.
-              </span>
-            )}
-          </div>
+          )}
         </div>
+
+        <p className="text-2xs font-medium text-primary/70">
+          ✓ طبيعي 100% · الدفع عند الاستلام
+        </p>
 
         <Button
           variant="gold"
-          size="sm"
+          size="default"
           className="w-full gap-2"
           disabled={!inStock}
         >
