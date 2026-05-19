@@ -5,18 +5,20 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, ShoppingBag, X } from "lucide-react";
 
+import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "#products", label: "منتجاتنا" },
-  { href: "#bundles",  label: "عروض العائلة" },
-  { href: "#story",    label: "قصتنا" },
-  { href: "#reviews",  label: "آراء العملاء" },
-  { href: "#faq",      label: "الأسئلة الشائعة" },
+  { href: "/products", label: "منتجاتنا" },
+  { href: "/#bundles", label: "عروض العائلة" },
+  { href: "/#story", label: "قصتنا" },
+  { href: "/#reviews", label: "آراء العملاء" },
+  { href: "/#faq", label: "الأسئلة الشائعة" },
 ];
 
 export function SiteHeader() {
+  const { itemCount, openCart } = useCommerce();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -28,7 +30,9 @@ export function SiteHeader() {
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [menuOpen]);
 
   return (
@@ -74,19 +78,23 @@ export function SiteHeader() {
               size="icon"
               aria-label="سلة التسوق"
               className="relative rounded-full hover:bg-secondary/80"
+              onClick={openCart}
             >
               <ShoppingBag className="size-5" strokeWidth={1.75} />
-              <span className="absolute -top-0.5 -end-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-gold-gradient px-1 text-[0.6rem] font-bold text-foreground shadow-gold">
-                0
-              </span>
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -end-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-gold-gradient px-1 text-[0.6rem] font-bold text-foreground shadow-gold">
+                  {itemCount > 9 ? "9+" : itemCount}
+                </span>
+              )}
             </Button>
 
             <Button
               variant="gold"
               size="sm"
               className="hidden rounded-full px-6 shadow-gold lg:inline-flex"
+              asChild
             >
-              تسوق الآن
+              <Link href="/products">تسوق الآن</Link>
             </Button>
 
             <Button
@@ -99,7 +107,7 @@ export function SiteHeader() {
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </Button>
           </div>
-          </div>
+        </div>
       </header>
 
       <AnimatePresence>
@@ -134,9 +142,10 @@ export function SiteHeader() {
                   variant="gold"
                   size="lg"
                   className="w-full rounded-full shadow-gold"
+                  asChild
                   onClick={() => setMenuOpen(false)}
                 >
-                  تسوق الآن
+                  <Link href="/products">تسوق الآن</Link>
                 </Button>
               </div>
             </nav>

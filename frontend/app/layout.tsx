@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 
+import { CommerceShell } from "@/components/commerce/commerce-shell";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
@@ -43,9 +44,11 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
       <body className="min-h-screen font-sans selection:bg-accent/20">
-        <SiteHeader />
-        <main className="pt-[4.25rem] lg:pt-[4.75rem]">{children}</main>
-        <SiteFooter />
+        <CommerceShell>
+          <SiteHeader />
+          <main className="pt-[4.25rem] lg:pt-[4.75rem]">{children}</main>
+          <SiteFooter />
+        </CommerceShell>
       </body>
     </html>
   );
