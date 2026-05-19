@@ -8,30 +8,43 @@ import "./globals.css";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
-  title: "تازارزيت بيو | 100% طبيعي من قلب سوس",
+  title: {
+    default: "تازارزيت بيو | 100% طبيعي من قلب سوس",
+    template: "%s | تازارزيت بيو",
+  },
   description:
-    "منتجات مغربية طبيعية فاخرة — أملو، زيت أركان، عسل، ومكسرات من سوس. الدفع عند الاستلام في جميع أنحاء المغرب.",
+    "منتجات مغربية طبيعية فاخرة — أملو، زيت أركان، عسل، ومكسرات مختارة من سوس. الدفع عند الاستلام في جميع أنحاء المغرب.",
+  keywords: ["أملو", "زيت أركان", "عسل طبيعي", "سوس", "منتجات طبيعية المغرب", "تازارزيت بيو"],
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
+  openGraph: {
+    type: "website",
+    locale: "ar_MA",
+    title: "تازارزيت بيو | 100% طبيعي من قلب سوس",
+    description:
+      "أملو، زيت أركان، عسل، ومكسرات مختارة من سوس — الدفع عند الاستلام.",
+  },
+  other: {
+    "msapplication-TileColor": "#C8922A",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="min-h-screen font-sans">
+      <body className="min-h-screen font-sans selection:bg-accent/20">
         <SiteHeader />
-        <main>{children}</main>
+        <main className="pt-16">{children}</main>
         <SiteFooter />
       </body>
     </html>
