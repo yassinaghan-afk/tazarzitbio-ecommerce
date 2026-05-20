@@ -51,16 +51,28 @@ export function ProductPageClient({
   const { publicProduct: liveProduct } = useCatalogProduct(slug);
   const product = liveProduct ?? initialProduct;
 
-  const [selectedOffer, setSelectedOffer] = useState<PublicProductOffer | null>(
-    null,
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(
+    () => initialProduct?.offers[0]?.id ?? null,
   );
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
-    if (product?.offers[0]) {
-      setSelectedOffer(product.offers[0]);
-    }
-  }, [product?.slug, product?.offers]);
+    const source = liveProduct ?? initialProduct;
+    const firstId = source?.offers[0]?.id ?? null;
+    setSelectedOfferId((current) => {
+      if (current && source?.offers.some((o) => o.id === current)) {
+        return current;
+      }
+      return firstId;
+    });
+    // Reset size selection only when the product slug changes (not when offers[] is recreated).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- slug-only; offer prices sync via derived selectedOffer
+  }, [slug]);
+
+  const selectedOffer: PublicProductOffer | null =
+    product?.offers.find((o) => o.id === selectedOfferId) ??
+    product?.offers[0] ??
+    null;
 
   if (!product || !selectedOffer) {
     return null;
@@ -154,7 +166,7 @@ export function ProductPageClient({
                       <button
                         key={offer.id}
                         type="button"
-                        onClick={() => setSelectedOffer(offer)}
+                        onClick={() => setSelectedOfferId(offer.id)}
                         className={cn(
                           "rounded-2xl border p-4 text-start transition-all",
                           selectedOffer.id === offer.id

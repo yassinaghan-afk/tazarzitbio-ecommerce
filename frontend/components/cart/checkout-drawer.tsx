@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Banknote, Phone, ShieldCheck, Truck } from "lucide-react";
+import { Banknote, Phone, ShieldCheck } from "lucide-react";
 
 import { CartLineRow } from "@/components/cart/cart-line-row";
 import { OrderTotals } from "@/components/cart/order-totals";
@@ -83,21 +83,11 @@ export function CheckoutDrawer() {
           className="w-full rounded-full shadow-gold"
           disabled={submitting || items.length === 0}
         >
-          {submitting
-            ? "جاري الإرسال..."
-            : `تأكيد الطلب · ${shipping.total} د.م.`}
+          {submitting ? "جاري الإرسال..." : "تأكيد الطلب - الدفع عند الاستلام"}
         </Button>
       }
     >
       <form id="checkout-form" onSubmit={handleSubmit} className="space-y-5">
-        <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/85">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
-          <p>
-            لن نطلب أي دفع إلكتروني. سيتصل بك فريقنا لتأكيد الطلب قبل الشحن.
-            يمكنك إضافة منتجات أخرى قبل التأكيد.
-          </p>
-        </div>
-
         {items.length > 0 && (
           <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
             <div className="mb-3 flex items-center justify-between gap-2">
@@ -125,9 +115,12 @@ export function CheckoutDrawer() {
 
         <CheckoutCrossSell products={crossSellProducts} />
 
-        <div className="flex items-center gap-2 rounded-xl bg-secondary/50 px-3 py-2.5 text-xs text-muted-foreground">
-          <Truck className="size-4 shrink-0 text-accent" />
-          الدفع عند الاستلام — بدون دفع مسبق
+        <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/85">
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
+          <p>
+            أكمل بياناتك أدناه. سيتصل بك فريقنا لتأكيد الطلب قبل الشحن — يمكنك
+            إضافة منتجات من القائمة أعلاه قبل التأكيد.
+          </p>
         </div>
 
         <div>
