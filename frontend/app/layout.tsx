@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 
 import { CommerceShell } from "@/components/commerce/commerce-shell";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
@@ -50,7 +51,10 @@ export default function RootLayout({
       <body className="min-h-screen font-sans selection:bg-accent/20">
         <CommerceShell>
           <SiteHeader />
-          <main className="pt-[4.25rem] lg:pt-[4.75rem]">{children}</main>
+          <AnnouncementBar />
+          <main className="pt-[var(--site-top-offset,6.75rem)] lg:pt-[var(--site-top-offset,7.25rem)]">
+            {children}
+          </main>
           <SiteFooter />
         </CommerceShell>
       </body>

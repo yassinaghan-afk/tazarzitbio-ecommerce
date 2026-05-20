@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BrandLockup } from "@/components/brand/brand-logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Container } from "@/components/layout/container";
 
 const shopLinks   = ["أملو", "أملو بالفستق", "زيت أركان", "عسل طبيعي", "مكسرات بالعسل"];
@@ -19,7 +19,7 @@ export function SiteFooter() {
           {/* Brand column */}
           <div className="lg:col-span-1">
             <Link href="/" className="inline-flex transition-opacity hover:opacity-90">
-              <BrandLockup variant="footer" showTagline />
+              <BrandLogo variant="footer" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               منتجات مغربية طبيعية فاخرة — أملو، زيت أركان، عسل، ومكسرات

@@ -15,6 +15,18 @@ export {
   slugify,
 } from "./product-types";
 
+export {
+  ANNOUNCEMENT_BAR_HEIGHT_PX,
+  DEFAULT_ANNOUNCEMENT_BAR,
+  getActiveAnnouncementMessages,
+  normalizeAnnouncementBar,
+} from "./announcement-bar";
+export type {
+  AnnouncementBarConfig,
+  AnnouncementIcon,
+  AnnouncementMessage,
+} from "./announcement-bar";
+
 export type BannerPlacement =
   | "top-bar"
   | "homepage-hero"

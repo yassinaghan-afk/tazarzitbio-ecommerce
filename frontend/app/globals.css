@@ -37,6 +37,18 @@
     --shadow-xl:  0 16px 32px hsl(20 30% 10% / 0.06), 0 40px 80px hsl(20 30% 10% / 0.12);
     --shadow-gold: 0 4px 24px hsl(35 65% 46% / 0.35), 0 1px 3px hsl(35 50% 30% / 0.2);
     --shadow-inset-soft: inset 0 1px 0 hsl(0 0% 100% / 0.6);
+
+    /* Header + announcement bar offset (updated by AnnouncementBar) */
+    --header-height: 72px;
+    --announcement-height: 36px;
+    --site-top-offset: 108px;
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --header-height: 80px;
+      --site-top-offset: 116px;
+    }
   }
 
   * {

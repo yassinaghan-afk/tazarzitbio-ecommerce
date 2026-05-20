@@ -14,7 +14,9 @@ import type {
   LandingPage,
   AdminProductData,
   CmsProductRecord,
+  AnnouncementBarConfig,
 } from "@/lib/admin/types";
+import { DEFAULT_ANNOUNCEMENT_BAR, normalizeAnnouncementBar } from "@/lib/admin/announcement-bar";
 import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
 
 export interface PersistedStore {
@@ -30,6 +32,7 @@ export interface PersistedStore {
   landingPages: LandingPage[];
   homepageContent: HomepageContent;
   banners: Banner[];
+  announcementBar: AnnouncementBarConfig;
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -47,6 +50,7 @@ const DEFAULT_STORE: PersistedStore = {
   landingPages: [],
   homepageContent: DEFAULT_HOMEPAGE_CONTENT,
   banners: [],
+  announcementBar: DEFAULT_ANNOUNCEMENT_BAR,
 };
 
 async function ensureDir() {
@@ -89,6 +93,12 @@ export async function readStore(): Promise<PersistedStore> {
         (parsed.homepageContent as HomepageContent | undefined) ??
         DEFAULT_HOMEPAGE_CONTENT,
       banners: Array.isArray(parsed.banners) ? (parsed.banners as Banner[]) : [],
+      announcementBar:
+        parsed.announcementBar != null
+          ? normalizeAnnouncementBar(
+              parsed.announcementBar as Partial<AnnouncementBarConfig>,
+            )
+          : DEFAULT_ANNOUNCEMENT_BAR,
     };
   } catch {
     return DEFAULT_STORE;

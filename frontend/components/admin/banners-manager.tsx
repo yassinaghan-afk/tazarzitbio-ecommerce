@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Edit2, Megaphone, Plus, Save, Trash2, X } from "lucide-react";
 
+import { AnnouncementBarManager } from "@/components/admin/announcement-bar-manager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,7 @@ function EmptyBanner(): Partial<Banner> {
 }
 
 export function BannersManager() {
+  const [tab, setTab] = useState<"announcement" | "legacy">("announcement");
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Banner> | null>(null);
@@ -177,10 +179,41 @@ export function BannersManager() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <div className="flex gap-2 border-b border-border/60 pb-1">
+        <button
+          type="button"
+          onClick={() => setTab("announcement")}
+          className={cn(
+            "rounded-t-lg px-4 py-2 text-sm font-semibold transition-colors",
+            tab === "announcement"
+              ? "bg-accent/10 text-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Announcement Bar
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("legacy")}
+          className={cn(
+            "rounded-t-lg px-4 py-2 text-sm font-semibold transition-colors",
+            tab === "legacy"
+              ? "bg-accent/10 text-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Site Banners
+        </button>
+      </div>
+
+      {tab === "announcement" ? (
+        <AnnouncementBarManager />
+      ) : (
+        <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Banners</h2>
+          <h2 className="text-xl font-bold text-foreground">Site Banners</h2>
           <p className="text-sm text-muted-foreground">
             Manage promotional banners across the storefront.
           </p>
@@ -275,6 +308,8 @@ export function BannersManager() {
               </div>
             </div>
           ))}
+        </div>
+      )}
         </div>
       )}
     </div>

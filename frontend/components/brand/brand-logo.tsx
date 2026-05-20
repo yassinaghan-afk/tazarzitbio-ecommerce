@@ -3,36 +3,34 @@ import Image from "next/image";
 import { BRAND_LOGO_PNG, BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
+const LOGO_WIDTH = 433;
+const LOGO_HEIGHT = 577;
+
 type BrandLogoVariant = "header" | "footer" | "compact" | "checkout" | "admin";
 
 const variantConfig: Record<
   BrandLogoVariant,
-  { width: number; height: number; className: string }
+  { sizes: string; className: string }
 > = {
   header: {
-    width: 132,
-    height: 36,
-    className: "h-8 w-auto max-w-[7.5rem] sm:h-9 sm:max-w-[8.5rem] lg:h-10 lg:max-w-[9.5rem]",
+    sizes: "(max-width: 640px) 56px, (max-width: 1024px) 64px, 72px",
+    className: "h-12 sm:h-14 lg:h-16",
   },
   footer: {
-    width: 148,
-    height: 40,
-    className: "h-10 w-auto max-w-[9rem]",
+    sizes: "128px",
+    className: "h-14 sm:h-16",
   },
   compact: {
-    width: 108,
-    height: 30,
-    className: "h-7 w-auto max-w-[6.5rem]",
+    sizes: "96px",
+    className: "h-11 sm:h-12",
   },
   checkout: {
-    width: 120,
-    height: 32,
-    className: "h-8 w-auto max-w-[7rem] mx-auto",
+    sizes: "104px",
+    className: "h-12 mx-auto",
   },
   admin: {
-    width: 128,
-    height: 34,
-    className: "h-9 w-auto max-w-[8rem]",
+    sizes: "112px",
+    className: "h-12 sm:h-14",
   },
 };
 
@@ -50,39 +48,39 @@ export function BrandLogo({
   const config = variantConfig[variant];
 
   return (
-    <Image
-      src={BRAND_LOGO_PNG}
-      alt={BRAND_NAME}
-      width={config.width}
-      height={config.height}
-      priority={priority}
-      className={cn("object-contain object-center", config.className, className)}
-    />
+    <span
+      className={cn(
+        "relative inline-flex shrink-0 items-center",
+        config.className,
+        className,
+      )}
+    >
+      <Image
+        src={BRAND_LOGO_PNG}
+        alt={BRAND_NAME}
+        width={LOGO_WIDTH}
+        height={LOGO_HEIGHT}
+        sizes={config.sizes}
+        quality={100}
+        priority={priority}
+        className="h-full w-auto max-w-none object-contain object-center"
+      />
+    </span>
   );
 }
 
-interface BrandLockupProps {
-  variant?: BrandLogoVariant;
-  showTagline?: boolean;
-  className?: string;
-  priority?: boolean;
-}
-
-/** Logo with optional Arabic tagline — used in header/footer */
+/** @deprecated Use BrandLogo — tagline removed */
 export function BrandLockup({
   variant = "header",
-  showTagline = true,
   className,
   priority = false,
-}: BrandLockupProps) {
+}: {
+  variant?: BrandLogoVariant;
+  className?: string;
+  priority?: boolean;
+  showTagline?: boolean;
+}) {
   return (
-    <div className={cn("flex flex-col items-start gap-0.5", className)}>
-      <BrandLogo variant={variant} priority={priority} />
-      {showTagline && (
-        <span className="text-[0.65rem] font-medium tracking-wide text-muted-foreground">
-          من قلب سوس
-        </span>
-      )}
-    </div>
+    <BrandLogo variant={variant} className={className} priority={priority} />
   );
 }

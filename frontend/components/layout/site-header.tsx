@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, ShoppingBag, X } from "lucide-react";
 
 import { useCommerce } from "@/components/providers/commerce-provider";
-import { BrandLockup } from "@/components/brand/brand-logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,13 +44,13 @@ export function SiteHeader() {
           scrolled ? "glass-nav-solid" : "glass-nav",
         )}
       >
-        <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[4.75rem] lg:px-8">
+        <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-[5rem] lg:px-8">
           <Link
             href="/"
-            className="group shrink-0 transition-opacity hover:opacity-90"
+            className="flex shrink-0 items-center py-1 transition-opacity hover:opacity-90"
             onClick={() => setMenuOpen(false)}
           >
-            <BrandLockup variant="header" priority showTagline />
+            <BrandLogo variant="header" priority />
           </Link>
 
           <nav
@@ -114,11 +114,11 @@ export function SiteHeader() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-surface fixed inset-x-0 top-[4.25rem] z-40 border-b-0 shadow-warm-xl lg:top-[4.75rem]"
+            className="glass-surface fixed inset-x-0 top-[var(--site-top-offset,6.75rem)] z-40 border-b-0 shadow-warm-xl lg:top-[var(--site-top-offset,7.25rem)]"
           >
             <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6">
               <div className="mb-4 flex justify-center border-b border-border/50 pb-5">
-                <BrandLockup variant="compact" showTagline />
+                <BrandLogo variant="compact" />
               </div>
               {navLinks.map((link, i) => (
                 <motion.div
