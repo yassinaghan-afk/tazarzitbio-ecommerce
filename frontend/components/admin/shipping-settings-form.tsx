@@ -50,17 +50,16 @@ export function ShippingSettingsForm() {
           <Truck className="size-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-foreground">إعدادات التوصيل — المغرب</h2>
+          <h2 className="text-lg font-bold text-foreground">Shipping Settings — Morocco</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            رسوم ثابتة لكل طلب. التوصيل مجاني عند بلوغ الحد الأدنى للمنتجات أو
-            المبلغ، أو عند شراء باقة.
+            Flat fee per order. Free shipping when minimum products/amount is reached, or for bundle orders.
           </p>
         </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-3">
         <div>
-          <Label htmlFor="defaultShippingPrice">رسوم التوصيل الافتراضية (د.م.)</Label>
+          <Label htmlFor="defaultShippingPrice">Default Shipping Fee (MAD)</Label>
           <Input
             id="defaultShippingPrice"
             type="number"
@@ -73,13 +72,13 @@ export function ShippingSettingsForm() {
             className="mt-1.5"
           />
           <p className="mt-1 text-2xs text-muted-foreground">
-            defaultShippingPrice — افتراضي: 40
+            defaultShippingPrice — default: 40
           </p>
         </div>
 
         <div>
           <Label htmlFor="freeShippingMinimumAmount">
-            حد التوصيل المجاني بالمبلغ (د.م.)
+            Free Shipping Min. Amount (MAD)
           </Label>
           <Input
             id="freeShippingMinimumAmount"
@@ -93,13 +92,13 @@ export function ShippingSettingsForm() {
             className="mt-1.5"
           />
           <p className="mt-1 text-2xs text-muted-foreground">
-            freeShippingMinimumAmount — افتراضي: 399
+            freeShippingMinimumAmount — default: 399
           </p>
         </div>
 
         <div>
           <Label htmlFor="freeShippingMinimumProducts">
-            حد التوصيل المجاني بعدد المنتجات
+            Free Shipping Min. Products
           </Label>
           <Input
             id="freeShippingMinimumProducts"
@@ -116,7 +115,7 @@ export function ShippingSettingsForm() {
             className="mt-1.5"
           />
           <p className="mt-1 text-2xs text-muted-foreground">
-            freeShippingMinimumProducts — افتراضي: 3
+            freeShippingMinimumProducts — default: 3
           </p>
         </div>
       </div>
@@ -124,7 +123,7 @@ export function ShippingSettingsForm() {
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Button variant="gold" className="gap-2 rounded-full" onClick={handleSave}>
           <Save className="size-4" />
-          حفظ إعدادات التوصيل
+          Save Shipping Settings
         </Button>
         <Button
           variant="outline"
@@ -132,10 +131,10 @@ export function ShippingSettingsForm() {
           onClick={handleReset}
         >
           <RotateCcw className="size-4" />
-          استعادة الافتراضي
+          Reset to Defaults
         </Button>
         {saved && (
-          <span className="text-sm font-medium text-emerald-600">تم الحفظ ✓</span>
+          <span className="text-sm font-medium text-emerald-600">Saved ✓</span>
         )}
       </div>
     </div>

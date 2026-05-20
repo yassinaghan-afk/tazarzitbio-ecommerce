@@ -15,7 +15,9 @@ import { buildCatalog, getAllVariants } from "@/lib/products";
 import { buildPricingEconomics } from "@/lib/products/pricing";
 
 type RowState = {
+  rowKey: string;
   variantId: string;
+  productId: string;
   productName: string;
   label: string;
   sku: string;
@@ -33,8 +35,12 @@ export function PricingDashboard() {
     const overrides = loadPricingOverrides();
     const variants = getAllVariants(buildCatalog(overrides));
     setRows(
-      variants.map((v) => ({
-        variantId: v.variantId,
+      variants.map((v, i) => ({
+        rowKey: v.variantId
+          ? `${v.productId ?? "p"}-${v.variantId}`
+          : `${v.productId ?? "p"}-${v.label ?? ""}-${i}`,
+        variantId: v.variantId ?? `${v.productId ?? "p"}-${i}`,
+        productId: v.productId ?? "",
         productName: v.productName,
         label: v.label,
         sku: v.sku,
@@ -64,9 +70,9 @@ export function PricingDashboard() {
     [rows],
   );
 
-  const updateRow = (variantId: string, patch: Partial<RowState>) => {
+  const updateRow = (rowKey: string, patch: Partial<RowState>) => {
     setRows((prev) =>
-      prev.map((r) => (r.variantId === variantId ? { ...r, ...patch } : r)),
+      prev.map((r) => (r.rowKey === rowKey ? { ...r, ...patch } : r)),
     );
     setSaved(false);
   };
@@ -87,7 +93,7 @@ export function PricingDashboard() {
   };
 
   const handleReset = () => {
-    if (!confirm("إعادة جميع الأسعار إلى القيم الافتراضية؟")) return;
+    if (!confirm("Reset all prices to default values?")) return;
     resetPricingOverrides();
     loadRows();
     setSaved(false);
@@ -97,23 +103,23 @@ export function PricingDashboard() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          هذه البيانات للإدارة فقط — لا تظهر للزوار.
+          Internal pricing data — never shown to customers.
         </p>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={handleReset}>
             <RotateCcw className="size-4" />
-            إعادة الافتراضي
+            Reset Defaults
           </Button>
           <Button variant="gold" className="gap-2 shadow-gold" onClick={handleSave}>
             <Save className="size-4" />
-            حفظ التعديلات
+            Save Changes
           </Button>
         </div>
       </div>
 
       {saved && (
         <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">
-          تم الحفظ — ستنعكس الأسعار على المتجر فوراً.
+          Saved — prices updated successfully.
         </p>
       )}
 
@@ -121,21 +127,21 @@ export function PricingDashboard() {
         <table className="w-full min-w-[960px] text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/40 text-start">
-              <th className="p-3 font-bold">المنتج</th>
-              <th className="p-3 font-bold">الحجم</th>
+              <th className="p-3 font-bold">Product</th>
+              <th className="p-3 font-bold">Size</th>
               <th className="p-3 font-bold">SKU</th>
-              <th className="p-3 font-bold">تكلفة</th>
-              <th className="p-3 font-bold">سعر البيع</th>
-              <th className="p-3 font-bold">توصيل</th>
-              <th className="p-3 font-bold">إعلانات</th>
-              <th className="p-3 font-bold">ربح إجمالي</th>
-              <th className="p-3 font-bold">صافي تقديري</th>
-              <th className="p-3 font-bold">هامش %</th>
+              <th className="p-3 font-bold">Cost</th>
+              <th className="p-3 font-bold">Sale Price</th>
+              <th className="p-3 font-bold">Delivery</th>
+              <th className="p-3 font-bold">Ads</th>
+              <th className="p-3 font-bold">Gross Profit</th>
+              <th className="p-3 font-bold">Net (Est.)</th>
+              <th className="p-3 font-bold">Margin %</th>
             </tr>
           </thead>
           <tbody>
             {computed.map((row) => (
-              <tr key={row.variantId} className="border-b border-border/50">
+              <tr key={row.rowKey} className="border-b border-border/50">
                 <td className="p-3 font-medium">{row.productName}</td>
                 <td className="p-3">{row.label}</td>
                 <td className="p-3 font-mono text-xs text-muted-foreground">
@@ -148,7 +154,7 @@ export function PricingDashboard() {
                     className="h-9 w-24"
                     value={row.costPrice}
                     onChange={(e) =>
-                      updateRow(row.variantId, {
+                      updateRow(row.rowKey, {
                         costPrice: Number(e.target.value),
                       })
                     }
@@ -161,7 +167,7 @@ export function PricingDashboard() {
                     className="h-9 w-24"
                     value={row.salePrice}
                     onChange={(e) =>
-                      updateRow(row.variantId, {
+                      updateRow(row.rowKey, {
                         salePrice: Number(e.target.value),
                       })
                     }
@@ -173,7 +179,7 @@ export function PricingDashboard() {
                     className="h-9 w-20"
                     value={row.estimatedDeliveryCost}
                     onChange={(e) =>
-                      updateRow(row.variantId, {
+                      updateRow(row.rowKey, {
                         estimatedDeliveryCost: Number(e.target.value),
                       })
                     }
@@ -185,7 +191,7 @@ export function PricingDashboard() {
                     className="h-9 w-20"
                     value={row.estimatedAdsCost}
                     onChange={(e) =>
-                      updateRow(row.variantId, {
+                      updateRow(row.rowKey, {
                         estimatedAdsCost: Number(e.target.value),
                       })
                     }

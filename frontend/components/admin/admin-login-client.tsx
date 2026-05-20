@@ -25,7 +25,7 @@ export function AdminLoginClient() {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setError("كلمة المرور غير صحيحة");
+        setError("Incorrect password. Please try again.");
         return;
       }
       router.push("/admin");
@@ -42,16 +42,16 @@ export function AdminLoginClient() {
           <Lock className="size-5 text-accent" />
         </div>
         <div>
-          <h1 className="text-display text-2xl text-foreground">لوحة الإدارة</h1>
+          <h1 className="text-display text-2xl text-foreground">Admin Panel</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            تسجيل دخول بسيط لحماية الطلبات والبيانات
+            Tazarzit Bio — Secure admin access
           </p>
         </div>
       </div>
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <Label htmlFor="adminPassword">كلمة المرور</Label>
+          <Label htmlFor="adminPassword">Password</Label>
           <Input
             id="adminPassword"
             type="password"
@@ -71,7 +71,7 @@ export function AdminLoginClient() {
           className="w-full rounded-full shadow-gold"
           disabled={loading || password.trim().length === 0}
         >
-          {loading ? "جاري الدخول..." : "دخول"}
+          {loading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
     </div>

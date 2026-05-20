@@ -8,12 +8,23 @@ import {
   type ShippingSettings,
 } from "@/lib/shipping/settings";
 import type { PricingOverrides } from "@/lib/products/admin-storage";
+import type {
+  Banner,
+  HomepageContent,
+  LandingPage,
+  AdminProductData,
+} from "@/lib/admin/types";
+import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
 
 export interface PersistedStore {
   version: 1;
   orders: OrderRecord[];
   shippingSettings: ShippingSettings;
   pricingOverrides: PricingOverrides;
+  productOverrides: AdminProductData[];
+  landingPages: LandingPage[];
+  homepageContent: HomepageContent;
+  banners: Banner[];
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -23,6 +34,10 @@ const DEFAULT_STORE: PersistedStore = {
   orders: [],
   shippingSettings: DEFAULT_SHIPPING_SETTINGS,
   pricingOverrides: {},
+  productOverrides: [],
+  landingPages: [],
+  homepageContent: DEFAULT_HOMEPAGE_CONTENT,
+  banners: [],
 };
 
 async function ensureDir() {
@@ -43,6 +58,16 @@ export async function readStore(): Promise<PersistedStore> {
         DEFAULT_SHIPPING_SETTINGS,
       pricingOverrides:
         (parsed.pricingOverrides as PricingOverrides | undefined) ?? {},
+      productOverrides: Array.isArray(parsed.productOverrides)
+        ? (parsed.productOverrides as AdminProductData[])
+        : [],
+      landingPages: Array.isArray(parsed.landingPages)
+        ? (parsed.landingPages as LandingPage[])
+        : [],
+      homepageContent:
+        (parsed.homepageContent as HomepageContent | undefined) ??
+        DEFAULT_HOMEPAGE_CONTENT,
+      banners: Array.isArray(parsed.banners) ? (parsed.banners as Banner[]) : [],
     };
   } catch {
     return DEFAULT_STORE;
