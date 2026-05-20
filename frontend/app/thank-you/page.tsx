@@ -17,7 +17,7 @@ import { ThankYouVerification } from "@/components/thank-you/thank-you-verificat
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
-import type { PlacedOrder } from "@/lib/checkout/types";
+import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 
 export default function ThankYouPage() {
@@ -38,6 +38,19 @@ export default function ThankYouPage() {
   }, []);
 
   const recommended = useMemo(() => products.slice(0, 3), [products]);
+
+  const handleCustomerUpdate = (customer: CheckoutFormData) => {
+    setOrder((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, customer };
+      try {
+        sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore quota errors */
+      }
+      return next;
+    });
+  };
 
   return (
     <>
@@ -92,7 +105,10 @@ export default function ThankYouPage() {
 
             {hydrated && order && (
               <>
-                <ThankYouVerification order={order} />
+                <ThankYouVerification
+                  order={order}
+                  onCustomerUpdate={handleCustomerUpdate}
+                />
 
                 <div className="glass-card mt-8 rounded-2xl border border-border/60 p-6 text-start shadow-warm-lg">
                   <p className="text-xs font-bold uppercase tracking-wider text-accent">
