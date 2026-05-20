@@ -44,17 +44,17 @@ export function SiteHeader() {
           scrolled ? "glass-nav-solid" : "glass-nav",
         )}
       >
-        <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-[5rem] lg:px-8">
+        <div className="mx-auto flex min-h-[var(--header-height,5.75rem)] max-w-7xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="flex shrink-0 items-center py-1 transition-opacity hover:opacity-90"
+            className="flex shrink-0 items-center pe-1 transition-opacity hover:opacity-90 sm:pe-2"
             onClick={() => setMenuOpen(false)}
           >
             <BrandLogo variant="header" priority />
           </Link>
 
           <nav
-            className="hidden items-center gap-1 lg:flex"
+            className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1"
             aria-label="التنقل الرئيسي"
           >
             {navLinks.map((link) => (
@@ -68,7 +68,7 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -114,10 +114,10 @@ export function SiteHeader() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-surface fixed inset-x-0 top-[var(--site-top-offset,6.75rem)] z-40 border-b-0 shadow-warm-xl lg:top-[var(--site-top-offset,7.25rem)]"
+            className="glass-surface fixed inset-x-0 top-[var(--site-top-offset,8rem)] z-40 border-b-0 shadow-warm-xl lg:top-[var(--site-top-offset,9.75rem)]"
           >
             <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6">
-              <div className="mb-4 flex justify-center border-b border-border/50 pb-5">
+              <div className="mb-5 flex justify-center border-b border-border/50 pb-6 pt-1">
                 <BrandLogo variant="compact" />
               </div>
               {navLinks.map((link, i) => (

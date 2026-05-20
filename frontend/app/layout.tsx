@@ -52,7 +52,7 @@ export default function RootLayout({
         <CommerceShell>
           <SiteHeader />
           <AnnouncementBar />
-          <main className="pt-[var(--site-top-offset,6.75rem)] lg:pt-[var(--site-top-offset,7.25rem)]">
+          <main className="pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
             {children}
           </main>
           <SiteFooter />

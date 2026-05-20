@@ -17,6 +17,10 @@ import {
   getActiveAnnouncementMessages,
   type AnnouncementIcon,
 } from "@/lib/admin/announcement-bar";
+import {
+  HEADER_HEIGHT_DESKTOP_PX,
+  HEADER_HEIGHT_MOBILE_PX,
+} from "@/lib/brand";
 import { useAnnouncementBar } from "@/hooks/use-announcement-bar";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +48,9 @@ export function AnnouncementBar() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const headerHeight =
-      window.matchMedia("(min-width: 1024px)").matches ? 80 : 72;
+    const headerHeight = window.matchMedia("(min-width: 1024px)").matches
+      ? HEADER_HEIGHT_DESKTOP_PX
+      : HEADER_HEIGHT_MOBILE_PX;
     const announcementHeight = visible ? ANNOUNCEMENT_BAR_HEIGHT_PX : 0;
 
     root.style.setProperty("--header-height", `${headerHeight}px`);
@@ -82,7 +87,7 @@ export function AnnouncementBar() {
 
   return (
     <div
-      className="fixed inset-x-0 top-[var(--header-height,4.25rem)] z-40 border-b border-white/10 bg-[hsl(96_33%_18%)] shadow-sm"
+      className="fixed inset-x-0 top-[var(--header-height,5.75rem)] z-40 border-b border-white/10 bg-[hsl(96_33%_18%)] shadow-sm"
       style={{ height: ANNOUNCEMENT_BAR_HEIGHT_PX }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
