@@ -6,10 +6,11 @@ import type { ProductCategory } from "@/lib/products";
 import { CATEGORY_LABELS } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
-const filters: { id: ProductCategory; label: string }[] = [
+const defaultFilters: { id: ProductCategory; label: string }[] = [
   { id: "all", label: "الكل" },
-  { id: "bundles", label: CATEGORY_LABELS.bundles },
+  { id: "honey", label: CATEGORY_LABELS.honey },
   { id: "amlou", label: CATEGORY_LABELS.amlou },
+  { id: "bundles", label: CATEGORY_LABELS.bundles },
   { id: "oils", label: CATEGORY_LABELS.oils },
   { id: "honey-nuts", label: CATEGORY_LABELS["honey-nuts"] },
 ];
@@ -17,9 +18,10 @@ const filters: { id: ProductCategory; label: string }[] = [
 interface CategoryFiltersProps {
   active: ProductCategory;
   onChange: (category: ProductCategory) => void;
+  filters?: { id: ProductCategory; label: string }[];
 }
 
-export function CategoryFilters({ active, onChange }: CategoryFiltersProps) {
+export function CategoryFilters({ active, onChange, filters = defaultFilters }: CategoryFiltersProps) {
   return (
     <div
       className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"

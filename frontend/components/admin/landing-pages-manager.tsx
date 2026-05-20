@@ -12,6 +12,10 @@ import { cn } from "@/lib/utils";
 const PRODUCT_SLUGS = [
   "almond-amlou",
   "pistachio-amlou",
+  "peanut-amlou",
+  "daghmous-honey",
+  "thym-honey",
+  "eucalyptus-honey",
   "argan-oil",
   "mixed-nuts-honey",
   "premium-family-pack",

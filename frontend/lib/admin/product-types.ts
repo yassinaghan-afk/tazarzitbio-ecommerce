@@ -43,6 +43,7 @@ export interface CmsProductRecord {
 
 export const CMS_CATEGORIES: { id: CmsCategory; label: string }[] = [
   { id: "amlou", label: "Amlou" },
+  { id: "honey", label: "Honey" },
   { id: "oils", label: "Oils" },
   { id: "honey-nuts", label: "Honey & Nuts" },
   { id: "bundles", label: "Bundles & Packs" },

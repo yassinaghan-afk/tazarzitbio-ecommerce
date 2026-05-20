@@ -3,14 +3,23 @@ import { buildPricingEconomics, type PricingInput } from "./pricing";
 import {
   REVIEWS_ALMOND,
   REVIEWS_ARGAN,
+  REVIEWS_DAGHMOUS,
+  REVIEWS_EUCALYPTUS,
   REVIEWS_FAMILY,
   REVIEWS_NUTS,
+  REVIEWS_PEANUT_AMLou,
   REVIEWS_PISTACHIO,
+  REVIEWS_THYM,
 } from "./reviews-darija";
 import type { Product, ProductOffer } from "./types";
 import { expandCatalogWithVariants } from "./variant-products";
 
 const IMG = "/images/products";
+
+const ADMIN_ECONOMICS = {
+  estimatedDeliveryCost: 40,
+  estimatedAdsCost: 20,
+} as const;
 
 function offer(
   id: string,
@@ -67,6 +76,30 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       "أملو لوز + فستق + مكسرات + أركان",
       overrides,
     ),
+  ];
+
+  const daghmousOffers = [
+    offer("daghmous-250", "HON-DAG-250", "250 غ", "250 غ", { costPrice: 122, salePrice: 169, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("daghmous-500", "HON-DAG-500", "500 غ", "500 غ", { costPrice: 222, salePrice: 299, ...ADMIN_ECONOMICS }, "الأكثر طلباً", overrides),
+    offer("daghmous-750", "HON-DAG-750", "750 غ", "750 غ", { costPrice: 322, salePrice: 449, ...ADMIN_ECONOMICS }, "قيمة عائلية", overrides),
+  ];
+
+  const thymOffers = [
+    offer("thym-250", "HON-THY-250", "250 غ", "250 غ", { costPrice: 97, salePrice: 149, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("thym-500", "HON-THY-500", "500 غ", "500 غ", { costPrice: 172, salePrice: 269, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("thym-750", "HON-THY-750", "750 غ", "750 غ", { costPrice: 247, salePrice: 399, ...ADMIN_ECONOMICS }, undefined, overrides),
+  ];
+
+  const eucalyptusOffers = [
+    offer("eucalyptus-250", "HON-EUC-250", "250 غ", "250 غ", { costPrice: 59.5, salePrice: 99, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("eucalyptus-500", "HON-EUC-500", "500 غ", "500 غ", { costPrice: 97, salePrice: 179, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("eucalyptus-750", "HON-EUC-750", "750 غ", "750 غ", { costPrice: 134.5, salePrice: 279, ...ADMIN_ECONOMICS }, undefined, overrides),
+  ];
+
+  const peanutAmlouOffers = [
+    offer("peanut-amlou-250", "AML-PNT-250", "250 غ", "250 غ", { costPrice: 29.5, salePrice: 79, ...ADMIN_ECONOMICS }, undefined, overrides),
+    offer("peanut-amlou-500", "AML-PNT-500", "500 غ", "500 غ", { costPrice: 37, salePrice: 129, ...ADMIN_ECONOMICS }, "الأكثر طلباً", overrides),
+    offer("peanut-amlou-750", "AML-PNT-750", "750 غ", "750 غ", { costPrice: 44.5, salePrice: 199, ...ADMIN_ECONOMICS }, undefined, overrides),
   ];
 
   const catalog: Product[] = [
@@ -233,6 +266,147 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       rating: 4.9,
       reviewCount: 241,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "premium-family-pack"],
+    },
+    {
+      id: "daghmous-honey",
+      slug: "daghmous-honey",
+      nameAr: "عسل الدغموس",
+      shortDescription:
+        "عسل الدغموس الطبيعي من سوس — نكهة غنية ولون ذهبي أصيل.",
+      description:
+        "عسل الدغموس من تازارزيت بيو يُجمع من مراعي سوس الطبيعية. عسل نقي بقوام كثيف ونكهة مميزة، مثالي للفطور والضيافة المغربية.",
+      price: lowestPrice(daghmousOffers),
+      image: `${IMG}/Daghmous_honey.jpeg`,
+      images: [`${IMG}/Daghmous_honey.jpeg`],
+      category: "honey",
+      badges: ["natural", "bestseller"],
+      weight: "250 غ — 750 غ",
+      ingredients: ["عسل الدغموس الطبيعي 100%"],
+      benefits: [
+        "عسل نقي من مراعي سوس",
+        "قوام كثيف ولون ذهبي",
+        "مثالي للفطور والشاي",
+      ],
+      usageSuggestions: [
+        "مع الملوي والخبز البيت",
+        "في الشاي المغربي",
+        "على مائدة الضيافة",
+      ],
+      offers: daghmousOffers,
+      faq: [
+        { q: "هل العسل طبيعي 100%؟", a: "نعم، عسل نقي دون إضافات." },
+        { q: "ما الأحجام المتوفرة؟", a: "250 غ، 500 غ، و750 غ." },
+        { q: "الدفع عند الاستلام؟", a: "نعم، لجميع مدن المغرب." },
+      ],
+      reviews: REVIEWS_DAGHMOUS,
+      rating: 4.9,
+      reviewCount: 87,
+      relatedSlugs: ["thym-honey", "eucalyptus-honey", "almond-amlou"],
+    },
+    {
+      id: "thym-honey",
+      slug: "thym-honey",
+      nameAr: "عسل الزعتر",
+      shortDescription:
+        "عسل الزعتر (السعتر) من جبال سوس — رائحة عطرية وطعم أصيل.",
+      description:
+        "عسل الزعتر المغربي يُعرَف بجودته ونكهته المميزة. يُجمع من نبات الزعتر البري في مناطق سوس ويُعبأ بعناية للحفاظ على نقاوته.",
+      price: lowestPrice(thymOffers),
+      image: `${IMG}/saatar_honey.jpeg`,
+      images: [`${IMG}/saatar_honey.jpeg`],
+      category: "honey",
+      badges: ["natural", "new"],
+      weight: "250 غ — 750 غ",
+      ingredients: ["عسل الزعتر الطبيعي 100%"],
+      benefits: [
+        "نكهة زعتر أصيلة",
+        "عسل من مراعي جبلية",
+        "تغليف أنيق وفاخر",
+      ],
+      usageSuggestions: [
+        "مع الفطور العائلي",
+        "في الشاي بالنعناع",
+        "هدية عملية من المغرب",
+      ],
+      offers: thymOffers,
+      faq: [
+        { q: "ما الفرق بين الدغموس والزعتر؟", a: "كل نوع له نبات مصدر مختلف ونكهة مميزة." },
+        { q: "كيف يُخزَّن؟", a: "في مكان بارد وجاف بعيداً عن الشمس." },
+      ],
+      reviews: REVIEWS_THYM,
+      rating: 4.9,
+      reviewCount: 64,
+      relatedSlugs: ["daghmous-honey", "eucalyptus-honey", "mixed-nuts-honey"],
+    },
+    {
+      id: "eucalyptus-honey",
+      slug: "eucalyptus-honey",
+      nameAr: "عسل الأوكالبتوس",
+      shortDescription:
+        "عسل الأوكالبتوس خفيف وطبيعي — من خيرات سوس المغربية.",
+      description:
+        "عسل الأوكالبتوس من تازارزيت بيو يتميز بقوامه الخفيف ونكهته المميزة. عسل طبيعي يُجمع ويُعبأ بعناية ليصل إليكم بأفضل جودة.",
+      price: lowestPrice(eucalyptusOffers),
+      image: `${IMG}/eucalyptus_honey.jpeg`,
+      images: [`${IMG}/eucalyptus_honey.jpeg`],
+      category: "honey",
+      badges: ["natural"],
+      weight: "250 غ — 750 غ",
+      ingredients: ["عسل الأوكالبتوس الطبيعي 100%"],
+      benefits: [
+        "قوام خفيف وطعم مميز",
+        "عسل طبيعي من سوس",
+        "أسعار مناسبة للعائلة",
+      ],
+      usageSuggestions: [
+        "مع اللبن والحليب",
+        "في الوصفات المنزلية",
+        "مع المخبوزات والكرواسان",
+      ],
+      offers: eucalyptusOffers,
+      faq: [
+        { q: "هل التوصيل مجاني؟", a: "التوصيل مجاني عند 3 منتجات أو 399 د.م." },
+        { q: "مدة التوصيل؟", a: "1–5 أيام عمل حسب المدينة." },
+      ],
+      reviews: REVIEWS_EUCALYPTUS,
+      rating: 4.8,
+      reviewCount: 52,
+      relatedSlugs: ["daghmous-honey", "thym-honey", "peanut-amlou"],
+    },
+    {
+      id: "peanut-amlou",
+      slug: "peanut-amlou",
+      nameAr: "أملو الكاوكاو",
+      shortDescription:
+        "أملو بالكاوكاو (الفول السوداني) — قوام كريمي وطعم غني من سوس.",
+      description:
+        "أملو الكاوكاو من تازارزيت بيو يُحضّر من كاوكاو مطحون مع عسل طبيعي وزيت أركان. نكهة أصيلة وقوام كريمي مثالي للفطور والضيافة.",
+      price: lowestPrice(peanutAmlouOffers),
+      image: `${IMG}/Cocoa_amlou.jpeg`,
+      images: [`${IMG}/Cocoa_amlou.jpeg`],
+      category: "amlou",
+      badges: ["new", "natural"],
+      weight: "250 غ — 750 غ",
+      ingredients: ["كاوكاو (فول سوداني)", "عسل طبيعي", "زيت أركان بكر"],
+      benefits: [
+        "طعم كاوكاو غني وكريمي",
+        "تحضير تقليدي من سوس",
+        "مثالي للفطور العائلي",
+      ],
+      usageSuggestions: [
+        "على الملوي والخبز",
+        "مع الشاي والحليب",
+        "وجبة خفيفة للأطفال والكبار",
+      ],
+      offers: peanutAmlouOffers,
+      faq: [
+        { q: "هل يحتوي على شوكولاتة؟", a: "لا، أملو كاوكاو تقليدي بدون إضافات." },
+        { q: "ما الأحجام؟", a: "250 غ، 500 غ، و750 غ." },
+      ],
+      reviews: REVIEWS_PEANUT_AMLou,
+      rating: 4.9,
+      reviewCount: 41,
+      relatedSlugs: ["almond-amlou", "pistachio-amlou", "daghmous-honey"],
     },
     {
       id: "premium-family-pack",

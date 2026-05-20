@@ -88,6 +88,82 @@ export const REVIEWS_NUTS: ProductReview[] = [
   },
 ];
 
+export const REVIEWS_DAGHMOUS: ProductReview[] = [
+  {
+    id: "dag-1",
+    author: "فاطمة",
+    city: "أكادير",
+    rating: 5,
+    date: "ماي 2026",
+    content: "عسل الدغموس طبيعي وكثيف، الذوق أصيل من سوس.",
+  },
+  {
+    id: "dag-2",
+    author: "محمد",
+    city: "مراكش",
+    rating: 5,
+    date: "أبريل 2026",
+    content: "جاني الطلب مرتب والعسل بنين بزاف مع الفطور.",
+  },
+];
+
+export const REVIEWS_THYM: ProductReview[] = [
+  {
+    id: "thym-1",
+    author: "رشيد",
+    city: "فاس",
+    rating: 5,
+    date: "ماي 2026",
+    content: "عسل الزعتر ريحتو نقية وبنين، باين بلي طبيعي.",
+  },
+  {
+    id: "thym-2",
+    author: "حنان",
+    city: "طنجة",
+    rating: 5,
+    date: "مارس 2026",
+    content: "كنستعملو فالدار مع الشاي، العائلة عجبها.",
+  },
+];
+
+export const REVIEWS_EUCALYPTUS: ProductReview[] = [
+  {
+    id: "euc-1",
+    author: "سعاد",
+    city: "الدار البيضاء",
+    rating: 5,
+    date: "ماي 2026",
+    content: "عسل الأوكالبتوس خفيف وطبيعي، التغليف أنيق.",
+  },
+  {
+    id: "euc-2",
+    author: "عمر",
+    city: "الرباط",
+    rating: 5,
+    date: "أبريل 2026",
+    content: "ثمن معقول والجودة مزيانة، غادي نعاود نطلب.",
+  },
+];
+
+export const REVIEWS_PEANUT_AMLou: ProductReview[] = [
+  {
+    id: "pnut-1",
+    author: "إلهام",
+    city: "مراكش",
+    rating: 5,
+    date: "ماي 2026",
+    content: "أملو الكاوكاو بنين بزاف وقومتو كريمة، ماشي بحال ديال السوق.",
+  },
+  {
+    id: "pnut-2",
+    author: "حسن",
+    city: "أكادير",
+    rating: 5,
+    date: "أبريل 2026",
+    content: "جربناه مع الملوي، الضيوف عجبهم بزاف.",
+  },
+];
+
 export const REVIEWS_FAMILY: ProductReview[] = [
   {
     id: "fam-1",

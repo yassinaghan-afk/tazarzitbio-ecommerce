@@ -1,31 +1,63 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
+import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
+import { CategoryFilters } from "@/components/catalog/category-filters";
 import { Container, Section } from "@/components/layout/container";
-import { ProductCard } from "@/components/product/product-card";
 import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
-import { bestSellers } from "@/lib/home-data";
+import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
+import type { ProductCategory } from "@/lib/products";
+
+const HOME_CATEGORIES: ProductCategory[] = ["all", "honey", "amlou"];
 
 export function BestSellersSection() {
+  const allProducts = useCatalogProducts();
+  const [category, setCategory] = useState<ProductCategory>("all");
+
+  const products = useMemo(() => {
+    if (category === "all") return allProducts;
+    return allProducts.filter((p) => p.category === category);
+  }, [allProducts, category]);
+
   return (
     <Section id="products" spacing="lg" bg="alt" className="texture-grain">
       <Container>
         <div className="flex flex-col items-end justify-between gap-6 md:flex-row md:items-end">
           <SectionHeader
-            label="الأكثر مبيعاً"
-            title="منتجات يعشقها المغاربة"
-            description="جودة فاخرة، تقييمات حقيقية، والدفع عند الاستلام — بدون تعقيد."
+            label="منتجاتنا"
+            title="عسل وأملو من قلب سوس"
+            description="جودة فاخرة، تقييمات حقيقية، والدفع عند الاستلام — اختر فئتك واطلب الآن."
             align="start"
             className="mb-0 md:max-w-xl"
           />
-          <Button variant="outline" className="shrink-0 gap-2">
-            عرض الكل
-            <ArrowLeft className="size-4" />
+          <Button variant="outline" className="shrink-0 gap-2" asChild>
+            <Link href="/products">
+              عرض الكل
+              <ArrowLeft className="size-4" />
+            </Link>
           </Button>
+        </div>
+
+        <div className="mt-8">
+          <CategoryFilters
+            active={category}
+            onChange={setCategory}
+            filters={HOME_CATEGORIES.map((id) => ({
+              id,
+              label:
+                id === "all"
+                  ? "الكل"
+                  : id === "honey"
+                    ? "عسل"
+                    : "أملو",
+            }))}
+          />
         </div>
 
         <motion.div
@@ -33,24 +65,20 @@ export function BestSellersSection() {
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT}
-          className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {bestSellers.map((product) => (
+          {products.slice(0, 8).map((product) => (
             <motion.div key={product.id} variants={staggerItem}>
-              <ProductCard
-                name={product.name}
-                price={product.price}
-                weight={product.weight}
-                imageSrc={product.imageSrc}
-                imageAlt={product.imageAlt}
-                rating={product.rating}
-                reviewCount={product.reviewCount}
-                soldLabel={product.soldLabel}
-                isNew={product.isNew}
-              />
+              <CatalogProductCard product={product} />
             </motion.div>
           ))}
         </motion.div>
+
+        {products.length === 0 && (
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            لا توجد منتجات في هذه الفئة حالياً.
+          </p>
+        )}
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           جميع الأسعار بالدرهم المغربي · الدفع عند الاستلام في كل الطلبات

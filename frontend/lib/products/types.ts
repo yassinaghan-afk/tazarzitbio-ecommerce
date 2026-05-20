@@ -4,6 +4,7 @@ export type ProductCategory =
   | "all"
   | "bundles"
   | "amlou"
+  | "honey"
   | "oils"
   | "honey-nuts";
 
@@ -77,6 +78,7 @@ export const CATEGORY_LABELS: Record<
 > = {
   bundles: "باقات عائلية",
   amlou: "أملو",
+  honey: "عسل",
   oils: "زيوت طبيعية",
   "honey-nuts": "عسل ومكسرات",
 };
