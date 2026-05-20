@@ -124,7 +124,8 @@ export const bestSellers = [
 
 export const familyPacks = [
   {
-    id: "family-value-pack",
+    id: "premium-family-pack",
+    slug: "premium-family-pack",
     title: "باقة العائلة — قيمة ممتازة",
     description: "تشكيلة 250غ/250مل — أملو، مكسرات، وأركان بسعر أوفر",
     price: 499,
@@ -140,6 +141,7 @@ export const familyPacks = [
   },
   {
     id: "family-breakfast",
+    slug: "premium-family-pack",
     title: "باقة فطور العائلة",
     description: "أحجام 500غ و500مل — للعائلة الكبيرة",
     price: 899,

@@ -51,7 +51,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
 
   const familyOffers = [
     offer(
-      "family-pack",
+      "premium-family-pack",
       "BND-FAM-01",
       "باقة عائلية — تشكيلة 250غ",
       "4 منتجات",
@@ -104,7 +104,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       ],
       rating: 4.9,
       reviewCount: 312,
-      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey", "family-value-pack"],
+      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey", "premium-family-pack"],
     },
     {
       id: "pistachio-amlou",
@@ -139,7 +139,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       ],
       rating: 5,
       reviewCount: 198,
-      relatedSlugs: ["almond-amlou", "mixed-nuts-honey", "family-value-pack"],
+      relatedSlugs: ["almond-amlou", "mixed-nuts-honey", "premium-family-pack"],
     },
     {
       id: "argan-oil",
@@ -174,7 +174,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       ],
       rating: 4.8,
       reviewCount: 156,
-      relatedSlugs: ["almond-amlou", "family-value-pack"],
+      relatedSlugs: ["almond-amlou", "premium-family-pack"],
     },
     {
       id: "mixed-nuts-honey",
@@ -209,11 +209,11 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       ],
       rating: 4.9,
       reviewCount: 241,
-      relatedSlugs: ["almond-amlou", "pistachio-amlou", "family-value-pack"],
+      relatedSlugs: ["almond-amlou", "pistachio-amlou", "premium-family-pack"],
     },
     {
-      id: "family-value-pack",
-      slug: "family-value-pack",
+      id: "premium-family-pack",
+      slug: "premium-family-pack",
       nameAr: "باقة العائلة — قيمة ممتازة",
       shortDescription:
         "تشكيلة عائلية: أملو لوز وفستق، مكسرات بالعسل، وزيت أركان — بسعر أوفر من الشراء المنفصل.",

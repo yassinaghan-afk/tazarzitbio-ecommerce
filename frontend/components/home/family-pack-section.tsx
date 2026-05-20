@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Coffee, Package, Heart } from "lucide-react";
 
@@ -55,13 +56,18 @@ export function FamilyPackSection() {
             viewport={VIEWPORT}
             className="lg:col-span-2"
           >
-            <PremiumImage
-              src="/images/products/pack.png"
-              alt="باقة عائلية تازارزيت بيو"
-              aspect="portrait"
-              sizes="(max-width: 1024px) 100vw, 360px"
-              className="shadow-warm-xl"
-            />
+            <Link
+              href="/products/premium-family-pack"
+              className="block transition-opacity hover:opacity-95"
+            >
+              <PremiumImage
+                src="/images/products/pack.png"
+                alt="باقة عائلية تازارزيت بيو"
+                aspect="portrait"
+                sizes="(max-width: 1024px) 100vw, 360px"
+                className="shadow-warm-xl"
+              />
+            </Link>
           </motion.div>
 
           <motion.div
@@ -80,6 +86,7 @@ export function FamilyPackSection() {
                   items={pack.items}
                   isPopular={pack.isPopular}
                   variant={pack.variant}
+                  productSlug={pack.slug}
                 />
               </motion.div>
             ))}

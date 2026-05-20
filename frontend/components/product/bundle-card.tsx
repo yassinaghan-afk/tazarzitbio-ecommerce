@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Package, ShoppingBag } from "lucide-react";
 
@@ -21,6 +22,7 @@ export interface BundleCardProps {
   items: BundleItem[];
   isPopular?: boolean;
   variant?: "gold" | "olive" | "default";
+  productSlug?: string;
   className?: string;
 }
 
@@ -38,6 +40,7 @@ export function BundleCard({
   items,
   isPopular = false,
   variant = "default",
+  productSlug,
   className,
 }: BundleCardProps) {
   const savings = comparePrice != null ? comparePrice - price : 0;
@@ -106,10 +109,19 @@ export function BundleCard({
             )}
           </div>
 
-          <Button variant="gold" className="shrink-0 gap-2">
-            <ShoppingBag className="size-4" />
-            اطلب الآن
-          </Button>
+          {productSlug ? (
+            <Button variant="gold" className="shrink-0 gap-2" asChild>
+              <Link href={`/products/${productSlug}`}>
+                <ShoppingBag className="size-4" />
+                اطلب الآن
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="gold" className="shrink-0 gap-2">
+              <ShoppingBag className="size-4" />
+              اطلب الآن
+            </Button>
+          )}
         </div>
       </div>
     </motion.article>

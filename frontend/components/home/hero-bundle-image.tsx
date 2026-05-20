@@ -32,7 +32,7 @@ export function HeroBundleImage({ className }: HeroBundleImageProps) {
         />
         <Image
           src="/images/products/pack.png"
-          alt="مجموعة تازارزيت بيو الفاخرة — أملو، زيت أركان، ومكسرات بالعسل"
+          alt="باقة عائلية تازارزيت بيو — أملو، زيت أركان، ومكسرات بالعسل"
           fill
           priority
           sizes="(max-width: 768px) 92vw, (max-width: 1200px) 45vw, 32rem"
