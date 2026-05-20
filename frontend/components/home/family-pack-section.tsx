@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Coffee, Gift, Heart } from "lucide-react";
+import { Coffee, Package, Heart } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
 import { BundleCard } from "@/components/product/bundle-card";
@@ -11,9 +11,9 @@ import { familyPacks } from "@/lib/home-data";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
 const hospitalityPoints = [
-  { icon: Gift,   title: "هدايا فاخرة",     desc: "تغليف يليق بالعيد والأفراح" },
-  { icon: Coffee, title: "فطور العائلة",   desc: "مائدة مغربية كاملة في عبوة واحدة" },
-  { icon: Heart,  title: "كرم الضيافة",    desc: "تعبّر عن حبك لمن تحب" },
+  { icon: Package, title: "قيمة عائلية",   desc: "تشكيلة عملية بسعر أوفر" },
+  { icon: Coffee,  title: "فطور العائلة", desc: "مائدة مغربية في باقة واحدة" },
+  { icon: Heart,   title: "جودة سوس",     desc: "منتجات طبيعية من مصدر موثوق" },
 ];
 
 export function FamilyPackSection() {
@@ -23,7 +23,7 @@ export function FamilyPackSection() {
         <SectionHeader
           label="عروض العائلة"
           title="ضيافة مغربية في كل عبوة"
-          description="علب هدايا وباقات عائلية مصممة للفطور، المناسبات، ولمسة الكرم المغربي الأصيل."
+          description="باقات عائلية بأسعار مناسبة — للفطور اليومي والمخزون المنزلي دون تغليف هدايا فاخر."
         />
 
         <div className="mb-14 grid gap-6 md:grid-cols-3">
@@ -56,8 +56,8 @@ export function FamilyPackSection() {
             className="lg:col-span-2"
           >
             <PremiumImage
-              src="/products/pack.png"
-              alt="مجموعة تازارزيت بيو الفاخرة للعائلة والإهداء"
+              src="/images/products/pack.png"
+              alt="باقة عائلية تازارزيت بيو"
               aspect="portrait"
               sizes="(max-width: 1024px) 100vw, 360px"
               className="shadow-warm-xl"
@@ -77,7 +77,6 @@ export function FamilyPackSection() {
                   title={pack.title}
                   description={pack.description}
                   price={pack.price}
-                  comparePrice={pack.comparePrice}
                   items={pack.items}
                   isPopular={pack.isPopular}
                   variant={pack.variant}

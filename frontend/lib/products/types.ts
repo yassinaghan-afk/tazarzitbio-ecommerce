@@ -1,3 +1,5 @@
+import type { PricingEconomics } from "./pricing";
+
 export type ProductCategory =
   | "all"
   | "bundles"
@@ -5,19 +7,25 @@ export type ProductCategory =
   | "oils"
   | "honey-nuts";
 
-export type ProductBadge =
-  | "bestseller"
-  | "new"
-  | "natural"
-  | "gift"
-  | "limited";
+export type ProductBadge = "bestseller" | "new" | "natural" | "limited";
 
+/** Full offer with internal economics (admin + resolver) */
 export interface ProductOffer {
   id: string;
+  sku: string;
   label: string;
-  price: number;
-  oldPrice?: number;
+  weight: string;
   hint?: string;
+  economics: PricingEconomics;
+}
+
+/** Public-safe offer — storefront only */
+export interface PublicProductOffer {
+  id: string;
+  label: string;
+  weight: string;
+  hint?: string;
+  price: number;
 }
 
 export interface ProductFaq {
@@ -40,8 +48,8 @@ export interface Product {
   nameAr: string;
   shortDescription: string;
   description: string;
+  /** Lowest variant sale price — public */
   price: number;
-  oldPrice?: number;
   image: string;
   images: string[];
   category: Exclude<ProductCategory, "all">;
@@ -58,11 +66,16 @@ export interface Product {
   relatedSlugs: string[];
 }
 
+export type PublicProduct = Omit<Product, "offers" | "price"> & {
+  price: number;
+  offers: PublicProductOffer[];
+};
+
 export const CATEGORY_LABELS: Record<
   Exclude<ProductCategory, "all">,
   string
 > = {
-  bundles: "باقات وعروض",
+  bundles: "باقات عائلية",
   amlou: "أملو",
   oils: "زيوت طبيعية",
   "honey-nuts": "عسل ومكسرات",
@@ -72,6 +85,5 @@ export const BADGE_LABELS: Record<ProductBadge, string> = {
   bestseller: "الأكثر مبيعاً",
   new: "جديد",
   natural: "طبيعي 100%",
-  gift: "هدية فاخرة",
   limited: "عرض محدود",
 };

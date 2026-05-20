@@ -31,7 +31,7 @@ export function HeroBundleImage({ className }: HeroBundleImageProps) {
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,hsl(45_85%_58%/0.25)_0%,transparent_50%)]"
         />
         <Image
-          src="/products/pack.png"
+          src="/images/products/pack.png"
           alt="مجموعة تازارزيت بيو الفاخرة — أملو، زيت أركان، ومكسرات بالعسل"
           fill
           priority

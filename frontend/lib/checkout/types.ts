@@ -1,15 +1,12 @@
 export interface CheckoutFormData {
   fullName: string;
   phone: string;
-  city: string;
   address: string;
-  note?: string;
 }
 
 export interface CheckoutFormErrors {
   fullName?: string;
   phone?: string;
-  city?: string;
   address?: string;
 }
 

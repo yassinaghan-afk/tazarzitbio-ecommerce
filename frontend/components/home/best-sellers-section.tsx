@@ -40,7 +40,6 @@ export function BestSellersSection() {
               <ProductCard
                 name={product.name}
                 price={product.price}
-                comparePrice={product.comparePrice}
                 weight={product.weight}
                 imageSrc={product.imageSrc}
                 imageAlt={product.imageAlt}

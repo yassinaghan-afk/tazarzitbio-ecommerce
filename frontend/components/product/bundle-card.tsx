@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Gift, ShoppingBag } from "lucide-react";
+import { Package, ShoppingBag } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ export interface BundleCardProps {
   title: string;
   description: string;
   price: number;
-  comparePrice: number;
+  comparePrice?: number;
   items: BundleItem[];
   isPopular?: boolean;
   variant?: "gold" | "olive" | "default";
@@ -40,7 +40,7 @@ export function BundleCard({
   variant = "default",
   className,
 }: BundleCardProps) {
-  const savings = comparePrice - price;
+  const savings = comparePrice != null ? comparePrice - price : 0;
 
   return (
     <motion.article
@@ -61,7 +61,7 @@ export function BundleCard({
         {/* Header */}
         <div className="flex items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/10">
-            <Gift className="size-6 text-accent" />
+            <Package className="size-6 text-accent" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-foreground">{title}</h3>
@@ -93,13 +93,17 @@ export function BundleCard({
                 {price}
               </span>
               <span className="text-sm font-medium text-accent">د.م.</span>
-              <span className="text-sm text-muted-foreground line-through tabular-nums">
-                {comparePrice} د.م.
-              </span>
+              {comparePrice != null && (
+                <span className="text-sm text-muted-foreground line-through tabular-nums">
+                  {comparePrice} د.م.
+                </span>
+              )}
             </div>
-            <Badge variant="success" className="mt-1">
-              وفّر {savings} د.م.
-            </Badge>
+            {savings > 0 && (
+              <Badge variant="success" className="mt-1">
+                وفّر {savings} د.م.
+              </Badge>
+            )}
           </div>
 
           <Button variant="gold" className="shrink-0 gap-2">

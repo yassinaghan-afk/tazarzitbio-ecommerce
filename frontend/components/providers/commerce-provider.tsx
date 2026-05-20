@@ -25,7 +25,7 @@ import {
   hasCheckoutErrors,
   validateCheckoutForm,
 } from "@/lib/checkout/validation";
-import { getRelatedProducts, products } from "@/lib/products";
+import { getProducts, getRelatedProducts } from "@/lib/products";
 
 interface CommerceContextValue {
   items: CartLineItem[];
@@ -72,16 +72,26 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
 
   const cartSlugs = useMemo(() => [...new Set(items.map((i) => i.slug))], [items]);
 
+  const [catalogVersion, setCatalogVersion] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setCatalogVersion((v) => v + 1);
+    window.addEventListener("tazarzit-pricing-updated", bump);
+    return () => window.removeEventListener("tazarzit-pricing-updated", bump);
+  }, []);
+
   const crossSellProducts = useMemo(() => {
+    const catalog = getProducts();
     const relatedSlugs = cartSlugs.flatMap((slug) => {
-      const p = products.find((x) => x.slug === slug);
+      const p = catalog.find((x) => x.slug === slug);
       return p?.relatedSlugs ?? [];
     });
     const unique = [...new Set(relatedSlugs)].filter(
       (slug) => !cartSlugs.includes(slug),
     );
     return getRelatedProducts(unique).slice(0, 3);
-  }, [cartSlugs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartSlugs, catalogVersion]);
 
   const addToCart = useCallback((payload: AddToCartPayload) => {
     const lineId = createLineId(payload.productId, payload.offerId);

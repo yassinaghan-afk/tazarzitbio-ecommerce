@@ -1,14 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
-import { Banknote, Phone, ShieldCheck } from "lucide-react";
+import { Banknote, Phone, ShieldCheck, Truck } from "lucide-react";
 
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import type { CheckoutFormData, CheckoutFormErrors } from "@/lib/checkout/types";
 import {
   hasCheckoutErrors,
@@ -18,9 +18,7 @@ import {
 const emptyForm: CheckoutFormData = {
   fullName: "",
   phone: "",
-  city: "",
   address: "",
-  note: "",
 };
 
 export function CheckoutDrawer() {
@@ -53,7 +51,7 @@ export function CheckoutDrawer() {
 
   const update = (field: keyof CheckoutFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (field !== "note" && errors[field]) {
+    if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
         delete next[field];
@@ -66,7 +64,7 @@ export function CheckoutDrawer() {
     <Drawer
       open={checkoutOpen}
       onClose={handleClose}
-      title="إتمام الطلب — الدفع عند الاستلام"
+      title="تأكيد الطلب — الدفع عند الاستلام"
       footer={
         <Button
           type="submit"
@@ -84,14 +82,51 @@ export function CheckoutDrawer() {
         <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/85">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
           <p>
-            لن نطلب أي دفع إلكتروني. فريقنا سيتصل بك لتأكيد الطلب قبل الشحن.
+            لن نطلب أي دفع إلكتروني. سيتصل بك فريقنا لتأكيد الطلب قبل الشحن.
           </p>
         </div>
 
-        <div className="rounded-xl bg-secondary/50 px-4 py-3 text-sm">
-          <span className="text-muted-foreground">المجموع: </span>
-          <span className="font-extrabold text-accent">{subtotal} د.م.</span>
-          <span className="text-muted-foreground"> · {items.length} منتج</span>
+        {items.length > 0 && (
+          <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+            <p className="mb-3 text-xs font-bold text-accent">ملخص السلة</p>
+            <ul className="space-y-2.5">
+              {items.map((item) => (
+                <li key={item.lineId} className="flex gap-3 text-sm">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#3d2818] to-[#2a1810]">
+                    <Image
+                      src={item.image}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-contain p-1"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground line-clamp-1">
+                      {item.nameAr}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.offerLabel} × {item.quantity}
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-bold tabular-nums text-accent">
+                    {item.unitPrice * item.quantity} د.م.
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
+              <span className="text-sm text-muted-foreground">المجموع</span>
+              <span className="text-lg font-extrabold tabular-nums text-accent">
+                {subtotal} د.م.
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 rounded-xl bg-secondary/50 px-3 py-2.5 text-xs text-muted-foreground">
+          <Truck className="size-4 shrink-0 text-accent" />
+          الدفع عند الاستلام — بدون دفع مسبق
         </div>
 
         <div>
@@ -128,37 +163,15 @@ export function CheckoutDrawer() {
         </div>
 
         <div>
-          <Label htmlFor="city">المدينة *</Label>
-          <Input
-            id="city"
-            name="city"
-            placeholder="مثال: أكادير"
-            value={form.city}
-            onChange={(e) => update("city", e.target.value)}
-            error={errors.city}
-          />
-        </div>
-
-        <div>
           <Label htmlFor="address">العنوان الكامل *</Label>
           <Input
             id="address"
             name="address"
-            placeholder="الحي، الشارع، رقم المنزل..."
+            autoComplete="street-address"
+            placeholder="المدينة، الحي، الشارع، رقم المنزل..."
             value={form.address}
             onChange={(e) => update("address", e.target.value)}
             error={errors.address}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="note">ملاحظة (اختياري)</Label>
-          <Textarea
-            id="note"
-            name="note"
-            placeholder="تعليمات للتوصيل أو وقت الاتصال..."
-            value={form.note ?? ""}
-            onChange={(e) => update("note", e.target.value)}
           />
         </div>
 

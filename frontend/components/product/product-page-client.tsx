@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -19,13 +19,16 @@ import { ProductImageGallery } from "@/components/product/product-image-gallery"
 import { ReviewCard } from "@/components/reviews/review-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCatalogProduct } from "@/hooks/use-catalog";
 import { fadeUp } from "@/lib/animations";
-import type { Product, ProductOffer } from "@/lib/products";
+import type { PublicProduct, PublicProductOffer } from "@/lib/products";
 import { BADGE_LABELS, getRelatedProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 interface ProductPageClientProps {
-  product: Product;
+  slug: string;
+  /** SSR fallback before client pricing hydration */
+  initialProduct?: PublicProduct;
 }
 
 const trustItems = [
@@ -34,18 +37,30 @@ const trustItems = [
   { icon: Leaf, text: "من قلب سوس" },
 ];
 
-export function ProductPageClient({ product }: ProductPageClientProps) {
+export function ProductPageClient({
+  slug,
+  initialProduct,
+}: ProductPageClientProps) {
   const { addToCart } = useCommerce();
-  const [selectedOffer, setSelectedOffer] = useState<ProductOffer>(
-    product.offers[0],
+  const { publicProduct: liveProduct } = useCatalogProduct(slug);
+  const product = liveProduct ?? initialProduct;
+
+  const [selectedOffer, setSelectedOffer] = useState<PublicProductOffer | null>(
+    null,
   );
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  useEffect(() => {
+    if (product?.offers[0] && !selectedOffer) {
+      setSelectedOffer(product.offers[0]);
+    }
+  }, [product, selectedOffer]);
+
+  if (!product || !selectedOffer) {
+    return null;
+  }
+
   const related = getRelatedProducts(product.relatedSlugs);
-  const savings =
-    selectedOffer.oldPrice != null
-      ? selectedOffer.oldPrice - selectedOffer.price
-      : 0;
 
   const handleAddToCart = () => {
     addToCart({
@@ -54,7 +69,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       nameAr: product.nameAr,
       image: product.image,
       offerId: selectedOffer.id,
-      offerLabel: selectedOffer.label,
+      offerLabel: `${selectedOffer.label} — ${selectedOffer.weight}`,
       unitPrice: selectedOffer.price,
     });
   };
@@ -118,18 +133,13 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                   {selectedOffer.price}
                   <span className="ms-1 text-lg font-semibold">د.م.</span>
                 </span>
-                {selectedOffer.oldPrice && (
-                  <span className="text-lg text-muted-foreground line-through tabular-nums">
-                    {selectedOffer.oldPrice} د.م.
-                  </span>
-                )}
-                {savings > 0 && (
-                  <Badge variant="success">وفّر {savings} د.م.</Badge>
-                )}
+                <span className="text-sm text-muted-foreground">
+                  {selectedOffer.weight}
+                </span>
               </div>
 
               <div className="space-y-3">
-                <p className="text-sm font-bold text-foreground">اختر العرض</p>
+                <p className="text-sm font-bold text-foreground">اختر الحجم</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {product.offers.map((offer) => (
                     <button
@@ -268,7 +278,6 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             {product.faq.map((item, i) => (
               <motion.div
                 key={item.q}
-                initial={false}
                 className="overflow-hidden rounded-2xl border border-border/70 bg-card"
               >
                 <button
@@ -285,13 +294,9 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                   />
                 </button>
                 {openFaq === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    className="border-t border-border/50 px-5 py-4 text-sm leading-relaxed text-muted-foreground"
-                  >
+                  <div className="border-t border-border/50 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
                     {item.a}
-                  </motion.div>
+                  </div>
                 )}
               </motion.div>
             ))}

@@ -69,7 +69,7 @@ export function HeroSection() {
             className="glass-card absolute end-2 top-4 z-10 rounded-full px-3 py-1.5 md:end-[-0.5rem] md:top-8 md:px-4 md:py-2"
           >
             <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
-              مجموعة هدايا فاخرة
+              باقة عائلية — قيمة ممتازة
             </p>
           </motion.div>
         </motion.div>

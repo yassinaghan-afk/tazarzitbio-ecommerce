@@ -10,22 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { cardHoverProps } from "@/lib/animations";
-import type { Product } from "@/lib/products";
+import type { PublicProduct } from "@/lib/products";
 import { BADGE_LABELS } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 interface CatalogProductCardProps {
-  product: Product;
+  product: PublicProduct;
   className?: string;
 }
 
 export function CatalogProductCard({ product, className }: CatalogProductCardProps) {
   const { addToCart } = useCommerce();
   const defaultOffer = product.offers[0];
-  const savings =
-    defaultOffer.oldPrice != null
-      ? defaultOffer.oldPrice - defaultOffer.price
-      : 0;
+  const fromPrice = product.price;
 
   return (
     <motion.article
@@ -57,9 +54,6 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
               {BADGE_LABELS[b]}
             </Badge>
           ))}
-          {savings > 0 && (
-            <Badge variant="success">وفّر {savings} د.م.</Badge>
-          )}
         </div>
       </Link>
 
@@ -84,13 +78,11 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
 
         <div className="flex items-baseline gap-2">
           <span className="text-xl font-extrabold tabular-nums text-accent">
-            {defaultOffer.price}
+            {fromPrice}
             <span className="ms-1 text-sm font-semibold">د.م.</span>
           </span>
-          {defaultOffer.oldPrice && (
-            <span className="text-sm text-muted-foreground line-through tabular-nums">
-              {defaultOffer.oldPrice} د.م.
-            </span>
+          {product.offers.length > 1 && (
+            <span className="text-xs text-muted-foreground">يبدأ من</span>
           )}
         </div>
 
@@ -106,7 +98,7 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
                 nameAr: product.nameAr,
                 image: product.image,
                 offerId: defaultOffer.id,
-                offerLabel: defaultOffer.label,
+                offerLabel: `${defaultOffer.label} — ${defaultOffer.weight}`,
                 unitPrice: defaultOffer.price,
               })
             }

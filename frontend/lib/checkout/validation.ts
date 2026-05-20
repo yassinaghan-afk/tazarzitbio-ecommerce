@@ -1,6 +1,5 @@
 import type { CheckoutFormData, CheckoutFormErrors } from "./types";
 
-/** Normalize Moroccan phone to digits only for validation */
 export function normalizeMoroccanPhone(input: string): string {
   let digits = input.replace(/\D/g, "");
   if (digits.startsWith("212")) {
@@ -13,7 +12,6 @@ export function normalizeMoroccanPhone(input: string): string {
   return digits;
 }
 
-/** Valid: 06xxxxxxxx or 07xxxxxxxx */
 export function isValidMoroccanPhone(input: string): boolean {
   const digits = normalizeMoroccanPhone(input);
   return /^0[67]\d{8}$/.test(digits);
@@ -43,14 +41,10 @@ export function validateCheckoutForm(
     errors.phone = "أدخل رقم هاتف مغربي صحيح (06 أو 07)";
   }
 
-  if (!data.city.trim()) {
-    errors.city = "المدينة مطلوبة";
-  }
-
   if (!data.address.trim()) {
-    errors.address = "العنوان مطلوب";
-  } else if (data.address.trim().length < 8) {
-    errors.address = "أدخل عنواناً أوضح (8 أحرف على الأقل)";
+    errors.address = "العنوان الكامل مطلوب";
+  } else if (data.address.trim().length < 10) {
+    errors.address = "أدخل عنواناً كاملاً (المدينة، الحي، الشارع)";
   }
 
   return errors;
