@@ -2,8 +2,12 @@
 
 import { Truck } from "lucide-react";
 
+import { FreeShippingProgress } from "@/components/shipping/free-shipping-progress";
 import { useCommerce } from "@/components/providers/commerce-provider";
-import { DEFAULT_SHIPPING_SETTINGS } from "@/lib/shipping/settings";
+import {
+  DEFAULT_SHIPPING_SETTINGS,
+  FREE_SHIPPING_MARKETING_AR,
+} from "@/lib/shipping/settings";
 import { cn } from "@/lib/utils";
 
 interface ShippingPromoBannerProps {
@@ -12,8 +16,7 @@ interface ShippingPromoBannerProps {
 
 export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
   const { shipping } = useCommerce();
-  const min = DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumProducts;
-  const amount = DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumAmount;
+  const threshold = shipping.freeShippingThreshold;
 
   if (shipping.isFreeShipping && shipping.productCount > 0) {
     return (
@@ -26,24 +29,29 @@ export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
         <Truck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
         <div>
           <p className="font-semibold text-emerald-800">Livraison gratuite</p>
-          <p className="text-emerald-700/90">توصيل مجاني على طلبك الحالي</p>
+          <p className="text-emerald-700/90">توصيل مجاني على طلبك الحالي ✓</p>
         </div>
       </div>
     );
   }
 
-  if (shipping.upsellMessageFr) {
+  if (shipping.subtotal > 0) {
     return (
       <div
         className={cn(
-          "rounded-xl border border-dashed border-accent/35 bg-accent/5 px-3 py-2.5 text-xs",
+          "space-y-3 rounded-xl border border-accent/20 bg-accent/5 px-3 py-3 text-xs",
           className,
         )}
       >
-        <p className="font-medium text-foreground">{shipping.upsellMessageFr}</p>
-        {shipping.upsellMessageAr && (
-          <p className="mt-1 text-muted-foreground">{shipping.upsellMessageAr}</p>
-        )}
+        <div className="flex items-start gap-2">
+          <Truck className="mt-0.5 size-4 shrink-0 text-accent" />
+          <p className="leading-relaxed text-foreground/90">
+            {FREE_SHIPPING_MARKETING_AR} — رسوم التوصيل{" "}
+            {DEFAULT_SHIPPING_SETTINGS.defaultShippingPrice} د.م. للطلبات الأقل من{" "}
+            {threshold} د.م.
+          </p>
+        </div>
+        <FreeShippingProgress shipping={shipping} compact />
       </div>
     );
   }
@@ -56,10 +64,7 @@ export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
       )}
     >
       <Truck className="mt-0.5 size-4 shrink-0 text-accent" />
-      <p>
-        توصيل مجاني من {amount} د.م. أو {min} منتجات — رسوم ثابتة{" "}
-        {DEFAULT_SHIPPING_SETTINGS.defaultShippingPrice} د.م. لكل طلب.
-      </p>
+      <p>{FREE_SHIPPING_MARKETING_AR}</p>
     </div>
   );
 }

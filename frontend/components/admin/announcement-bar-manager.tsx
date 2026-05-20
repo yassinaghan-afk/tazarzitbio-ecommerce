@@ -27,6 +27,7 @@ import {
   type AnnouncementIcon,
   type AnnouncementMessage,
 } from "@/lib/admin/announcement-bar";
+import { FREE_SHIPPING_MARKETING_AR } from "@/lib/shipping/settings";
 import { cn } from "@/lib/utils";
 
 const ICON_OPTIONS: {
@@ -340,8 +341,9 @@ export function AnnouncementBarManager() {
         <div className="flex items-start gap-2">
           <Megaphone className="mt-0.5 size-4 shrink-0 text-accent" />
           <p>
-            Free shipping threshold is <strong className="text-foreground">399 MAD</strong>{" "}
-            (3+ products or order total). Messages appear site-wide under the navbar.
+            Free shipping applies when cart subtotal is{" "}
+            <strong className="text-foreground">349 MAD</strong> or more (
+            {FREE_SHIPPING_MARKETING_AR}).
           </p>
         </div>
       </div>

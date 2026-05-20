@@ -1,41 +1,29 @@
 import type { CartLineItem } from "@/lib/cart/types";
-import { getProducts } from "@/lib/products/catalog";
 
 import {
   DEFAULT_SHIPPING_SETTINGS,
+  FREE_SHIPPING_MARKETING_AR,
   type ShippingSettings,
 } from "./settings";
 
-export type FreeShippingReason =
-  | "bundle"
-  | "minimum_amount"
-  | "minimum_products";
+export type FreeShippingReason = "minimum_amount";
 
 export interface ShippingResult {
-  /** Flat fee for the whole order (0 if free) */
   shippingFee: number;
   isFreeShipping: boolean;
   freeShippingReason?: FreeShippingReason;
-  /** Total units in cart (sum of quantities) */
   productCount: number;
   subtotal: number;
   total: number;
   labelFr: string;
   labelAr: string;
-  /** Shown when customer can unlock free shipping */
+  freeShippingThreshold: number;
+  /** MAD still needed for free shipping (0 if already free) */
+  amountRemaining: number;
+  /** 0–100 progress toward free shipping threshold */
+  progressPercent: number;
   upsellMessageFr?: string;
   upsellMessageAr?: string;
-}
-
-function cartHasBundle(items: CartLineItem[]): boolean {
-  const catalog = getProducts();
-  return items.some((item) => {
-    if (item.isBundle) return true;
-    const product = catalog.find(
-      (p) => p.slug === item.slug || p.id === item.productId,
-    );
-    return product?.category === "bundles";
-  });
 }
 
 function countProducts(items: CartLineItem[]): number {
@@ -48,7 +36,7 @@ export function calculateShipping(
   settings: ShippingSettings = DEFAULT_SHIPPING_SETTINGS,
 ): ShippingResult {
   const productCount = countProducts(items);
-  const hasBundle = cartHasBundle(items);
+  const threshold = settings.freeShippingMinimumAmount;
 
   if (items.length === 0) {
     return {
@@ -59,21 +47,22 @@ export function calculateShipping(
       total: 0,
       labelFr: "Livraison gratuite",
       labelAr: "توصيل مجاني",
+      freeShippingThreshold: threshold,
+      amountRemaining: 0,
+      progressPercent: 0,
     };
   }
 
-  let freeShippingReason: FreeShippingReason | undefined;
-  if (hasBundle) {
-    freeShippingReason = "bundle";
-  } else if (subtotal >= settings.freeShippingMinimumAmount) {
-    freeShippingReason = "minimum_amount";
-  } else if (productCount >= settings.freeShippingMinimumProducts) {
-    freeShippingReason = "minimum_products";
-  }
-
-  const isFreeShipping = Boolean(freeShippingReason);
+  const isFreeShipping = subtotal >= threshold;
+  const freeShippingReason = isFreeShipping ? "minimum_amount" : undefined;
   const shippingFee = isFreeShipping ? 0 : settings.defaultShippingPrice;
   const total = subtotal + shippingFee;
+  const amountRemaining = isFreeShipping
+    ? 0
+    : Math.max(0, threshold - subtotal);
+  const progressPercent = isFreeShipping
+    ? 100
+    : Math.min(100, Math.round((subtotal / threshold) * 100));
 
   const labelFr = isFreeShipping
     ? "Livraison gratuite"
@@ -83,15 +72,7 @@ export function calculateShipping(
     ? "توصيل مجاني"
     : `رسوم التوصيل: ${settings.defaultShippingPrice} د.م.`;
 
-  const showUpsell =
-    !isFreeShipping &&
-    productCount < settings.freeShippingMinimumProducts &&
-    subtotal < settings.freeShippingMinimumAmount;
-
-  const productsNeeded = Math.max(
-    0,
-    settings.freeShippingMinimumProducts - productCount,
-  );
+  const showUpsell = !isFreeShipping && amountRemaining > 0;
 
   return {
     shippingFee,
@@ -102,13 +83,16 @@ export function calculateShipping(
     total,
     labelFr,
     labelAr,
+    freeShippingThreshold: threshold,
+    amountRemaining,
+    progressPercent,
     upsellMessageFr: showUpsell
-      ? "Ajoutez encore un produit pour bénéficier de la livraison gratuite 🚚"
+      ? `Plus que ${amountRemaining} MAD pour la livraison gratuite 🚚`
       : undefined,
     upsellMessageAr: showUpsell
-      ? productsNeeded === 1
-        ? "أضف منتجاً آخر للاستفادة من التوصيل المجاني 🚚"
-        : `أضف ${productsNeeded} منتجات للاستفادة من التوصيل المجاني 🚚`
+      ? `باقي ${amountRemaining} د.م. للتوصيل المجاني 🚚`
       : undefined,
   };
 }
+
+export { FREE_SHIPPING_MARKETING_AR };

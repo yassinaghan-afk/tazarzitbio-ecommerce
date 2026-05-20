@@ -1,5 +1,6 @@
 import {
   DEFAULT_SHIPPING_SETTINGS,
+  FREE_SHIPPING_THRESHOLD_MAD,
   type ShippingSettings,
 } from "./settings";
 
@@ -16,8 +17,11 @@ export function loadShippingSettings(): ShippingSettings {
         parsed.defaultShippingPrice ??
         DEFAULT_SHIPPING_SETTINGS.defaultShippingPrice,
       freeShippingMinimumAmount:
-        parsed.freeShippingMinimumAmount ??
-        DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumAmount,
+        parsed.freeShippingMinimumAmount === 399 ||
+        parsed.freeShippingMinimumAmount === 499
+          ? FREE_SHIPPING_THRESHOLD_MAD
+          : (parsed.freeShippingMinimumAmount ??
+            DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumAmount),
       freeShippingMinimumProducts:
         parsed.freeShippingMinimumProducts ??
         DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumProducts,

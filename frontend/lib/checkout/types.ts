@@ -24,6 +24,7 @@ export interface PlacedOrder {
   shippingFee: number;
   total: number;
   shippingLabelFr: string;
+  shippingLabelAr?: string;
 }
 
 export const LAST_ORDER_STORAGE_KEY = "tazarzit-last-order";

@@ -245,6 +245,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         shippingFee: shipping.shippingFee,
         total: shipping.total,
         shippingLabelFr: shipping.labelFr,
+        shippingLabelAr: shipping.labelAr,
       };
 
       // Fire-and-forget persistence. If it succeeds, update order id in sessionStorage.

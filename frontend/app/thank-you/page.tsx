@@ -155,7 +155,9 @@ export default function ThankYouPage() {
                         <span className="block">
                           {order.shippingLabelFr ?? "Livraison gratuite"}
                         </span>
-                        <span className="mt-0.5 block text-2xs">التوصيل</span>
+                        <span className="mt-0.5 block text-2xs">
+                          {order.shippingLabelAr ?? "التوصيل"}
+                        </span>
                       </span>
                       <span
                         className={

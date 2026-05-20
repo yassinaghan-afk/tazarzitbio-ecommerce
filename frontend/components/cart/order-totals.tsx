@@ -1,5 +1,6 @@
 "use client";
 
+import { FreeShippingProgress } from "@/components/shipping/free-shipping-progress";
 import type { ShippingResult } from "@/lib/shipping/calculate";
 import { cn } from "@/lib/utils";
 
@@ -47,13 +48,8 @@ export function OrderTotals({
         </div>
       </div>
 
-      {showUpsell && shipping.upsellMessageFr && (
-        <div className="rounded-xl border border-dashed border-accent/35 bg-accent/5 px-3 py-2.5 text-xs leading-relaxed">
-          <p className="font-medium text-foreground">{shipping.upsellMessageFr}</p>
-          {shipping.upsellMessageAr && (
-            <p className="mt-1 text-muted-foreground">{shipping.upsellMessageAr}</p>
-          )}
-        </div>
+      {showUpsell && shipping.subtotal > 0 && !shipping.isFreeShipping && (
+        <FreeShippingProgress shipping={shipping} />
       )}
     </div>
   );

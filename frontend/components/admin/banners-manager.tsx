@@ -119,7 +119,7 @@ export function BannersManager() {
               value={editing.text ?? ""}
               onChange={(e) => setEditing((s) => s && { ...s, text: e.target.value })}
               dir="rtl"
-              placeholder="توصيل مجاني عند الطلب فوق 399 درهم 🚚"
+              placeholder="توصيل مجاني للطلبات فوق 349 درهم 🚚"
             />
           </div>
 

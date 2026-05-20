@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import type { OrderRecord } from "@/lib/orders/types";
 import {
   DEFAULT_SHIPPING_SETTINGS,
+  FREE_SHIPPING_THRESHOLD_MAD,
   type ShippingSettings,
 } from "@/lib/shipping/settings";
 import type { PricingOverrides } from "@/lib/products/admin-storage";
@@ -18,6 +19,21 @@ import type {
 } from "@/lib/admin/types";
 import { DEFAULT_ANNOUNCEMENT_BAR, normalizeAnnouncementBar } from "@/lib/admin/announcement-bar";
 import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
+
+function normalizeShippingSettings(
+  raw?: ShippingSettings | null,
+): ShippingSettings {
+  if (!raw) return DEFAULT_SHIPPING_SETTINGS;
+  const amount = raw.freeShippingMinimumAmount;
+  const migratedAmount =
+    amount === 399 || amount === 499 ? FREE_SHIPPING_THRESHOLD_MAD : amount;
+  return {
+    ...DEFAULT_SHIPPING_SETTINGS,
+    ...raw,
+    freeShippingMinimumAmount:
+      migratedAmount ?? DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumAmount,
+  };
+}
 
 export interface PersistedStore {
   version: 1;
@@ -66,9 +82,9 @@ export async function readStore(): Promise<PersistedStore> {
       ...DEFAULT_STORE,
       ...parsed,
       orders: Array.isArray(parsed.orders) ? (parsed.orders as OrderRecord[]) : [],
-      shippingSettings:
-        (parsed.shippingSettings as ShippingSettings | undefined) ??
-        DEFAULT_SHIPPING_SETTINGS,
+      shippingSettings: normalizeShippingSettings(
+        parsed.shippingSettings as ShippingSettings | undefined,
+      ),
       pricingOverrides:
         (parsed.pricingOverrides as PricingOverrides | undefined) ?? {},
       productOverrides: Array.isArray(parsed.productOverrides)

@@ -1,3 +1,5 @@
+import { FREE_SHIPPING_MARKETING_AR } from "@/lib/shipping/settings";
+
 export type AnnouncementIcon =
   | "truck"
   | "shield"
@@ -38,14 +40,8 @@ export const DEFAULT_ANNOUNCEMENT_BAR: AnnouncementBarConfig = {
       isEnabled: true,
     },
     {
-      id: "free-3",
-      text: "توصيل مجاني عند شراء 3 منتجات أو أكثر",
-      icon: "package",
-      isEnabled: true,
-    },
-    {
-      id: "free-399",
-      text: "توصيل مجاني للطلبات ابتداءً من 399 د.م",
+      id: "free-349",
+      text: "توصيل مجاني للطلبات فوق 349 درهم",
       icon: "gift",
       isEnabled: true,
     },
@@ -64,6 +60,24 @@ export const DEFAULT_ANNOUNCEMENT_BAR: AnnouncementBarConfig = {
   ],
 };
 
+const LEGACY_FREE_SHIPPING_IDS = new Set(["free-3", "free-399", "free-499"]);
+
+function migrateAnnouncementMessageText(
+  id: string,
+  text: string,
+): string {
+  if (LEGACY_FREE_SHIPPING_IDS.has(id)) return FREE_SHIPPING_MARKETING_AR;
+  const t = text.trim();
+  if (!t) return t;
+  if (/399|499/.test(t) && /توصيل|مجاني/.test(t)) {
+    return FREE_SHIPPING_MARKETING_AR;
+  }
+  if (/3\s*منتجات/.test(t) && /توصيل|مجاني/.test(t)) {
+    return FREE_SHIPPING_MARKETING_AR;
+  }
+  return text;
+}
+
 export function normalizeAnnouncementBar(
   input?: Partial<AnnouncementBarConfig> | null,
 ): AnnouncementBarConfig {
@@ -73,7 +87,7 @@ export function normalizeAnnouncementBar(
     Array.isArray(input.messages) && input.messages.length > 0
       ? input.messages.map((m, i) => ({
           id: m.id ?? `msg-${i}`,
-          text: m.text ?? "",
+          text: migrateAnnouncementMessageText(m.id ?? `msg-${i}`, m.text ?? ""),
           icon: m.icon ?? "truck",
           isEnabled: m.isEnabled ?? true,
         }))

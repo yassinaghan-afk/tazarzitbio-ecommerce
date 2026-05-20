@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   DEFAULT_SHIPPING_SETTINGS,
+  FREE_SHIPPING_MARKETING_AR,
+  FREE_SHIPPING_THRESHOLD_MAD,
   type ShippingSettings,
 } from "@/lib/shipping/settings";
 import {
@@ -52,12 +54,13 @@ export function ShippingSettingsForm() {
         <div>
           <h2 className="text-lg font-bold text-foreground">Shipping Settings — Morocco</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Flat fee per order. Free shipping when minimum products/amount is reached, or for bundle orders.
+            Flat delivery fee per order. Free shipping when cart subtotal reaches the
+            minimum amount ({FREE_SHIPPING_MARKETING_AR}).
           </p>
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="defaultShippingPrice">Default Shipping Fee (MAD)</Label>
           <Input
@@ -72,13 +75,13 @@ export function ShippingSettingsForm() {
             className="mt-1.5"
           />
           <p className="mt-1 text-2xs text-muted-foreground">
-            defaultShippingPrice — default: 40
+            Applied when subtotal is below {settings.freeShippingMinimumAmount} د.م.
           </p>
         </div>
 
         <div>
           <Label htmlFor="freeShippingMinimumAmount">
-            Free Shipping Min. Amount (MAD)
+            Free Shipping Min. Subtotal (MAD)
           </Label>
           <Input
             id="freeShippingMinimumAmount"
@@ -92,30 +95,7 @@ export function ShippingSettingsForm() {
             className="mt-1.5"
           />
           <p className="mt-1 text-2xs text-muted-foreground">
-            freeShippingMinimumAmount — default: 399
-          </p>
-        </div>
-
-        <div>
-          <Label htmlFor="freeShippingMinimumProducts">
-            Free Shipping Min. Products
-          </Label>
-          <Input
-            id="freeShippingMinimumProducts"
-            type="number"
-            min={1}
-            step={1}
-            value={settings.freeShippingMinimumProducts}
-            onChange={(e) =>
-              update(
-                "freeShippingMinimumProducts",
-                Math.max(1, Number(e.target.value) || 1),
-              )
-            }
-            className="mt-1.5"
-          />
-          <p className="mt-1 text-2xs text-muted-foreground">
-            freeShippingMinimumProducts — default: 3
+            Default: {FREE_SHIPPING_THRESHOLD_MAD} د.م. — subtotal ≥ this = free shipping
           </p>
         </div>
       </div>

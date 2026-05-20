@@ -365,7 +365,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       ],
       offers: eucalyptusOffers,
       faq: [
-        { q: "هل التوصيل مجاني؟", a: "التوصيل مجاني عند 3 منتجات أو 399 د.م." },
+        { q: "هل التوصيل مجاني؟", a: "التوصيل مجاني للطلبات من 349 د.م. فما فوق." },
         { q: "مدة التوصيل؟", a: "1–5 أيام عمل حسب المدينة." },
       ],
       reviews: REVIEWS_EUCALYPTUS,

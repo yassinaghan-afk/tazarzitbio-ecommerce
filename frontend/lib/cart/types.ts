@@ -10,7 +10,7 @@ export interface CartLineItem {
   offerLabel: string;
   unitPrice: number;
   quantity: number;
-  /** Bundle/pack products qualify for free shipping */
+  /** @deprecated Bundles no longer auto-qualify for free shipping */
   isBundle?: boolean;
 }
 

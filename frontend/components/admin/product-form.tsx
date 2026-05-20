@@ -182,7 +182,7 @@ export function ProductForm({ product, onChange, isNew }: ProductFormProps) {
             { key: "isVisible" as const, label: "Visible on storefront" },
             { key: "isFeatured" as const, label: "Featured on homepage" },
             { key: "isBestseller" as const, label: "Bestseller" },
-            { key: "isBundle" as const, label: "Bundle / Pack (free shipping)" },
+            { key: "isBundle" as const, label: "Bundle / Pack" },
           ].map(({ key, label }) => (
             <label
               key={key}
