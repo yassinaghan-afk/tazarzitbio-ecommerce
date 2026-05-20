@@ -1,11 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
-import { PlaceholderImage } from "@/components/ui/placeholder-image";
 import { storyPillars } from "@/lib/home-data";
 import { slideInEnd, slideInStart, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
@@ -34,14 +34,25 @@ export function StorySection() {
             whileInView="visible"
             viewport={VIEWPORT}
           >
-            <PlaceholderImage
-              emoji="🏔️"
-              label="سوس — أرض الأركان والعسل"
-              gradient="from-emerald-50 via-teal-50 to-amber-50"
-              aspect="portrait"
-              size="lg"
-              className="shadow-warm-xl"
-            />
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-border/40 bg-card shadow-warm-xl">
+              <Image
+                src="/images/sections/tazar.jpeg"
+                alt="سوس — أرض الأركان والعسل"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 560px"
+                quality={90}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/5"
+              />
+              <div className="absolute bottom-0 inset-x-0 p-5">
+                <p className="rounded-2xl border border-white/20 bg-black/35 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm">
+                  سوس — أرض الأركان والعسل
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           <motion.div
