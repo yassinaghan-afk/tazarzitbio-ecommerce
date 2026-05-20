@@ -31,6 +31,7 @@ import {
   loadShippingSettings,
   type ShippingResult,
 } from "@/lib/shipping";
+import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
 
 interface CommerceContextValue {
   items: CartLineItem[];
@@ -206,9 +207,33 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       if (hasCheckoutErrors(errors)) return { success: false, errors };
       if (items.length === 0) return { success: false };
 
-      const order: PlacedOrder = {
-        id: `TZ-${Date.now().toString(36).toUpperCase()}`,
-        placedAt: new Date().toISOString(),
+      const placedAt = new Date().toISOString();
+
+      const createPayload: CreateOrderInput = {
+        customerName: form.fullName,
+        phone: form.phone,
+        address: form.address,
+        products: items.map((i) => ({
+          productId: i.productId,
+          slug: i.slug,
+          nameAr: i.nameAr,
+          image: i.image,
+          offerId: i.offerId,
+          offerLabel: i.offerLabel,
+          unitPrice: i.unitPrice,
+          quantity: i.quantity,
+          isBundle: i.isBundle,
+        })),
+        subtotal: shipping.subtotal,
+        shippingPrice: shipping.shippingFee,
+        total: shipping.total,
+      };
+
+      // Create a local optimistic order first (keeps UX fast and thank-you working).
+      const optimisticId = `TZ-${placedAt.replace(/[-:TZ.]/g, "").slice(0, 14)}-LOCAL`;
+      const optimistic: PlacedOrder = {
+        id: optimisticId,
+        placedAt,
         customer: form,
         items: items.map((i) => ({
           nameAr: i.nameAr,
@@ -222,7 +247,24 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         shippingLabelFr: shipping.labelFr,
       };
 
-      sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(order));
+      // Fire-and-forget persistence. If it succeeds, update order id in sessionStorage.
+      void fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createPayload),
+      })
+        .then(async (res) => {
+          if (!res.ok) return null;
+          return (await res.json()) as CreateOrderResponse;
+        })
+        .then((data) => {
+          if (!data?.order?.orderId) return;
+          const updated: PlacedOrder = { ...optimistic, id: data.order.orderId };
+          sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(updated));
+        })
+        .catch(() => null);
+
+      sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(optimistic));
       clearCart();
       setCheckoutOpen(false);
       router.push("/thank-you");
