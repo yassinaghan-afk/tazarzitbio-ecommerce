@@ -44,6 +44,7 @@ interface CommerceContextValue {
   openCheckout: () => void;
   closeCheckout: () => void;
   addToCart: (payload: AddToCartPayload) => void;
+  orderNow: (payload: Omit<AddToCartPayload, "openDrawer">) => void;
   removeItem: (lineId: string) => void;
   updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
@@ -54,6 +55,41 @@ interface CommerceContextValue {
 }
 
 const CommerceContext = createContext<CommerceContextValue | null>(null);
+
+function applyAddToCart(
+  prev: CartLineItem[],
+  payload: AddToCartPayload,
+): CartLineItem[] {
+  const lineId = createLineId(payload.productId, payload.offerId);
+  const qty = payload.quantity ?? 1;
+  const existing = prev.find((i) => i.lineId === lineId);
+  if (existing) {
+    return prev.map((i) =>
+      i.lineId === lineId
+        ? {
+            ...i,
+            quantity: i.quantity + qty,
+            isBundle: payload.isBundle ?? i.isBundle,
+          }
+        : i,
+    );
+  }
+  return [
+    ...prev,
+    {
+      lineId,
+      productId: payload.productId,
+      slug: payload.slug,
+      nameAr: payload.nameAr,
+      image: payload.image,
+      offerId: payload.offerId,
+      offerLabel: payload.offerLabel,
+      unitPrice: payload.unitPrice,
+      quantity: qty,
+      isBundle: payload.isBundle,
+    },
+  ];
+}
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -104,45 +140,35 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     const unique = [...new Set(relatedSlugs)].filter(
       (slug) => !cartSlugs.includes(slug),
     );
-    return getRelatedProducts(unique).slice(0, 3);
+    return getRelatedProducts(unique).slice(0, 4);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartSlugs, settingsVersion]);
 
-  const addToCart = useCallback((payload: AddToCartPayload) => {
-    const lineId = createLineId(payload.productId, payload.offerId);
-    const qty = payload.quantity ?? 1;
-
-    setItems((prev) => {
-      const existing = prev.find((i) => i.lineId === lineId);
-      if (existing) {
-        return prev.map((i) =>
-          i.lineId === lineId
-            ? {
-                ...i,
-                quantity: i.quantity + qty,
-                isBundle: payload.isBundle ?? i.isBundle,
-              }
-            : i,
-        );
-      }
-      return [
-        ...prev,
-        {
-          lineId,
-          productId: payload.productId,
-          slug: payload.slug,
-          nameAr: payload.nameAr,
-          image: payload.image,
-          offerId: payload.offerId,
-          offerLabel: payload.offerLabel,
-          unitPrice: payload.unitPrice,
-          quantity: qty,
-          isBundle: payload.isBundle,
-        },
-      ];
-    });
-    setCartOpen(true);
+  const openDrawerAfterAdd = useCallback((mode: AddToCartPayload["openDrawer"]) => {
+    if (mode === "checkout") {
+      setCartOpen(false);
+      setCheckoutOpen(true);
+    } else if (mode === "cart") {
+      setCheckoutOpen(false);
+      setCartOpen(true);
+    }
   }, []);
+
+  const addToCart = useCallback(
+    (payload: AddToCartPayload) => {
+      const mode = payload.openDrawer ?? "cart";
+      setItems((prev) => applyAddToCart(prev, payload));
+      openDrawerAfterAdd(mode);
+    },
+    [openDrawerAfterAdd],
+  );
+
+  const orderNow = useCallback(
+    (payload: Omit<AddToCartPayload, "openDrawer">) => {
+      addToCart({ ...payload, openDrawer: "checkout" });
+    },
+    [addToCart],
+  );
 
   const removeItem = useCallback((lineId: string) => {
     setItems((prev) => prev.filter((i) => i.lineId !== lineId));
@@ -218,6 +244,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       openCheckout,
       closeCheckout,
       addToCart,
+      orderNow,
       removeItem,
       updateQuantity,
       clearCart,
@@ -236,6 +263,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       openCheckout,
       closeCheckout,
       addToCart,
+      orderNow,
       removeItem,
       updateQuantity,
       clearCart,

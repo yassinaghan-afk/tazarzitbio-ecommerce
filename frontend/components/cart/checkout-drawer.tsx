@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Banknote, Phone, ShieldCheck, Truck } from "lucide-react";
 
+import { CartLineRow } from "@/components/cart/cart-line-row";
 import { OrderTotals } from "@/components/cart/order-totals";
+import { CheckoutCrossSell } from "@/components/checkout/checkout-cross-sell";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
@@ -23,8 +24,15 @@ const emptyForm: CheckoutFormData = {
 };
 
 export function CheckoutDrawer() {
-  const { items, shipping, checkoutOpen, closeCheckout, submitOrder } =
-    useCommerce();
+  const {
+    items,
+    shipping,
+    checkoutOpen,
+    closeCheckout,
+    submitOrder,
+    crossSellProducts,
+    openCart,
+  } = useCommerce();
   const [form, setForm] = useState<CheckoutFormData>(emptyForm);
   const [errors, setErrors] = useState<CheckoutFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -86,43 +94,36 @@ export function CheckoutDrawer() {
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
           <p>
             لن نطلب أي دفع إلكتروني. سيتصل بك فريقنا لتأكيد الطلب قبل الشحن.
+            يمكنك إضافة منتجات أخرى قبل التأكيد.
           </p>
         </div>
 
         {items.length > 0 && (
           <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
-            <p className="mb-3 text-xs font-bold text-accent">ملخص السلة</p>
-            <ul className="space-y-2.5">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-xs font-bold text-accent">ملخص الطلب</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto px-2 py-1 text-xs text-muted-foreground"
+                onClick={openCart}
+              >
+                تعديل السلة
+              </Button>
+            </div>
+            <ul className="space-y-4">
               {items.map((item) => (
-                <li key={item.lineId} className="flex gap-3 text-sm">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#3d2818] to-[#2a1810]">
-                    <Image
-                      src={item.image}
-                      alt=""
-                      fill
-                      sizes="48px"
-                      className="object-contain p-1"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground line-clamp-1">
-                      {item.nameAr}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.offerLabel} × {item.quantity}
-                    </p>
-                  </div>
-                  <span className="shrink-0 font-bold tabular-nums text-accent">
-                    {item.unitPrice * item.quantity} د.م.
-                  </span>
-                </li>
+                <CartLineRow key={item.lineId} item={item} compact linkToProduct />
               ))}
             </ul>
             <div className="mt-4 border-t border-border/50 pt-4">
-              <OrderTotals shipping={shipping} showUpsell={false} />
+              <OrderTotals shipping={shipping} />
             </div>
           </div>
         )}
+
+        <CheckoutCrossSell products={crossSellProducts} />
 
         <div className="flex items-center gap-2 rounded-xl bg-secondary/50 px-3 py-2.5 text-xs text-muted-foreground">
           <Truck className="size-4 shrink-0 text-accent" />

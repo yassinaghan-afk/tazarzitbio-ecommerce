@@ -7,18 +7,24 @@ import {
   Check,
   ChevronDown,
   Leaf,
+  MapPin,
+  Phone,
   ShieldCheck,
-  ShoppingBag,
   Truck,
+  Zap,
 } from "lucide-react";
 
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
 import { Container, Section } from "@/components/layout/container";
-import { useCommerce } from "@/components/providers/commerce-provider";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
+import { ProductPurchaseActions } from "@/components/product/product-purchase-actions";
+import { useCommerce } from "@/components/providers/commerce-provider";
+import { Button } from "@/components/ui/button";
+import { buildAddToCartPayload } from "@/lib/cart/product-payload";
+import { ShippingPromoBanner } from "@/components/product/shipping-promo-banner";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/ui/star-rating";
 import { useCatalogProduct } from "@/hooks/use-catalog";
 import { fadeUp } from "@/lib/animations";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products";
@@ -27,21 +33,21 @@ import { cn } from "@/lib/utils";
 
 interface ProductPageClientProps {
   slug: string;
-  /** SSR fallback before client pricing hydration */
   initialProduct?: PublicProduct;
 }
 
-const trustItems = [
-  { icon: ShieldCheck, text: "طبيعي 100%" },
+const pdpTrust = [
   { icon: Truck, text: "الدفع عند الاستلام" },
-  { icon: Leaf, text: "من قلب سوس" },
+  { icon: MapPin, text: "توصيل لجميع المدن" },
+  { icon: Phone, text: "فريقنا يتصل بك لتأكيد الطلب" },
+  { icon: Leaf, text: "منتجات طبيعية من قلب سوس" },
 ];
 
 export function ProductPageClient({
   slug,
   initialProduct,
 }: ProductPageClientProps) {
-  const { addToCart } = useCommerce();
+  const { orderNow } = useCommerce();
   const { publicProduct: liveProduct } = useCatalogProduct(slug);
   const product = liveProduct ?? initialProduct;
 
@@ -51,29 +57,19 @@ export function ProductPageClient({
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
-    if (product?.offers[0] && !selectedOffer) {
+    if (product?.offers[0]) {
       setSelectedOffer(product.offers[0]);
     }
-  }, [product, selectedOffer]);
+  }, [product?.slug, product?.offers]);
 
   if (!product || !selectedOffer) {
     return null;
   }
 
-  const related = getRelatedProducts(product.relatedSlugs);
-
-  const handleAddToCart = () => {
-    addToCart({
-      productId: product.id,
-      slug: product.slug,
-      nameAr: product.nameAr,
-      image: product.image,
-      offerId: selectedOffer.id,
-      offerLabel: `${selectedOffer.label} — ${selectedOffer.weight}`,
-      unitPrice: selectedOffer.price,
-      isBundle: product.category === "bundles",
-    });
-  };
+  const related = getRelatedProducts(
+    product.relatedSlugs.filter((s) => s !== product.slug),
+  );
+  const showSizePicker = product.offers.length > 1;
 
   return (
     <>
@@ -98,14 +94,18 @@ export function ProductPageClient({
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="flex flex-col gap-6"
+              className="flex flex-col gap-5"
             >
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 {product.badges.map((b) => (
                   <Badge key={b} variant="premium">
                     {BADGE_LABELS[b]}
                   </Badge>
                 ))}
+                <StarRating rating={product.rating} showValue />
+                <span className="text-xs text-muted-foreground">
+                  ({product.reviewCount} تقييم)
+                </span>
               </div>
 
               <div>
@@ -117,70 +117,73 @@ export function ProductPageClient({
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                {trustItems.map(({ icon: Icon, text }) => (
+              <div className="flex flex-wrap gap-2">
+                {pdpTrust.map(({ icon: Icon, text }) => (
                   <span
                     key={text}
-                    className="glass-card flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium"
+                    className="glass-card flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium text-foreground/90"
                   >
-                    <Icon className="size-4 text-accent" />
+                    <Icon className="size-4 shrink-0 text-accent" />
                     {text}
                   </span>
                 ))}
               </div>
 
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-extrabold tabular-nums text-accent">
-                  {selectedOffer.price}
-                  <span className="ms-1 text-lg font-semibold">د.م.</span>
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {selectedOffer.weight}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-bold text-foreground">اختر الحجم</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {product.offers.map((offer) => (
-                    <button
-                      key={offer.id}
-                      type="button"
-                      onClick={() => setSelectedOffer(offer)}
-                      className={cn(
-                        "rounded-2xl border p-4 text-start transition-all",
-                        selectedOffer.id === offer.id
-                          ? "border-accent bg-accent/5 shadow-warm-sm ring-1 ring-accent/30"
-                          : "border-border bg-card/50 hover:border-accent/30",
-                      )}
-                    >
-                      <p className="font-bold text-foreground">{offer.label}</p>
-                      {offer.hint && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {offer.hint}
-                        </p>
-                      )}
-                      <p className="mt-2 text-sm font-extrabold text-accent">
-                        {offer.price} د.م.
-                      </p>
-                    </button>
-                  ))}
+              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl font-extrabold tabular-nums text-accent">
+                    {selectedOffer.price}
+                  </span>
+                  <span className="text-lg font-semibold text-accent">د.م.</span>
+                  <span className="text-sm text-muted-foreground">
+                    {selectedOffer.weight}
+                  </span>
                 </div>
+                {selectedOffer.hint && (
+                  <p className="mt-1 text-sm font-medium text-foreground/80">
+                    {selectedOffer.hint}
+                  </p>
+                )}
               </div>
 
-              <Button
-                variant="gold"
-                size="xl"
-                className="hidden w-full gap-2 rounded-full shadow-gold lg:inline-flex"
-                onClick={handleAddToCart}
-              >
-                <ShoppingBag className="size-5" />
-                أضف إلى السلة
-              </Button>
+              {showSizePicker && (
+                <div className="space-y-3">
+                  <p className="text-sm font-bold text-foreground">اختر الحجم</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {product.offers.map((offer) => (
+                      <button
+                        key={offer.id}
+                        type="button"
+                        onClick={() => setSelectedOffer(offer)}
+                        className={cn(
+                          "rounded-2xl border p-4 text-start transition-all",
+                          selectedOffer.id === offer.id
+                            ? "border-accent bg-accent/5 shadow-warm-sm ring-1 ring-accent/30"
+                            : "border-border bg-card/50 hover:border-accent/30",
+                        )}
+                      >
+                        <p className="font-bold text-foreground">{offer.label}</p>
+                        {offer.hint && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {offer.hint}
+                          </p>
+                        )}
+                        <p className="mt-2 text-sm font-extrabold text-accent">
+                          {offer.price} د.م.
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <p className="hidden text-center text-xs text-muted-foreground lg:block">
-                الدفع عند الاستلام · توصيل لجميع المدن المغربية
-              </p>
+              <ProductPurchaseActions
+                product={product}
+                offer={selectedOffer}
+                className="hidden lg:flex"
+              />
+
+              <ShippingPromoBanner />
             </motion.div>
           </div>
         </Container>
@@ -198,26 +201,26 @@ export function ProductPageClient({
       <Section spacing="md">
         <Container>
           <div className="grid gap-10 md:grid-cols-3">
-            <div>
-              <h2 className="text-display mb-4 text-xl text-foreground">
-                المكونات
-              </h2>
+            <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
+              <h2 className="text-display mb-4 text-xl text-foreground">المكونات</h2>
               <ul className="space-y-2">
                 {product.ingredients.map((item) => (
                   <li
                     key={item}
                     className="flex items-center gap-2 text-sm text-foreground/85"
                   >
-                    <Check className="size-4 text-accent" />
+                    <Check className="size-4 shrink-0 text-accent" />
                     {item}
                   </li>
                 ))}
               </ul>
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                مكونات طبيعية مختارة من مزارعي سوس — دون مواد حافظة أو إضافات
+                صناعية.
+              </p>
             </div>
-            <div>
-              <h2 className="text-display mb-4 text-xl text-foreground">
-                الفوائد
-              </h2>
+            <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
+              <h2 className="text-display mb-4 text-xl text-foreground">لماذا تازارزيت؟</h2>
               <ul className="space-y-2">
                 {product.benefits.map((item) => (
                   <li
@@ -230,7 +233,7 @@ export function ProductPageClient({
                 ))}
               </ul>
             </div>
-            <div>
+            <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
               <h2 className="text-display mb-4 text-xl text-foreground">
                 اقتراحات الاستخدام
               </h2>
@@ -251,10 +254,38 @@ export function ProductPageClient({
 
       <Section spacing="md" bg="alt">
         <Container>
-          <h2 className="text-display mb-8 text-2xl text-foreground">
-            آراء العملاء
+          <div className="mb-8 flex items-center gap-3">
+            <ShieldCheck className="size-8 text-accent" />
+            <div>
+              <h2 className="text-display text-2xl text-foreground">ثقة وخدمة</h2>
+              <p className="text-sm text-muted-foreground">
+                نرافقك من الطلب حتى الاستلام
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {pdpTrust.map(({ icon: Icon, text }) => (
+              <div
+                key={text}
+                className="flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-4"
+              >
+                <Icon className="mt-0.5 size-5 shrink-0 text-accent" />
+                <p className="text-sm font-semibold text-foreground">{text}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </Section>
+
+      <Section spacing="md">
+        <Container>
+          <h2 className="text-display mb-2 text-2xl text-foreground">
+            آراء الزبناء
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <p className="mb-8 text-sm text-muted-foreground">
+            تعليقات بالدارجة من مدن مغربية مختلفة
+          </p>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {product.reviews.map((review) => (
               <ReviewCard
                 key={review.id}
@@ -270,14 +301,14 @@ export function ProductPageClient({
         </Container>
       </Section>
 
-      <Section spacing="md">
+      <Section spacing="md" bg="alt">
         <Container className="max-w-2xl">
           <h2 className="text-display mb-6 text-2xl text-foreground">
             أسئلة شائعة
           </h2>
           <div className="space-y-2">
             {product.faq.map((item, i) => (
-              <motion.div
+              <div
                 key={item.q}
                 className="overflow-hidden rounded-2xl border border-border/70 bg-card"
               >
@@ -299,7 +330,7 @@ export function ProductPageClient({
                     {item.a}
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
         </Container>
@@ -321,22 +352,26 @@ export function ProductPageClient({
       )}
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-card/95 p-4 backdrop-blur-lg lg:hidden">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold">{product.nameAr}</p>
-            <p className="text-lg font-extrabold tabular-nums text-accent">
-              {selectedOffer.price} د.م.
-            </p>
+        <div className="mx-auto max-w-lg space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold">{product.nameAr}</p>
+              <p className="text-lg font-extrabold tabular-nums text-accent">
+                {selectedOffer.price} د.م.
+              </p>
+            </div>
+            <Button
+              variant="gold"
+              size="lg"
+              className="shrink-0 gap-2 rounded-full px-6 shadow-gold"
+              onClick={() =>
+                orderNow(buildAddToCartPayload(product, selectedOffer))
+              }
+            >
+              <Zap className="size-4" />
+              اطلب الآن
+            </Button>
           </div>
-          <Button
-            variant="gold"
-            size="lg"
-            className="shrink-0 gap-2 rounded-full px-6 shadow-gold"
-            onClick={handleAddToCart}
-          >
-            <ShoppingBag className="size-4" />
-            أضف للسلة
-          </Button>
         </div>
       </div>
     </>

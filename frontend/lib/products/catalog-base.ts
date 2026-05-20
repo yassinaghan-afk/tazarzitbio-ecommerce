@@ -1,6 +1,14 @@
 import type { PricingOverrides } from "./admin-storage";
 import { buildPricingEconomics, type PricingInput } from "./pricing";
+import {
+  REVIEWS_ALMOND,
+  REVIEWS_ARGAN,
+  REVIEWS_FAMILY,
+  REVIEWS_NUTS,
+  REVIEWS_PISTACHIO,
+} from "./reviews-darija";
 import type { Product, ProductOffer } from "./types";
+import { expandCatalogWithVariants } from "./variant-products";
 
 const IMG = "/images/products";
 
@@ -78,30 +86,29 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       weight: "250 غ — 750 غ",
       ingredients: ["لوز محلي", "عسل طبيعي", "زيت أركان بكر"],
       benefits: [
-        "طاقة طبيعية للفطور",
-        "غني بالأوميغا وفيتامين E",
-        "بدون مواد حافظة",
+        "طعم لوز غني وقومة كريمة",
+        "مثالي لفطور العائلة",
+        "بدون مواد حافظة أو إضافات",
       ],
       usageSuggestions: [
         "على خبز البيت أو الملوي",
-        "مع الشاي المغربي",
-        "وجبة خفيفة للأطفال",
+        "مع الشاي المغربي والضيافة",
+        "وجبة خفيفة على مائدة العائلة",
       ],
       offers: almondOffers,
       faq: [
         { q: "كم مدة الصلاحية؟", a: "6 أشهر في مكان بارد وجاف." },
         { q: "هل يوجد سكر مضاف؟", a: "لا، الحلاوة من العسل الطبيعي فقط." },
-      ],
-      reviews: [
         {
-          id: "r1",
-          author: "فاطمة الزهراء",
-          city: "الدار البيضاء",
-          rating: 5,
-          date: "مايو 2026",
-          content: "أفضل أملو جربته — طعم طبيعي وتغليف عملي.",
+          q: "كيف يتم الدفع والتوصيل؟",
+          a: "الدفع عند الاستلام لجميع المدن. نتصل بك لتأكيد العنوان قبل الشحن.",
+        },
+        {
+          q: "ما الأحجام المتوفرة؟",
+          a: "250 غ، 500 غ، و750 غ — اختر الحجم المناسب لعائلتك.",
         },
       ],
+      reviews: REVIEWS_ALMOND,
       rating: 4.9,
       reviewCount: 312,
       relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey", "premium-family-pack"],
@@ -121,22 +128,29 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       badges: ["new", "natural"],
       weight: "250 غ — 750 غ",
       ingredients: ["فستق طبيعي", "عسل طبيعي", "زيت أركان بكر"],
-      benefits: ["نكهة مميزة", "غني بالبروتين", "تحضير حرفي بطيء"],
-      usageSuggestions: ["فطور العائلة", "مع التمر", "للضيافة"],
+      benefits: [
+        "نكهة فستق أصيلة ولون طبيعي",
+        "تحضير حرفي بطيء",
+        "مناسب للضيافة والهدايا العائلية",
+      ],
+      usageSuggestions: [
+        "فطور الأحد مع العائلة",
+        "مع التمر والشاي",
+        "لضيافة الضيوف المغربية",
+      ],
       offers: pistachioOffers,
       faq: [
         { q: "هل اللون الأخضر طبيعي؟", a: "نعم، من الفستق دون صبغات." },
-      ],
-      reviews: [
         {
-          id: "r1",
-          author: "نادية السوسي",
-          city: "أكادير",
-          rating: 5,
-          date: "مارس 2026",
-          content: "فستق طازج وطعم رائع.",
+          q: "الدفع عند الاستلام؟",
+          a: "نعم، تدفع نقداً عند استلام الطلب فقط.",
+        },
+        {
+          q: "كيف نخزّنه؟",
+          a: "في مكان بارد وجاف، بعيداً عن الشمس المباشرة.",
         },
       ],
+      reviews: REVIEWS_PISTACHIO,
       rating: 5,
       reviewCount: 198,
       relatedSlugs: ["almond-amlou", "mixed-nuts-honey", "premium-family-pack"],
@@ -156,22 +170,28 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       badges: ["natural", "bestseller"],
       weight: "250 مل — 500 مل",
       ingredients: ["زيت أركان بكر 100%"],
-      benefits: ["ترطيب البشرة", "تغذية الشعر", "فيتامين E"],
-      usageSuggestions: ["ليلاً على الوجه", "تدليك الشعر", "بعد الاستحمام"],
+      benefits: [
+        "زيت بكر معصور على البارد",
+        "ريحة نقية من سوس",
+        "للعناية اليومية بالوجه والشعر",
+      ],
+      usageSuggestions: [
+        "ليلاً على الوجه واليدين",
+        "تدليك أطراف الشعر",
+        "هدية عملية من المغرب",
+      ],
       offers: arganOffers,
       faq: [
-        { q: "هل مناسب للبشرة الدهنية؟", a: "نعم بكميات صغيرة." },
-      ],
-      reviews: [
         {
-          id: "r1",
-          author: "نادية السوسي",
-          city: "أكادير",
-          rating: 5,
-          date: "مارس 2026",
-          content: "زيت حقيقي من سوس.",
+          q: "هل الزيت للأكل أو للعناية؟",
+          a: "هذا الزيت مخصص للعناية بالبشرة والشعر.",
+        },
+        {
+          q: "ما مدة التوصيل؟",
+          a: "1–5 أيام عمل حسب المدينة، مع اتصال تأكيد قبل الشحن.",
         },
       ],
+      reviews: REVIEWS_ARGAN,
       rating: 4.8,
       reviewCount: 156,
       relatedSlugs: ["almond-amlou", "premium-family-pack"],
@@ -191,22 +211,25 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       badges: ["natural", "bestseller"],
       weight: "250 غ",
       ingredients: ["لوز", "جوز", "فستق", "عسل طبيعي"],
-      benefits: ["طاقة سريعة", "بدون سكر مضاف", "للضيافة"],
-      usageSuggestions: ["مع الشاي", "وجبة خفيفة", "في الحلويات"],
+      benefits: [
+        "قرمشة مكسرات مع عسل كثيف",
+        "بدون سكر مضاف",
+        "مثالي للضيافة والعائلة",
+      ],
+      usageSuggestions: [
+        "مع أتاي المغربي",
+        "وجبة خفيفة بين الوجبات",
+        "على مائدة الضيافة",
+      ],
       offers: nutsOffers,
       faq: [
         { q: "مواد حافظة؟", a: "لا، العسل يحافظ على النضارة." },
-      ],
-      reviews: [
         {
-          id: "r1",
-          author: "كريم الحموي",
-          city: "مراكش",
-          rating: 5,
-          date: "فبراير 2026",
-          content: "عسل غني ومكسرات مقرمشة.",
+          q: "هل التوصيل لكل المدن؟",
+          a: "نعم، لجميع مدن المغرب مع الدفع عند الاستلام.",
         },
       ],
+      reviews: REVIEWS_NUTS,
       rating: 4.9,
       reviewCount: 241,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "premium-family-pack"],
@@ -252,23 +275,14 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
           a: "لا، باقة قيمة عائلية بتغليف عملي وليس علبة هدايا فاخرة.",
         },
       ],
-      reviews: [
-        {
-          id: "r1",
-          author: "يوسف بنعلي",
-          city: "الرباط",
-          rating: 5,
-          date: "أبريل 2026",
-          content: "باقة عملية بسعر معقول — العائلة أحبتها.",
-        },
-      ],
+      reviews: REVIEWS_FAMILY,
       rating: 4.9,
       reviewCount: 124,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
     },
   ];
 
-  return catalog;
+  return expandCatalogWithVariants(catalog);
 }
 
 /** Default catalog (SSR / build) */

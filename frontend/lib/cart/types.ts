@@ -1,3 +1,5 @@
+export type CartOpenMode = "cart" | "checkout" | "none";
+
 export interface CartLineItem {
   lineId: string;
   productId: string;
@@ -26,4 +28,6 @@ export interface AddToCartPayload {
   unitPrice: number;
   quantity?: number;
   isBundle?: boolean;
+  /** Where to navigate after adding — default opens cart drawer */
+  openDrawer?: CartOpenMode;
 }

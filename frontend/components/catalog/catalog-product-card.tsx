@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Zap } from "lucide-react";
 
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { cardHoverProps } from "@/lib/animations";
+import { buildAddToCartPayload, getDefaultOffer } from "@/lib/cart/product-payload";
 import type { PublicProduct } from "@/lib/products";
 import { BADGE_LABELS } from "@/lib/products";
 import { cn } from "@/lib/utils";
@@ -20,9 +21,19 @@ interface CatalogProductCardProps {
 }
 
 export function CatalogProductCard({ product, className }: CatalogProductCardProps) {
-  const { addToCart } = useCommerce();
-  const defaultOffer = product.offers[0];
+  const { orderNow, addToCart } = useCommerce();
+  const defaultOffer = getDefaultOffer(product);
   const fromPrice = product.price;
+
+  const handleOrderNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    orderNow(buildAddToCartPayload(product, defaultOffer));
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addToCart(buildAddToCartPayload(product, defaultOffer, { openDrawer: "cart" }));
+  };
 
   return (
     <motion.article
@@ -86,33 +97,39 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
           )}
         </div>
 
-        <div className="mt-auto flex gap-2">
+        <div className="mt-auto flex flex-col gap-2 sm:flex-row">
           <Button
             variant="gold"
             size="default"
             className="flex-1 gap-2 rounded-xl"
-            onClick={() =>
-              addToCart({
-                productId: product.id,
-                slug: product.slug,
-                nameAr: product.nameAr,
-                image: product.image,
-                offerId: defaultOffer.id,
-                offerLabel: `${defaultOffer.label} — ${defaultOffer.weight}`,
-                unitPrice: defaultOffer.price,
-                isBundle: product.category === "bundles",
-              })
-            }
+            onClick={handleOrderNow}
+          >
+            <Zap className="size-4" />
+            اطلب الآن
+          </Button>
+          <Button
+            variant="outline"
+            size="default"
+            className="flex-1 gap-2 rounded-xl"
+            onClick={handleAddToCart}
           >
             <ShoppingBag className="size-4" />
             أضف للسلة
           </Button>
-          <Button variant="outline" size="icon" className="rounded-xl" asChild>
+          <Button variant="outline" size="icon" className="rounded-xl sm:hidden" asChild>
             <Link href={`/products/${product.slug}`} aria-label="عرض التفاصيل">
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden w-full text-muted-foreground sm:inline-flex"
+          asChild
+        >
+          <Link href={`/products/${product.slug}`}>عرض التفاصيل</Link>
+        </Button>
       </div>
     </motion.article>
   );

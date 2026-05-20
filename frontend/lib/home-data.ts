@@ -1,5 +1,7 @@
 /** Homepage content — swap with CMS/API later */
 
+import { HOMEPAGE_REVIEWS_DARIJA } from "@/lib/products/reviews-darija";
+
 const IMG = "/images/products";
 
 export const productShowcases = [
@@ -155,52 +157,7 @@ export const familyPacks = [
   },
 ];
 
-export const reviews = [
-  {
-    id: "1",
-    author: "فاطمة الزهراء",
-    city: "الدار البيضاء",
-    rating: 5,
-    date: "مايو 2026",
-    content:
-      "أملو تازارزيت هو أفضل أملو جربته. الطعم طبيعي 100% والتغليف عملي. طلبت للعائلة وكررنا الطلب مرتين.",
-    product: "أملو الكلاسيكي",
-    avatar: "ف",
-  },
-  {
-    id: "2",
-    author: "يوسف بنعلي",
-    city: "الرباط",
-    rating: 5,
-    date: "أبريل 2026",
-    content:
-      "باقة العائلة عملية بسعر معقول. الجودة عالية والتوصيل سريع والدفع عند الاستلام مريح جداً.",
-    product: "باقة العائلة",
-    avatar: "ي",
-  },
-  {
-    id: "3",
-    author: "نادية السوسي",
-    city: "أكادير",
-    rating: 5,
-    date: "مارس 2026",
-    content:
-      "من سوس وأعرف الجودة. تازارزيت بيو يستحق اسمه — زيت أركان حقيقي ومنتجات نقية.",
-    product: "زيت أركان",
-    avatar: "ن",
-  },
-  {
-    id: "4",
-    author: "كريم الحموي",
-    city: "مراكش",
-    rating: 5,
-    date: "فبراير 2026",
-    content:
-      "باقة العائلة وفرت علينا الكثير. الفطور أصبح مناسبة خاصة كل أسبوع.",
-    product: "باقة فطور العائلة",
-    avatar: "ك",
-  },
-];
+export const reviews = HOMEPAGE_REVIEWS_DARIJA;
 
 export const transparencySteps = [
   {
