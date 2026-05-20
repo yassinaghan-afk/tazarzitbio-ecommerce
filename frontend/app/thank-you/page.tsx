@@ -11,21 +11,19 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
+import { HoneyUpsellSection } from "@/components/checkout/honey-upsell-section";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Container, Section } from "@/components/layout/container";
 import { ThankYouVerification } from "@/components/thank-you/thank-you-verification";
 import { Button } from "@/components/ui/button";
-import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
-import { getListingProducts } from "@/lib/products/listing";
+import { getHoneyUpsellRecommendations } from "@/lib/products/honey-upsell";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 
 export default function ThankYouPage() {
   const [hydrated, setHydrated] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
-  const products = useCatalogProducts();
 
   useEffect(() => {
     try {
@@ -39,10 +37,12 @@ export default function ThankYouPage() {
     setHydrated(true);
   }, []);
 
-  const recommended = useMemo(
-    () => getListingProducts(products).slice(0, 3),
-    [products],
-  );
+  const recommended = useMemo(() => {
+    const slugs =
+      order?.items.map((i) => i.slug).filter((s): s is string => Boolean(s)) ??
+      [];
+    return getHoneyUpsellRecommendations(slugs);
+  }, [order]);
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {
     setOrder((prev) => {
@@ -225,16 +225,17 @@ export default function ThankYouPage() {
                 </h2>
               </motion.div>
               <motion.div variants={staggerItem}>
-                <p className="mb-10 text-center text-sm text-muted-foreground">
-                  منتجات طبيعية من سوس — نفس الجودة التي اخترتها
+                <p className="mb-8 text-center text-sm text-muted-foreground">
+                  عسل طبيعي من سوس — أضف نوعاً آخر إلى طلبك القادم
                 </p>
               </motion.div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {recommended.map((product) => (
-                  <motion.div key={product.id} variants={staggerItem}>
-                    <CatalogProductCard product={product} />
-                  </motion.div>
-                ))}
+              <div className="mx-auto max-w-3xl">
+                <HoneyUpsellSection
+                  products={recommended}
+                  title="عسل مقترح لك"
+                  subtitle="عسل الدغموس · الزعتر · الأوكالبتوس"
+                  layout="grid"
+                />
               </div>
             </motion.div>
           </Container>

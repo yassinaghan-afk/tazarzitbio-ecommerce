@@ -25,7 +25,7 @@ import {
   hasCheckoutErrors,
   validateCheckoutForm,
 } from "@/lib/checkout/validation";
-import { getProducts, getRelatedProducts } from "@/lib/products";
+import { getHoneyUpsellRecommendations } from "@/lib/products/honey-upsell";
 import {
   calculateShipping,
   loadShippingSettings,
@@ -49,7 +49,7 @@ interface CommerceContextValue {
   removeItem: (lineId: string) => void;
   updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
-  crossSellProducts: ReturnType<typeof getRelatedProducts>;
+  crossSellProducts: ReturnType<typeof getHoneyUpsellRecommendations>;
   submitOrder: (
     form: CheckoutFormData,
   ) => { success: boolean; errors?: import("@/lib/checkout/types").CheckoutFormErrors };
@@ -133,15 +133,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const cartSlugs = useMemo(() => [...new Set(items.map((i) => i.slug))], [items]);
 
   const crossSellProducts = useMemo(() => {
-    const catalog = getProducts();
-    const relatedSlugs = cartSlugs.flatMap((slug) => {
-      const p = catalog.find((x) => x.slug === slug);
-      return p?.relatedSlugs ?? [];
-    });
-    const unique = [...new Set(relatedSlugs)].filter(
-      (slug) => !cartSlugs.includes(slug),
-    );
-    return getRelatedProducts(unique).slice(0, 4);
+    return getHoneyUpsellRecommendations(cartSlugs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartSlugs, settingsVersion]);
 
@@ -240,6 +232,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           offerLabel: i.offerLabel,
           quantity: i.quantity,
           unitPrice: i.unitPrice,
+          slug: i.slug,
         })),
         subtotal: shipping.subtotal,
         shippingFee: shipping.shippingFee,

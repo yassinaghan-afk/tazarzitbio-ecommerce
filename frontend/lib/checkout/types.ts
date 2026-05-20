@@ -19,6 +19,7 @@ export interface PlacedOrder {
     offerLabel: string;
     quantity: number;
     unitPrice: number;
+    slug?: string;
   }[];
   subtotal: number;
   shippingFee: number;

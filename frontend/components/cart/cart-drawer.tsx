@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
 
+import { HoneyUpsellSection } from "@/components/checkout/honey-upsell-section";
 import { OrderTotals } from "@/components/cart/order-totals";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
-import { BADGE_LABELS } from "@/lib/products";
 
 export function CartDrawer() {
   const {
@@ -149,41 +149,13 @@ export function CartDrawer() {
           </div>
 
           {crossSellProducts.length > 0 && (
-            <div>
-              <p className="mb-3 text-sm font-bold text-foreground">
-                قد يعجبك أيضاً
-              </p>
-              <ul className="space-y-2">
-                {crossSellProducts.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      href={`/products/${p.slug}`}
-                      onClick={closeCart}
-                      className="flex items-center gap-3 rounded-xl border border-border/50 p-2 transition-colors hover:bg-secondary/50"
-                    >
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#3d2818] to-[#2a1810]">
-                        <Image
-                          src={p.image}
-                          alt={p.nameAr}
-                          fill
-                          sizes="48px"
-                          className="object-contain p-1"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold">{p.nameAr}</p>
-                        <p className="text-xs text-accent">{p.price} د.م.</p>
-                      </div>
-                      {p.badges[0] && (
-                        <span className="text-2xs text-muted-foreground">
-                          {BADGE_LABELS[p.badges[0]]}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <HoneyUpsellSection
+              products={crossSellProducts}
+              title="أكمل طلبك بعسل سوس"
+              subtitle="أنواع مختلفة — اختر 250غ أو 500غ أو 750غ"
+              layout="inline"
+              compact
+            />
           )}
         </div>
       )}

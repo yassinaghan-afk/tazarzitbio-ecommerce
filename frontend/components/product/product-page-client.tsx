@@ -24,6 +24,8 @@ import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
 import { isFamilyPackProduct } from "@/lib/brand";
+import { FamilyPackContentsSection } from "@/components/product/family-pack-contents-section";
+import { FamilyPackStoryVisual } from "@/components/product/family-pack-story-visual";
 import { ShippingPromoBanner } from "@/components/product/shipping-promo-banner";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { Badge } from "@/components/ui/badge";
@@ -210,13 +212,18 @@ export function ProductPageClient({
         </Container>
       </Section>
 
-      <Section spacing="md" bg="alt">
+      {isFamilyPackProduct(product.slug) && <FamilyPackContentsSection />}
+
+      <Section spacing="md" bg="alt" className="!pt-8 sm:!pt-10">
         <Container className="max-w-3xl">
           <h2 className="text-display mb-4 text-2xl text-foreground">عن المنتج</h2>
           <p className="text-base leading-[1.85] text-muted-foreground">
             {product.description}
           </p>
         </Container>
+        {isFamilyPackProduct(product.slug) && (
+          <FamilyPackStoryVisual className="mt-6 sm:mt-8 lg:mt-10" />
+        )}
       </Section>
 
       <Section spacing="md">
