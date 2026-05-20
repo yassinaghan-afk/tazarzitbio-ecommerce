@@ -1,25 +1,19 @@
-export interface AdminVariantOverride {
-  id: string;
-  label?: string;
-  salePrice?: number;
-  costPrice?: number;
-  stock?: number;
-}
-
-export interface AdminProductData {
-  id: string;
-  nameAr?: string;
-  slug?: string;
-  shortDescription?: string;
-  description?: string;
-  images?: string[];
-  isVisible?: boolean;
-  isBundle?: boolean;
-  badges?: string[];
-  ingredients?: string[];
-  benefits?: string[];
-  variantOverrides?: AdminVariantOverride[];
-}
+export type {
+  AdminProductData,
+  AdminVariantOverride,
+  CmsCategory,
+  CmsProductRecord,
+  CmsProductSource,
+  CmsProductVariant,
+} from "./product-types";
+export {
+  CMS_BADGES,
+  CMS_CATEGORIES,
+  PRESET_VARIANTS,
+  createEmptyProduct,
+  createEmptyVariant,
+  slugify,
+} from "./product-types";
 
 export type BannerPlacement =
   | "top-bar"

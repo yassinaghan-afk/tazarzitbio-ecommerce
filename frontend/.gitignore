@@ -34,3 +34,6 @@ next-env.d.ts
 
 # runtime data store (orders, settings — server-generated, not committed)
 /data/store.json
+
+# admin-uploaded product images
+/public/uploads/

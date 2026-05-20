@@ -13,6 +13,7 @@ import type {
   HomepageContent,
   LandingPage,
   AdminProductData,
+  CmsProductRecord,
 } from "@/lib/admin/types";
 import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
 
@@ -22,6 +23,10 @@ export interface PersistedStore {
   shippingSettings: ShippingSettings;
   pricingOverrides: PricingOverrides;
   productOverrides: AdminProductData[];
+  cmsProducts: CmsProductRecord[];
+  hiddenCatalogIds: string[];
+  featuredProductSlugs: string[];
+  productOrder: string[];
   landingPages: LandingPage[];
   homepageContent: HomepageContent;
   banners: Banner[];
@@ -35,6 +40,10 @@ const DEFAULT_STORE: PersistedStore = {
   shippingSettings: DEFAULT_SHIPPING_SETTINGS,
   pricingOverrides: {},
   productOverrides: [],
+  cmsProducts: [],
+  hiddenCatalogIds: [],
+  featuredProductSlugs: [],
+  productOrder: [],
   landingPages: [],
   homepageContent: DEFAULT_HOMEPAGE_CONTENT,
   banners: [],
@@ -60,6 +69,18 @@ export async function readStore(): Promise<PersistedStore> {
         (parsed.pricingOverrides as PricingOverrides | undefined) ?? {},
       productOverrides: Array.isArray(parsed.productOverrides)
         ? (parsed.productOverrides as AdminProductData[])
+        : [],
+      cmsProducts: Array.isArray(parsed.cmsProducts)
+        ? (parsed.cmsProducts as CmsProductRecord[])
+        : [],
+      hiddenCatalogIds: Array.isArray(parsed.hiddenCatalogIds)
+        ? (parsed.hiddenCatalogIds as string[])
+        : [],
+      featuredProductSlugs: Array.isArray(parsed.featuredProductSlugs)
+        ? (parsed.featuredProductSlugs as string[])
+        : [],
+      productOrder: Array.isArray(parsed.productOrder)
+        ? (parsed.productOrder as string[])
         : [],
       landingPages: Array.isArray(parsed.landingPages)
         ? (parsed.landingPages as LandingPage[])
