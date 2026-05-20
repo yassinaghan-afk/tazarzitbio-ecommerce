@@ -1,6 +1,6 @@
 "use client";
 
-import { Banknote, Home, Phone, User } from "lucide-react";
+import { Home, Phone, User } from "lucide-react";
 
 import type { PlacedOrder } from "@/lib/checkout/types";
 import { formatMoroccanPhoneDisplay } from "@/lib/checkout/validation";
@@ -12,7 +12,6 @@ interface ThankYouVerificationProps {
 export function ThankYouVerification({ order }: ThankYouVerificationProps) {
   const { customer } = order;
   const displayPhone = formatMoroccanPhoneDisplay(customer.phone);
-  const total = order.total ?? order.subtotal;
 
   return (
     <div className="mt-10 text-start">
@@ -52,17 +51,6 @@ export function ThankYouVerification({ order }: ThankYouVerificationProps) {
           </div>
           <p className="text-base font-bold leading-relaxed text-foreground sm:text-lg">
             {customer.address}
-          </p>
-        </div>
-
-        <div className="flex items-end justify-between gap-4 rounded-2xl border border-accent/25 bg-accent/10 px-5 py-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Banknote className="size-5 text-accent" aria-hidden />
-            <span>إجمالي الطلب</span>
-          </div>
-          <p className="text-3xl font-extrabold tabular-nums text-accent">
-            {total}
-            <span className="ms-1 text-lg font-bold">د.م.</span>
           </p>
         </div>
       </div>
