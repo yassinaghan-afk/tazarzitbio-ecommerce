@@ -1,12 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Package, ShoppingBag } from "lucide-react";
+import { Package, Zap } from "lucide-react";
 
+import { useCommerce } from "@/components/providers/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cardHoverProps } from "@/lib/animations";
+import {
+  buildAddToCartPayload,
+  getStartingOffer,
+} from "@/lib/cart/product-payload";
+import { getPublicProductBySlug } from "@/lib/products/catalog";
 import { cn } from "@/lib/utils";
 
 export interface BundleItem {
@@ -28,9 +33,12 @@ export interface BundleCardProps {
 
 const variantStyles = {
   default: "border-border bg-card",
-  gold:    "border-accent/40 bg-gradient-to-br from-amber-50 to-orange-50",
-  olive:   "border-primary/30 bg-gradient-to-br from-emerald-50 to-green-50",
+  gold: "border-accent/40 bg-gradient-to-br from-amber-50 to-orange-50",
+  olive: "border-primary/30 bg-gradient-to-br from-emerald-50 to-green-50",
 };
+
+const ORDER_CTA =
+  "min-h-12 h-12 w-full gap-2 text-base font-bold rounded-xl shadow-gold sm:max-w-xs";
 
 export function BundleCard({
   title,
@@ -43,7 +51,15 @@ export function BundleCard({
   productSlug,
   className,
 }: BundleCardProps) {
+  const { orderNow } = useCommerce();
   const savings = comparePrice != null ? comparePrice - price : 0;
+
+  const handleOrderNow = () => {
+    if (!productSlug) return;
+    const product = getPublicProductBySlug(productSlug);
+    if (!product) return;
+    orderNow(buildAddToCartPayload(product, getStartingOffer(product)));
+  };
 
   return (
     <motion.article
@@ -61,7 +77,6 @@ export function BundleCard({
       )}
 
       <div className="p-6">
-        {/* Header */}
         <div className="flex items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/10">
             <Package className="size-6 text-accent" />
@@ -72,7 +87,6 @@ export function BundleCard({
           </div>
         </div>
 
-        {/* Items */}
         <div className="mt-5 flex flex-wrap gap-2">
           {items.map((item) => (
             <span
@@ -85,11 +99,9 @@ export function BundleCard({
           ))}
         </div>
 
-        {/* Divider */}
         <div className="my-5 gold-divider" />
 
-        {/* Price + CTA */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold tabular-nums text-accent">
@@ -109,19 +121,16 @@ export function BundleCard({
             )}
           </div>
 
-          {productSlug ? (
-            <Button variant="gold" className="shrink-0 gap-2" asChild>
-              <Link href={`/products/${productSlug}`}>
-                <ShoppingBag className="size-4" />
-                اطلب الآن
-              </Link>
-            </Button>
-          ) : (
-            <Button variant="gold" className="shrink-0 gap-2">
-              <ShoppingBag className="size-4" />
-              اطلب الآن
-            </Button>
-          )}
+          <Button
+            variant="gold"
+            size="lg"
+            className={ORDER_CTA}
+            onClick={handleOrderNow}
+            disabled={!productSlug}
+          >
+            <Zap className="size-4" />
+            اطلب الآن
+          </Button>
         </div>
       </div>
     </motion.article>

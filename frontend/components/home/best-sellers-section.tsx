@@ -12,6 +12,7 @@ import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
+import { getListingProducts } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
 
 const HOME_CATEGORIES: ProductCategory[] = ["all", "honey", "amlou"];
@@ -20,10 +21,18 @@ export function BestSellersSection() {
   const allProducts = useCatalogProducts();
   const [category, setCategory] = useState<ProductCategory>("all");
 
+  const listingProducts = useMemo(
+    () =>
+      getListingProducts(allProducts, {
+        excludeSlugs: ["premium-family-pack"],
+      }),
+    [allProducts],
+  );
+
   const products = useMemo(() => {
-    if (category === "all") return allProducts;
-    return allProducts.filter((p) => p.category === category);
-  }, [allProducts, category]);
+    if (category === "all") return listingProducts;
+    return listingProducts.filter((p) => p.category === category);
+  }, [listingProducts, category]);
 
   return (
     <Section id="products" spacing="lg" bg="alt" className="texture-grain">

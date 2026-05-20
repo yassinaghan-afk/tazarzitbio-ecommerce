@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
 
 import { OrderTotals } from "@/components/cart/order-totals";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
@@ -47,6 +48,9 @@ export function CartDrawer() {
         ) : undefined
       }
     >
+      <div className="mb-4 flex justify-center sm:justify-start">
+        <BrandLogo variant="compact" />
+      </div>
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">

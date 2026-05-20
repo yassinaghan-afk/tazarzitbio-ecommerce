@@ -5,6 +5,7 @@ import { ArrowRight, Phone, ShieldCheck } from "lucide-react";
 
 import { CartLineRow } from "@/components/cart/cart-line-row";
 import { OrderTotals } from "@/components/cart/order-totals";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { CheckoutConfirmationCard } from "@/components/checkout/checkout-confirmation-card";
 import { CheckoutCrossSell } from "@/components/checkout/checkout-cross-sell";
 import { useCommerce } from "@/components/providers/commerce-provider";
@@ -139,6 +140,9 @@ export function CheckoutDrawer() {
 
   return (
     <Drawer open={checkoutOpen} onClose={handleClose} title={title} footer={footer}>
+      <div className="mb-4 flex justify-center">
+        <BrandLogo variant="checkout" />
+      </div>
       <div className="mb-5 flex items-center gap-2">
         {(["review", "details"] as const).map((s, i) => (
           <div key={s} className="flex flex-1 items-center gap-2">

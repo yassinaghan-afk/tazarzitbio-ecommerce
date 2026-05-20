@@ -61,7 +61,9 @@ export function CartLineRow({
             {item.nameAr}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">{item.offerLabel}</p>
+        {!item.nameAr.includes(item.offerLabel) && (
+          <p className="text-xs text-muted-foreground">{item.offerLabel}</p>
+        )}
 
         <div className="mt-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-0.5">

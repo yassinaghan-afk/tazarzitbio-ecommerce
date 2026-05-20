@@ -15,10 +15,10 @@ export default function HomePage() {
     <>
       <HeroSection />
       <TrustBadges />
+      <FamilyPackSection />
       <StorySection />
       <ProductShowcasesSection />
       <BestSellersSection />
-      <FamilyPackSection />
       <ReviewSection />
       <IngredientsSection />
       <LifestyleSection />

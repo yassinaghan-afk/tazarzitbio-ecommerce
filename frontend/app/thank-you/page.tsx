@@ -12,11 +12,13 @@ import {
 } from "lucide-react";
 
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Container, Section } from "@/components/layout/container";
 import { ThankYouVerification } from "@/components/thank-you/thank-you-verification";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
+import { getListingProducts } from "@/lib/products/listing";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 
@@ -37,7 +39,10 @@ export default function ThankYouPage() {
     setHydrated(true);
   }, []);
 
-  const recommended = useMemo(() => products.slice(0, 3), [products]);
+  const recommended = useMemo(
+    () => getListingProducts(products).slice(0, 3),
+    [products],
+  );
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {
     setOrder((prev) => {
@@ -57,6 +62,9 @@ export default function ThankYouPage() {
       <Section spacing="lg" className="texture-grain">
         <Container className="max-w-2xl">
           <div className="text-center">
+            <div className="mb-6 flex justify-center">
+              <BrandLogo variant="checkout" />
+            </div>
             <div className="relative mx-auto mb-8 flex h-24 w-24 items-center justify-center">
               <div
                 aria-hidden

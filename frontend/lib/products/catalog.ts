@@ -1,6 +1,7 @@
 import { loadPricingOverrides } from "./admin-storage";
 import { buildCatalog, baseCatalog } from "./catalog-base";
 import type { PricingOverrides } from "./admin-storage";
+import { isExpandedVariantRow } from "./listing";
 import type { Product, PublicProduct, PublicProductOffer } from "./types";
 
 export function getCatalog(overrides?: PricingOverrides): Product[] {
@@ -59,7 +60,9 @@ export function getProductsByCategory(
 export function getRelatedProducts(slugs: string[]): PublicProduct[] {
   return slugs
     .map((slug) => getPublicProductBySlug(slug))
-    .filter((p): p is PublicProduct => Boolean(p));
+    .filter(
+      (p): p is PublicProduct => Boolean(p && !isExpandedVariantRow(p)),
+    );
 }
 
 /** All variant rows for admin */

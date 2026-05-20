@@ -1,13 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Check, ShoppingBag } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
+import { useCommerce } from "@/components/providers/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fadeUp, VIEWPORT } from "@/lib/animations";
+import {
+  buildAddToCartPayload,
+  getStartingOffer,
+} from "@/lib/cart/product-payload";
+import { getPublicProductBySlug } from "@/lib/products/catalog";
 import { cn } from "@/lib/utils";
 
 export interface ProductFeatureProps {
@@ -39,7 +46,21 @@ export function ProductFeatureSection({
   imageFirst = false,
   badge,
 }: ProductFeatureProps) {
+  const router = useRouter();
+  const { orderNow } = useCommerce();
+  const productHref = `/products/${id}`;
   const savings = comparePrice ? comparePrice - price : 0;
+
+  const handleOrderNow = () => {
+    const product = getPublicProductBySlug(id);
+    if (!product) {
+      router.push(productHref);
+      return;
+    }
+    orderNow(buildAddToCartPayload(product, getStartingOffer(product)));
+  };
+
+  const goToProduct = () => router.push(productHref);
 
   const copy = (
     <motion.div
@@ -99,8 +120,13 @@ export function ProductFeatureSection({
             </p>
           )}
         </div>
-        <Button variant="gold" size="lg" className="ms-auto gap-2 rounded-full px-6">
-          <ShoppingBag className="size-4" />
+        <Button
+          variant="gold"
+          size="lg"
+          className="min-h-12 h-12 w-full gap-2 rounded-xl text-base font-bold shadow-gold sm:ms-auto sm:w-auto sm:rounded-full sm:px-6"
+          onClick={handleOrderNow}
+        >
+          <Zap className="size-4" />
           اطلب الآن
         </Button>
       </div>
@@ -108,12 +134,14 @@ export function ProductFeatureSection({
   );
 
   const visual = (
-    <motion.div
+    <motion.button
+      type="button"
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
       viewport={VIEWPORT}
-      className="relative"
+      onClick={goToProduct}
+      className="relative w-full cursor-pointer text-start"
     >
       {badge && (
         <div className="glass-card absolute start-4 top-4 z-10 rounded-full px-3 py-1.5 text-xs font-semibold text-accent shadow-warm-sm">
@@ -138,7 +166,7 @@ export function ProductFeatureSection({
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1a1008]/35 via-transparent to-[hsl(45_80%_55%/0.06)]"
         />
       </div>
-    </motion.div>
+    </motion.button>
   );
 
   return (

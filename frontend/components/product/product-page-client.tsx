@@ -12,15 +12,18 @@ import {
   ShieldCheck,
   Truck,
   Zap,
+  ShoppingBag,
 } from "lucide-react";
 
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
 import { Container, Section } from "@/components/layout/container";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductPurchaseActions } from "@/components/product/product-purchase-actions";
+import { QuantitySelector } from "@/components/product/quantity-selector";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
+import { isFamilyPackProduct } from "@/lib/brand";
 import { ShippingPromoBanner } from "@/components/product/shipping-promo-banner";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { Badge } from "@/components/ui/badge";
@@ -47,13 +50,14 @@ export function ProductPageClient({
   slug,
   initialProduct,
 }: ProductPageClientProps) {
-  const { orderNow } = useCommerce();
+  const { orderNow, addToCart } = useCommerce();
   const { publicProduct: liveProduct } = useCatalogProduct(slug);
   const product = liveProduct ?? initialProduct;
 
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(
     () => initialProduct?.offers[0]?.id ?? null,
   );
+  const [quantity, setQuantity] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
@@ -65,6 +69,7 @@ export function ProductPageClient({
       }
       return firstId;
     });
+    setQuantity(1);
     // Reset size selection only when the product slug changes (not when offers[] is recreated).
     // eslint-disable-next-line react-hooks/exhaustive-deps -- slug-only; offer prices sync via derived selectedOffer
   }, [slug]);
@@ -82,6 +87,7 @@ export function ProductPageClient({
     product.relatedSlugs.filter((s) => s !== product.slug),
   );
   const showSizePicker = product.offers.length > 1;
+  const orderOnly = isFamilyPackProduct(product.slug);
 
   return (
     <>
@@ -192,6 +198,9 @@ export function ProductPageClient({
               <ProductPurchaseActions
                 product={product}
                 offer={selectedOffer}
+                quantity={quantity}
+                onQuantityChange={setQuantity}
+                orderOnly={orderOnly}
                 className="hidden lg:flex"
               />
 
@@ -363,26 +372,53 @@ export function ProductPageClient({
         </Section>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-card/95 p-4 backdrop-blur-lg lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-card/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
         <div className="mx-auto max-w-lg space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{product.nameAr}</p>
               <p className="text-lg font-extrabold tabular-nums text-accent">
-                {selectedOffer.price} د.م.
+                {selectedOffer.price * quantity} د.م.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {selectedOffer.label}
+                {quantity > 1 ? ` × ${quantity}` : ""}
               </p>
             </div>
+            <QuantitySelector value={quantity} onChange={setQuantity} />
+          </div>
+          <div className="flex flex-col gap-2.5">
             <Button
               variant="gold"
               size="lg"
-              className="shrink-0 gap-2 rounded-full px-6 shadow-gold"
+              className="min-h-12 h-12 w-full gap-2 rounded-xl text-base font-bold shadow-gold"
               onClick={() =>
-                orderNow(buildAddToCartPayload(product, selectedOffer))
+                orderNow(
+                  buildAddToCartPayload(product, selectedOffer, { quantity }),
+                )
               }
             >
-              <Zap className="size-4" />
+              <Zap className="size-5" />
               اطلب الآن
             </Button>
+            {!orderOnly && (
+              <Button
+                variant="outline"
+                size="lg"
+                className="min-h-12 h-12 w-full gap-2 rounded-xl text-base font-bold"
+                onClick={() =>
+                  addToCart(
+                    buildAddToCartPayload(product, selectedOffer, {
+                      quantity,
+                      openDrawer: "cart",
+                    }),
+                  )
+                }
+              >
+                <ShoppingBag className="size-5" />
+                أضف للسلة
+              </Button>
+            )}
           </div>
         </div>
       </div>

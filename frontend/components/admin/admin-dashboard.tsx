@@ -23,6 +23,7 @@ import { ShippingSettingsForm } from "@/components/admin/shipping-settings-form"
 import { Button } from "@/components/ui/button";
 import type { OrderRecord, OrderStatus } from "@/lib/orders/types";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 type AdminSection =
   | "overview"
@@ -142,12 +143,8 @@ export function AdminDashboard() {
       {/* Sidebar */}
       <aside className="rounded-3xl border border-border/60 bg-card/60 p-4 shadow-warm-md h-fit lg:sticky lg:top-6">
         <div className="mb-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-accent">
-            Tazarzit Bio
-          </p>
-          <h1 className="mt-1 text-xl font-extrabold text-foreground">
-            Admin Panel
-          </h1>
+          <BrandLogo variant="admin" className="mb-3" />
+          <h1 className="text-xl font-extrabold text-foreground">Admin Panel</h1>
         </div>
 
         <nav className="space-y-4">

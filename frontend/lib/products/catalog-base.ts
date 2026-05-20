@@ -301,11 +301,11 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_DAGHMOUS,
       rating: 4.9,
       reviewCount: 87,
-      relatedSlugs: ["thym-honey", "eucalyptus-honey", "almond-amlou"],
+      relatedSlugs: ["saatar-honey", "eucalyptus-honey", "almond-amlou"],
     },
     {
-      id: "thym-honey",
-      slug: "thym-honey",
+      id: "saatar-honey",
+      slug: "saatar-honey",
       nameAr: "عسل الزعتر",
       shortDescription:
         "عسل الزعتر (السعتر) من جبال سوس — رائحة عطرية وطعم أصيل.",
@@ -371,11 +371,11 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_EUCALYPTUS,
       rating: 4.8,
       reviewCount: 52,
-      relatedSlugs: ["daghmous-honey", "thym-honey", "peanut-amlou"],
+      relatedSlugs: ["daghmous-honey", "saatar-honey", "cocoa-amlou"],
     },
     {
-      id: "peanut-amlou",
-      slug: "peanut-amlou",
+      id: "cocoa-amlou",
+      slug: "cocoa-amlou",
       nameAr: "أملو الكاوكاو",
       shortDescription:
         "أملو بالكاوكاو (الفول السوداني) — قوام كريمي وطعم غني من سوس.",

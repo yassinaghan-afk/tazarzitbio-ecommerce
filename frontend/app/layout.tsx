@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     description:
       "أملو، زيت أركان، عسل، ومكسرات مختارة من سوس — الدفع عند الاستلام.",
   },
+  icons: {
+    icon: "/brand/tazarzitbio-logo.png",
+    apple: "/brand/tazarzitbio-logo.png",
+  },
   other: {
     "msapplication-TileColor": "#C8922A",
   },

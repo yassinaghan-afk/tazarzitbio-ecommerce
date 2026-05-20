@@ -8,12 +8,12 @@ const VARIANT_CONFIG = [
   { parentSlug: "argan-oil", offerId: "argan-500", slug: "argan-oil-500g" },
   { parentSlug: "daghmous-honey", offerId: "daghmous-500", slug: "daghmous-honey-500g" },
   { parentSlug: "daghmous-honey", offerId: "daghmous-750", slug: "daghmous-honey-750g" },
-  { parentSlug: "thym-honey", offerId: "thym-500", slug: "thym-honey-500g" },
-  { parentSlug: "thym-honey", offerId: "thym-750", slug: "thym-honey-750g" },
+  { parentSlug: "saatar-honey", offerId: "thym-500", slug: "saatar-honey-500g" },
+  { parentSlug: "saatar-honey", offerId: "thym-750", slug: "saatar-honey-750g" },
   { parentSlug: "eucalyptus-honey", offerId: "eucalyptus-500", slug: "eucalyptus-honey-500g" },
   { parentSlug: "eucalyptus-honey", offerId: "eucalyptus-750", slug: "eucalyptus-honey-750g" },
-  { parentSlug: "peanut-amlou", offerId: "peanut-amlou-500", slug: "peanut-amlou-500g" },
-  { parentSlug: "peanut-amlou", offerId: "peanut-amlou-750", slug: "peanut-amlou-750g" },
+  { parentSlug: "cocoa-amlou", offerId: "peanut-amlou-500", slug: "cocoa-amlou-500g" },
+  { parentSlug: "cocoa-amlou", offerId: "peanut-amlou-750", slug: "cocoa-amlou-750g" },
 ] as const;
 
 export function expandCatalogWithVariants(catalog: Product[]): Product[] {

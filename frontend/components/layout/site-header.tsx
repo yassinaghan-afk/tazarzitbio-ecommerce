@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, ShoppingBag, X } from "lucide-react";
 
 import { useCommerce } from "@/components/providers/commerce-provider";
+import { BrandLockup } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -46,15 +47,10 @@ export function SiteHeader() {
         <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[4.75rem] lg:px-8">
           <Link
             href="/"
-            className="group flex flex-col gap-0.5 leading-none"
+            className="group shrink-0 transition-opacity hover:opacity-90"
             onClick={() => setMenuOpen(false)}
           >
-            <span className="text-lg font-extrabold tracking-tight text-foreground transition-colors group-hover:text-accent lg:text-xl">
-              تازارزيت بيو
-            </span>
-            <span className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              من قلب سوس
-            </span>
+            <BrandLockup variant="header" priority showTagline />
           </Link>
 
           <nav
@@ -121,6 +117,9 @@ export function SiteHeader() {
             className="glass-surface fixed inset-x-0 top-[4.25rem] z-40 border-b-0 shadow-warm-xl lg:top-[4.75rem]"
           >
             <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6">
+              <div className="mb-4 flex justify-center border-b border-border/50 pb-5">
+                <BrandLockup variant="compact" showTagline />
+              </div>
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.href}

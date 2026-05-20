@@ -9,16 +9,22 @@ import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { useCatalogProducts } from "@/hooks/use-catalog";
+import { getListingProducts } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
 
 export function ProductsCatalog() {
   const [category, setCategory] = useState<ProductCategory>("all");
   const allProducts = useCatalogProducts();
 
+  const listingProducts = useMemo(
+    () => getListingProducts(allProducts),
+    [allProducts],
+  );
+
   const filtered = useMemo(() => {
-    if (category === "all") return allProducts;
-    return allProducts.filter((p) => p.category === category);
-  }, [category, allProducts]);
+    if (category === "all") return listingProducts;
+    return listingProducts.filter((p) => p.category === category);
+  }, [category, listingProducts]);
 
   return (
     <Section spacing="lg" className="texture-grain">
@@ -34,7 +40,7 @@ export function ProductsCatalog() {
         <CategoryFilters active={category} onChange={setCategory} />
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {filtered.length} من {allProducts.length} منتج
+          {filtered.length} منتج
           {category !== "all" ? " في هذه الفئة" : ""}
         </p>
 
