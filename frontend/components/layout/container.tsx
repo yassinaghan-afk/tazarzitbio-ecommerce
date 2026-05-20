@@ -35,7 +35,6 @@ export function Container({
 }
 
 interface SectionProps extends React.HTMLAttributes<HTMLElement> {
-  as?: React.ElementType;
   spacing?: "sm" | "md" | "lg" | "xl";
   bg?: "default" | "alt" | "olive" | "gold" | "brown";
 }
@@ -56,7 +55,6 @@ const bgs = {
 };
 
 export function Section({
-  as: Tag = "section",
   spacing = "lg",
   bg = "default",
   className,
@@ -64,11 +62,11 @@ export function Section({
   ...props
 }: SectionProps) {
   return (
-    <Tag
+    <section
       className={cn(spacings[spacing], bgs[bg], "relative overflow-hidden", className)}
       {...props}
     >
       {children}
-    </Tag>
+    </section>
   );
 }

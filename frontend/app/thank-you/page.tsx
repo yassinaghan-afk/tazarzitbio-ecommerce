@@ -3,28 +3,38 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle2, Heart, Home, Phone, ShoppingBag, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  Heart,
+  Home,
+  ShoppingBag,
+  Sparkles,
+} from "lucide-react";
 
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
 import { Container, Section } from "@/components/layout/container";
+import { ThankYouVerification } from "@/components/thank-you/thank-you-verification";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
-import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
+import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import type { PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
-import { formatMoroccanPhoneDisplay } from "@/lib/checkout/validation";
 
 export default function ThankYouPage() {
+  const [hydrated, setHydrated] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
   const products = useCatalogProducts();
 
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(LAST_ORDER_STORAGE_KEY);
-      if (raw) setOrder(JSON.parse(raw) as PlacedOrder);
+      if (raw) {
+        setOrder(JSON.parse(raw) as PlacedOrder);
+      }
     } catch {
       setOrder(null);
     }
+    setHydrated(true);
   }, []);
 
   const recommended = useMemo(() => products.slice(0, 3), [products]);
@@ -33,12 +43,7 @@ export default function ThankYouPage() {
     <>
       <Section spacing="lg" className="texture-grain">
         <Container className="max-w-2xl">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="text-center"
-          >
+          <div className="text-center">
             <div className="relative mx-auto mb-8 flex h-24 w-24 items-center justify-center">
               <div
                 aria-hidden
@@ -59,85 +64,96 @@ export default function ThankYouPage() {
               شكراً من قلب سوس
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base leading-[1.9] text-muted-foreground sm:text-lg">
-              استلمنا طلبك بعناية.{" "}
+              تم استلام طلبك بنجاح.{" "}
               <strong className="font-bold text-foreground">
-                سيتصل بك فريق تازارزيت بيو خلال ساعات قليلة
+                الدفع عند الاستلام
               </strong>{" "}
-              لتأكيد الطلب والعنوان قبل الشحن — دون أي دفع مسبق.
+              — سيتصل بك فريق تازارزيت بيو خلال ساعات قليلة لتأكيد الطلب والعنوان
+              قبل الشحن.
             </p>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/5 px-4 py-2 text-sm text-foreground/85">
-              <Phone className="size-4 text-accent" />
-              تأكد من أن هاتفك مفعّل — نحن بانتظارك
-            </div>
+            {!hydrated && (
+              <p className="mt-8 text-sm text-muted-foreground" aria-live="polite">
+                جاري تحميل تفاصيل طلبك...
+              </p>
+            )}
 
-            {order && (
-              <div className="glass-card mt-10 rounded-2xl border border-border/60 p-6 text-start shadow-warm-lg">
-                <p className="text-xs font-bold uppercase tracking-wider text-accent">
-                  ملخص طلبك
+            {hydrated && !order && (
+              <div className="glass-card mt-8 rounded-2xl border border-border/60 p-6 text-sm text-muted-foreground shadow-warm-md">
+                <p>
+                  لم نعثر على تفاصيل الطلب في هذا المتصفح. إذا أكملت الطلب للتو،
+                  تحقق من رسائلك — أو تواصل معنا عبر واتساب.
                 </p>
-                <p className="mt-1 font-mono text-sm text-muted-foreground">
-                  {order.id}
-                </p>
-                <ul className="mt-4 space-y-3 border-t border-border/50 pt-4">
-                  {order.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex justify-between gap-4 text-sm"
-                    >
-                      <span className="text-foreground">
-                        {item.nameAr} × {item.quantity}
-                        <span className="mt-0.5 block text-xs text-muted-foreground">
-                          {item.offerLabel}
-                        </span>
-                      </span>
-                      <span className="shrink-0 font-bold tabular-nums text-accent">
-                        {item.unitPrice * item.quantity} د.م.
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-4 space-y-2 border-t border-border/50 pt-4 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">المجموع الفرعي</span>
-                    <span className="font-bold tabular-nums">{order.subtotal} د.م.</span>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">
-                      <span className="block">
-                        {order.shippingLabelFr ?? "Livraison"}
-                      </span>
-                      <span className="mt-0.5 block text-2xs">التوصيل</span>
-                    </span>
-                    <span
-                      className={
-                        (order.shippingFee ?? 0) === 0
-                          ? "font-bold text-emerald-600"
-                          : "font-bold tabular-nums"
-                      }
-                    >
-                      {(order.shippingFee ?? 0) === 0
-                        ? "مجاني"
-                        : `${order.shippingFee} د.م.`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between gap-4 border-t border-border/40 pt-2 text-base font-bold">
-                    <span>الإجمالي</span>
-                    <span className="text-accent">
-                      {order.total ?? order.subtotal} د.م.
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-1 border-t border-border/40 pt-4 text-sm text-muted-foreground">
-                  <p className="font-semibold text-foreground">
-                    {order.customer.fullName}
-                  </p>
-                  <p dir="ltr" className="text-end tabular-nums">
-                    {formatMoroccanPhoneDisplay(order.customer.phone)}
-                  </p>
-                  <p className="leading-relaxed">{order.customer.address}</p>
-                </div>
+                <Button variant="gold" className="mt-4 rounded-full" asChild>
+                  <Link href="/products">تسوق المنتجات</Link>
+                </Button>
               </div>
+            )}
+
+            {hydrated && order && (
+              <>
+                <ThankYouVerification order={order} />
+
+                <div className="glass-card mt-8 rounded-2xl border border-border/60 p-6 text-start shadow-warm-lg">
+                  <p className="text-xs font-bold uppercase tracking-wider text-accent">
+                    ملخص المنتجات
+                  </p>
+                  <p className="mt-1 font-mono text-sm text-muted-foreground">
+                    {order.id}
+                  </p>
+                  <ul className="mt-4 space-y-3 border-t border-border/50 pt-4">
+                    {order.items.map((item, i) => (
+                      <li
+                        key={`${item.nameAr}-${i}`}
+                        className="flex justify-between gap-4 text-sm"
+                      >
+                        <span className="text-foreground">
+                          {item.nameAr} × {item.quantity}
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                            {item.offerLabel}
+                          </span>
+                        </span>
+                        <span className="shrink-0 font-bold tabular-nums text-accent">
+                          {item.unitPrice * item.quantity} د.م.
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 space-y-2 border-t border-border/50 pt-4 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">المجموع الفرعي</span>
+                      <span className="font-bold tabular-nums">
+                        {order.subtotal} د.م.
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">
+                        <span className="block">
+                          {order.shippingLabelFr ?? "Livraison gratuite"}
+                        </span>
+                        <span className="mt-0.5 block text-2xs">التوصيل</span>
+                      </span>
+                      <span
+                        className={
+                          (order.shippingFee ?? 0) === 0
+                            ? "font-bold text-emerald-600"
+                            : "font-bold tabular-nums"
+                        }
+                      >
+                        {(order.shippingFee ?? 0) === 0
+                          ? "مجاني"
+                          : `${order.shippingFee} د.م.`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-4 border-t border-border/40 pt-2 text-base font-bold">
+                      <span>الإجمالي</span>
+                      <span className="text-accent">
+                        {order.total ?? order.subtotal} د.م.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -164,7 +180,7 @@ export default function ThankYouPage() {
                 </Link>
               </Button>
             </div>
-          </motion.div>
+          </div>
         </Container>
       </Section>
 
@@ -173,7 +189,7 @@ export default function ThankYouPage() {
           <Container>
             <motion.div
               variants={staggerContainer}
-              initial="hidden"
+              initial={false}
               whileInView="visible"
               viewport={VIEWPORT}
             >

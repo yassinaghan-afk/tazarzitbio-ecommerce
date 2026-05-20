@@ -3,14 +3,20 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { loadPricingOverrides } from "@/lib/products/admin-storage";
-import { getCatalog, getPublicProducts, toPublicProduct } from "@/lib/products/catalog";
+import {
+  getCatalog,
+  getPublicProducts,
+  toPublicProduct,
+} from "@/lib/products/catalog";
+import { baseCatalog } from "@/lib/products/catalog-base";
 import type { Product, PublicProduct } from "@/lib/products/types";
 
+/** Stable on server and first client paint — avoids hydration mismatch */
+const INITIAL_PUBLIC_PRODUCTS = baseCatalog.map(toPublicProduct);
+
 export function useCatalogProducts(): PublicProduct[] {
-  const [products, setProducts] = useState<PublicProduct[]>(() =>
-    typeof window !== "undefined"
-      ? getPublicProducts()
-      : [],
+  const [products, setProducts] = useState<PublicProduct[]>(
+    INITIAL_PUBLIC_PRODUCTS,
   );
 
   const refresh = useCallback(() => {
