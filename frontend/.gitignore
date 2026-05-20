@@ -31,3 +31,6 @@ next-env.d.ts
 # misc
 .DS_Store
 .vercel
+
+# runtime data store (orders, settings — server-generated, not committed)
+/data/store.json
