@@ -97,9 +97,36 @@ export default function ThankYouPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4 flex justify-between border-t border-border/50 pt-4 text-base font-bold">
-                  <span>المجموع</span>
-                  <span className="text-accent">{order.subtotal} د.م.</span>
+                <div className="mt-4 space-y-2 border-t border-border/50 pt-4 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">المجموع الفرعي</span>
+                    <span className="font-bold tabular-nums">{order.subtotal} د.م.</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      <span className="block">
+                        {order.shippingLabelFr ?? "Livraison"}
+                      </span>
+                      <span className="mt-0.5 block text-2xs">التوصيل</span>
+                    </span>
+                    <span
+                      className={
+                        (order.shippingFee ?? 0) === 0
+                          ? "font-bold text-emerald-600"
+                          : "font-bold tabular-nums"
+                      }
+                    >
+                      {(order.shippingFee ?? 0) === 0
+                        ? "مجاني"
+                        : `${order.shippingFee} د.م.`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t border-border/40 pt-2 text-base font-bold">
+                    <span>الإجمالي</span>
+                    <span className="text-accent">
+                      {order.total ?? order.subtotal} د.م.
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-4 space-y-1 border-t border-border/40 pt-4 text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">

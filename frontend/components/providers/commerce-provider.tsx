@@ -26,11 +26,17 @@ import {
   validateCheckoutForm,
 } from "@/lib/checkout/validation";
 import { getProducts, getRelatedProducts } from "@/lib/products";
+import {
+  calculateShipping,
+  loadShippingSettings,
+  type ShippingResult,
+} from "@/lib/shipping";
 
 interface CommerceContextValue {
   items: CartLineItem[];
   itemCount: number;
   subtotal: number;
+  shipping: ShippingResult;
   cartOpen: boolean;
   checkoutOpen: boolean;
   openCart: () => void;
@@ -55,6 +61,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [settingsVersion, setSettingsVersion] = useState(0);
 
   useEffect(() => {
     const stored = loadCartFromStorage();
@@ -67,18 +74,26 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     saveCartToStorage({ items });
   }, [items, hydrated]);
 
+  useEffect(() => {
+    const bump = () => setSettingsVersion((v) => v + 1);
+    window.addEventListener("tazarzit-pricing-updated", bump);
+    window.addEventListener("tazarzit-shipping-updated", bump);
+    return () => {
+      window.removeEventListener("tazarzit-pricing-updated", bump);
+      window.removeEventListener("tazarzit-shipping-updated", bump);
+    };
+  }, []);
+
   const itemCount = useMemo(() => getCartCount(items), [items]);
   const subtotal = useMemo(() => calcSubtotal(items), [items]);
 
+  const shipping = useMemo(() => {
+    const settings = loadShippingSettings();
+    return calculateShipping(items, subtotal, settings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, subtotal, settingsVersion]);
+
   const cartSlugs = useMemo(() => [...new Set(items.map((i) => i.slug))], [items]);
-
-  const [catalogVersion, setCatalogVersion] = useState(0);
-
-  useEffect(() => {
-    const bump = () => setCatalogVersion((v) => v + 1);
-    window.addEventListener("tazarzit-pricing-updated", bump);
-    return () => window.removeEventListener("tazarzit-pricing-updated", bump);
-  }, []);
 
   const crossSellProducts = useMemo(() => {
     const catalog = getProducts();
@@ -91,7 +106,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     );
     return getRelatedProducts(unique).slice(0, 3);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cartSlugs, catalogVersion]);
+  }, [cartSlugs, settingsVersion]);
 
   const addToCart = useCallback((payload: AddToCartPayload) => {
     const lineId = createLineId(payload.productId, payload.offerId);
@@ -101,7 +116,13 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((i) => i.lineId === lineId);
       if (existing) {
         return prev.map((i) =>
-          i.lineId === lineId ? { ...i, quantity: i.quantity + qty } : i,
+          i.lineId === lineId
+            ? {
+                ...i,
+                quantity: i.quantity + qty,
+                isBundle: payload.isBundle ?? i.isBundle,
+              }
+            : i,
         );
       }
       return [
@@ -116,6 +137,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           offerLabel: payload.offerLabel,
           unitPrice: payload.unitPrice,
           quantity: qty,
+          isBundle: payload.isBundle,
         },
       ];
     });
@@ -168,7 +190,10 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           quantity: i.quantity,
           unitPrice: i.unitPrice,
         })),
-        subtotal,
+        subtotal: shipping.subtotal,
+        shippingFee: shipping.shippingFee,
+        total: shipping.total,
+        shippingLabelFr: shipping.labelFr,
       };
 
       sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(order));
@@ -177,7 +202,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       router.push("/thank-you");
       return { success: true };
     },
-    [items, subtotal, clearCart, router],
+    [items, shipping, clearCart, router],
   );
 
   const value = useMemo(
@@ -185,6 +210,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       items,
       itemCount,
       subtotal,
+      shipping,
       cartOpen,
       checkoutOpen,
       openCart,
@@ -202,6 +228,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       items,
       itemCount,
       subtotal,
+      shipping,
       cartOpen,
       checkoutOpen,
       openCart,
@@ -230,7 +257,6 @@ export function useCommerce() {
   return ctx;
 }
 
-/** Returns validation errors for checkout form (used by checkout drawer) */
 export function useCheckoutValidation() {
   return { validateCheckoutForm, hasCheckoutErrors };
 }

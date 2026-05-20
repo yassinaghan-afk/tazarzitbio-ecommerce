@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
 
+import { OrderTotals } from "@/components/cart/order-totals";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
@@ -12,7 +13,7 @@ import { BADGE_LABELS } from "@/lib/products";
 export function CartDrawer() {
   const {
     items,
-    subtotal,
+    shipping,
     cartOpen,
     closeCart,
     openCheckout,
@@ -29,12 +30,7 @@ export function CartDrawer() {
       footer={
         items.length > 0 ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">المجموع الفرعي</span>
-              <span className="text-xl font-extrabold tabular-nums text-accent">
-                {subtotal} <span className="text-sm font-semibold">د.م.</span>
-              </span>
-            </div>
+            <OrderTotals shipping={shipping} />
             <div className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2.5 text-xs text-muted-foreground">
               <Truck className="size-4 shrink-0 text-accent" />
               الدفع عند الاستلام — بدون دفع مسبق

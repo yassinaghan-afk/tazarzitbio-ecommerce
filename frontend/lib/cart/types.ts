@@ -8,6 +8,8 @@ export interface CartLineItem {
   offerLabel: string;
   unitPrice: number;
   quantity: number;
+  /** Bundle/pack products qualify for free shipping */
+  isBundle?: boolean;
 }
 
 export interface CartState {
@@ -23,4 +25,5 @@ export interface AddToCartPayload {
   offerLabel: string;
   unitPrice: number;
   quantity?: number;
+  isBundle?: boolean;
 }

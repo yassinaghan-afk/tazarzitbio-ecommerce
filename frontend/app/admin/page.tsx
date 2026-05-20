@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PricingDashboard } from "@/components/admin/pricing-dashboard";
+import { ShippingSettingsForm } from "@/components/admin/shipping-settings-form";
 import { Container, Section } from "@/components/layout/container";
 
 export const metadata: Metadata = {
@@ -24,7 +25,10 @@ export default function AdminPricingPage() {
             البيع فقط للزوار على الموقع.
           </p>
         </div>
-        <PricingDashboard />
+        <div className="space-y-10">
+          <ShippingSettingsForm />
+          <PricingDashboard />
+        </div>
       </Container>
     </Section>
   );

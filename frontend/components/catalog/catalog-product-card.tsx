@@ -100,6 +100,7 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
                 offerId: defaultOffer.id,
                 offerLabel: `${defaultOffer.label} — ${defaultOffer.weight}`,
                 unitPrice: defaultOffer.price,
+                isBundle: product.category === "bundles",
               })
             }
           >

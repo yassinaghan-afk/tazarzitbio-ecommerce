@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Banknote, Phone, ShieldCheck, Truck } from "lucide-react";
 
+import { OrderTotals } from "@/components/cart/order-totals";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
@@ -22,7 +23,7 @@ const emptyForm: CheckoutFormData = {
 };
 
 export function CheckoutDrawer() {
-  const { items, subtotal, checkoutOpen, closeCheckout, submitOrder } =
+  const { items, shipping, checkoutOpen, closeCheckout, submitOrder } =
     useCommerce();
   const [form, setForm] = useState<CheckoutFormData>(emptyForm);
   const [errors, setErrors] = useState<CheckoutFormErrors>({});
@@ -74,7 +75,9 @@ export function CheckoutDrawer() {
           className="w-full rounded-full shadow-gold"
           disabled={submitting || items.length === 0}
         >
-          {submitting ? "جاري الإرسال..." : `تأكيد الطلب · ${subtotal} د.م.`}
+          {submitting
+            ? "جاري الإرسال..."
+            : `تأكيد الطلب · ${shipping.total} د.م.`}
         </Button>
       }
     >
@@ -115,11 +118,8 @@ export function CheckoutDrawer() {
                 </li>
               ))}
             </ul>
-            <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
-              <span className="text-sm text-muted-foreground">المجموع</span>
-              <span className="text-lg font-extrabold tabular-nums text-accent">
-                {subtotal} د.م.
-              </span>
+            <div className="mt-4 border-t border-border/50 pt-4">
+              <OrderTotals shipping={shipping} showUpsell={false} />
             </div>
           </div>
         )}

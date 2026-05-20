@@ -71,6 +71,7 @@ export function ProductPageClient({
       offerId: selectedOffer.id,
       offerLabel: `${selectedOffer.label} — ${selectedOffer.weight}`,
       unitPrice: selectedOffer.price,
+      isBundle: product.category === "bundles",
     });
   };
 
