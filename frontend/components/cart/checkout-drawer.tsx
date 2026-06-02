@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Phone, ShieldCheck } from "lucide-react";
 
 import { CartLineRow } from "@/components/cart/cart-line-row";
@@ -19,6 +19,7 @@ import {
   validateCheckoutForm,
 } from "@/lib/checkout/validation";
 import { cn } from "@/lib/utils";
+import { trackInitiateCheckout } from "@/lib/tracking/events";
 
 const emptyForm: CheckoutFormData = {
   fullName: "",
@@ -53,13 +54,29 @@ export function CheckoutDrawer() {
   const [form, setForm] = useState<CheckoutFormData>(emptyForm);
   const [errors, setErrors] = useState<CheckoutFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const checkoutTrackedRef = useRef(false);
 
   useEffect(() => {
     if (!checkoutOpen) {
       setStep("review");
       setErrors({});
+      checkoutTrackedRef.current = false;
+      return;
     }
-  }, [checkoutOpen]);
+    if (checkoutTrackedRef.current || items.length === 0) return;
+    checkoutTrackedRef.current = true;
+    trackInitiateCheckout({
+      products: items.map((i) => ({
+        productId: i.productId,
+        slug: i.slug,
+        name: i.nameAr,
+        price: i.unitPrice,
+        quantity: i.quantity,
+      })),
+      subtotal: shipping.subtotal,
+      total: shipping.total,
+    });
+  }, [checkoutOpen, items, shipping.subtotal, shipping.total]);
 
   const handleClose = () => {
     closeCheckout();

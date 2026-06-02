@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
@@ -8,6 +9,7 @@ import {
   Home,
   LogOut,
   Megaphone,
+  Radar,
   Settings2,
   ShoppingBag,
   TrendingUp,
@@ -45,6 +47,16 @@ const NAV: { id: AdminSection; label: string; icon: React.ElementType; group?: s
   { id: "shipping", label: "Shipping", icon: Settings2, group: "settings" },
   { id: "analytics", label: "Analytics", icon: TrendingUp, group: "settings" },
 ];
+
+const SETTINGS_LINKS = [
+  {
+    href: "/admin/tracking",
+    label: "Tracking & Pixels",
+    labelAr: "التتبع والإعلانات",
+    icon: Radar,
+    description: "Meta, TikTok, GA4, GTM, Clarity",
+  },
+] as const;
 
 function formatMAD(n: number) {
   return `${Math.round(n).toLocaleString()} MAD`;
@@ -170,6 +182,22 @@ export function AdminDashboard() {
                     {label}
                   </button>
                 ))}
+                {g.label === "Settings" &&
+                  SETTINGS_LINKS.map(({ href, label, icon: Icon, description }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+                    >
+                      <Icon className="size-4 shrink-0 text-accent" />
+                      <span>
+                        {label}
+                        <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">
+                          {description}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
               </div>
             </div>
           ))}

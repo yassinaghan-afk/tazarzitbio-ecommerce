@@ -19,6 +19,11 @@ import type {
 } from "@/lib/admin/types";
 import { DEFAULT_ANNOUNCEMENT_BAR, normalizeAnnouncementBar } from "@/lib/admin/announcement-bar";
 import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
+import {
+  DEFAULT_TRACKING_SETTINGS,
+  normalizeTrackingSettings,
+} from "@/lib/tracking/settings";
+import type { TrackingSettings } from "@/lib/tracking/types";
 
 function normalizeShippingSettings(
   raw?: ShippingSettings | null,
@@ -49,6 +54,7 @@ export interface PersistedStore {
   homepageContent: HomepageContent;
   banners: Banner[];
   announcementBar: AnnouncementBarConfig;
+  trackingSettings: TrackingSettings;
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -67,6 +73,7 @@ const DEFAULT_STORE: PersistedStore = {
   homepageContent: DEFAULT_HOMEPAGE_CONTENT,
   banners: [],
   announcementBar: DEFAULT_ANNOUNCEMENT_BAR,
+  trackingSettings: DEFAULT_TRACKING_SETTINGS,
 };
 
 async function ensureDir() {
@@ -115,6 +122,9 @@ export async function readStore(): Promise<PersistedStore> {
               parsed.announcementBar as Partial<AnnouncementBarConfig>,
             )
           : DEFAULT_ANNOUNCEMENT_BAR,
+      trackingSettings: normalizeTrackingSettings(
+        parsed.trackingSettings as Partial<TrackingSettings> | undefined,
+      ),
     };
   } catch {
     return DEFAULT_STORE;

@@ -20,6 +20,7 @@ import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { getHoneyUpsellRecommendations } from "@/lib/products/honey-upsell";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
+import { trackPurchase } from "@/lib/tracking/events";
 
 export default function ThankYouPage() {
   const [hydrated, setHydrated] = useState(false);
@@ -36,6 +37,23 @@ export default function ThankYouPage() {
     }
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!order) return;
+    trackPurchase({
+      orderId: order.id,
+      products: order.items.map((item, index) => ({
+        productId: item.slug ?? `order-item-${index}`,
+        slug: item.slug ?? "",
+        name: item.nameAr,
+        price: item.unitPrice,
+        quantity: item.quantity,
+      })),
+      subtotal: order.subtotal,
+      shipping: order.shippingFee,
+      total: order.total,
+    });
+  }, [order]);
 
   const recommended = useMemo(() => {
     const slugs =

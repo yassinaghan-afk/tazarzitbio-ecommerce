@@ -35,6 +35,7 @@ import { fadeUp } from "@/lib/animations";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products";
 import { BADGE_LABELS, getRelatedProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { trackViewContent } from "@/lib/tracking/events";
 
 interface ProductPageClientProps {
   slug: string;
@@ -80,6 +81,17 @@ export function ProductPageClient({
     product?.offers.find((o) => o.id === selectedOfferId) ??
     product?.offers[0] ??
     null;
+
+  useEffect(() => {
+    if (!product || !selectedOffer) return;
+    trackViewContent({
+      productId: product.id,
+      slug: product.slug,
+      name: product.nameAr,
+      price: selectedOffer.price,
+      quantity: 1,
+    });
+  }, [product, selectedOffer]);
 
   if (!product || !selectedOffer) {
     return null;

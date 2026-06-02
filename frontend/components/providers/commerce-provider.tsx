@@ -32,6 +32,7 @@ import {
   type ShippingResult,
 } from "@/lib/shipping";
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
+import { trackAddToCart, trackPurchase } from "@/lib/tracking/events";
 
 interface CommerceContextValue {
   items: CartLineItem[];
@@ -150,8 +151,16 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     (payload: AddToCartPayload) => {
       const mode = payload.openDrawer ?? "cart";
+      const qty = payload.quantity ?? 1;
       setItems((prev) => applyAddToCart(prev, payload));
       openDrawerAfterAdd(mode);
+      trackAddToCart({
+        productId: payload.productId,
+        slug: payload.slug,
+        name: payload.nameAr,
+        price: payload.unitPrice,
+        quantity: qty,
+      });
     },
     [openDrawerAfterAdd],
   );
@@ -259,6 +268,21 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         .catch(() => null);
 
       sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(optimistic));
+
+      trackPurchase({
+        orderId: optimisticId,
+        products: items.map((i) => ({
+          productId: i.productId,
+          slug: i.slug,
+          name: i.nameAr,
+          price: i.unitPrice,
+          quantity: i.quantity,
+        })),
+        subtotal: shipping.subtotal,
+        shipping: shipping.shippingFee,
+        total: shipping.total,
+      });
+
       clearCart();
       setCheckoutOpen(false);
       router.push("/thank-you");
