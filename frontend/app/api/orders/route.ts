@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
 import type { OrderRecord } from "@/lib/orders/types";
+import { sendOrderToGoogleSheet } from "@/lib/google-sheets";
 import { updateStore } from "@/lib/server/store";
 import crypto from "node:crypto";
 
@@ -60,6 +61,10 @@ export async function POST(req: Request) {
     ...prev,
     orders: [order, ...prev.orders],
   }));
+
+  // Non-blocking: export to Google Sheets (if configured). Never affects checkout.
+  const sourcePage = req.headers.get("referer") ?? "";
+  void sendOrderToGoogleSheet(order, { sourcePage });
 
   const res: CreateOrderResponse = { order };
   return NextResponse.json(res);
