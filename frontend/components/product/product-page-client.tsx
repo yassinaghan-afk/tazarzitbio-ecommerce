@@ -121,14 +121,18 @@ export function ProductPageClient({
             <span className="text-foreground">{product.nameAr}</span>
           </nav>
 
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-            <ProductImageGallery images={product.images} alt={product.nameAr} />
+          <div className="flex min-w-0 max-w-full flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-14">
+            <ProductImageGallery
+              images={product.images}
+              alt={product.nameAr}
+              className="order-1 min-w-0 w-full max-w-full shrink-0 lg:col-start-1 lg:row-span-2 lg:sticky lg:top-[calc(var(--site-top-offset)+1rem)] lg:self-start"
+            />
 
             <motion.div
               variants={fadeUp}
-              initial="hidden"
+              initial="visible"
               animate="visible"
-              className="flex flex-col gap-5"
+              className="order-2 flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-1"
             >
               <div className="flex flex-wrap items-center gap-3">
                 {product.badges.map((b) => (
@@ -162,7 +166,14 @@ export function ProductPageClient({
                   </span>
                 ))}
               </div>
+            </motion.div>
 
+            <motion.div
+              variants={fadeUp}
+              initial="visible"
+              animate="visible"
+              className="order-3 flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-2"
+            >
               <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
                 <div className="flex items-baseline gap-3">
                   <span className="text-4xl font-extrabold tabular-nums text-accent">
