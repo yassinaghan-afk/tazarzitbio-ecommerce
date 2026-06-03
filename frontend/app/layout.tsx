@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 
 import { CommerceShell } from "@/components/commerce/commerce-shell";
@@ -15,6 +15,13 @@ const tajawal = Tajawal({
   display: "swap",
   preload: true,
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -48,11 +55,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="min-h-screen font-sans selection:bg-accent/20">
+      <body className="min-h-screen max-w-full overflow-x-hidden font-sans selection:bg-accent/20">
         <CommerceShell>
           <SiteHeader />
           <AnnouncementBar />
-          <main className="pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
+          <main className="max-w-full overflow-x-hidden pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
             {children}
           </main>
           <SiteFooter />

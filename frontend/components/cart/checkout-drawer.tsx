@@ -221,7 +221,11 @@ export function CheckoutDrawer() {
           </div>
         </div>
       ) : (
-        <form id="checkout-form" onSubmit={handleSubmit} className="space-y-5">
+        <form
+          id="checkout-form"
+          onSubmit={handleSubmit}
+          className="w-full max-w-full min-w-0 space-y-5"
+        >
           <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/85">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
             <p>أدخل بياناتك — سيتصل بك فريقنا لتأكيد الطلب قبل الشحن.</p>

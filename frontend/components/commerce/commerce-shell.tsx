@@ -10,8 +10,10 @@ import { TrackingRoot } from "@/components/tracking/tracking-root";
 export function CommerceShell({ children }: { children: ReactNode }) {
   return (
     <CommerceProvider>
-      <TrackingRoot />
-      {children}
+      <div className="max-w-full overflow-x-hidden">
+        <TrackingRoot />
+        {children}
+      </div>
       <CartDrawer />
       <CheckoutDrawer />
     </CommerceProvider>

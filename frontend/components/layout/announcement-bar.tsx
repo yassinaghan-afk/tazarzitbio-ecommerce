@@ -97,7 +97,7 @@ export function AnnouncementBar() {
       aria-label="إعلانات تازارزيت بيو"
       aria-live="polite"
     >
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 items-center justify-center px-4 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={current.id}

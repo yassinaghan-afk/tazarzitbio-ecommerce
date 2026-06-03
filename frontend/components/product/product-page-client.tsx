@@ -391,8 +391,8 @@ export function ProductPageClient({
         </Section>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-card/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
-        <div className="mx-auto max-w-lg space-y-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 w-full max-w-[100dvw] overflow-hidden border-t border-border/60 bg-card/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
+        <div className="mx-auto w-full max-w-lg min-w-0 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{product.nameAr}</p>

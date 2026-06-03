@@ -28,11 +28,11 @@ export function HeroSection() {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-40 end-[-10%] h-[min(600px,80vw)] w-[min(600px,80vw)] rounded-full bg-[radial-gradient(circle,hsl(40_80%_55%/0.2)_0%,transparent_70%)] blur-2xl"
+        className="pointer-events-none absolute -top-40 end-0 h-[min(600px,80vw)] w-[min(600px,80vw)] max-w-full rounded-full bg-[radial-gradient(circle,hsl(40_80%_55%/0.2)_0%,transparent_70%)] blur-2xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 start-[-5%] h-80 w-80 rounded-full bg-[radial-gradient(circle,hsl(96_33%_22%/0.12)_0%,transparent_70%)] blur-2xl"
+        className="pointer-events-none absolute bottom-0 start-0 h-80 w-80 max-w-full rounded-full bg-[radial-gradient(circle,hsl(96_33%_22%/0.12)_0%,transparent_70%)] blur-2xl"
       />
 
       <Container className="relative z-[2] flex flex-col gap-8 pb-20 pt-24 sm:gap-10 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] md:items-center md:gap-12 md:pb-28 md:pt-36 lg:pt-40">
@@ -49,7 +49,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.5 }}
-            className="glass-card absolute -bottom-2 start-2 z-10 rounded-2xl p-3.5 shadow-warm-lg sm:-bottom-4 sm:start-0 sm:p-4 md:-start-6 md:p-5"
+            className="glass-card absolute -bottom-2 start-2 z-10 max-w-[calc(100%-1rem)] rounded-2xl p-3.5 shadow-warm-lg sm:-bottom-4 sm:start-0 sm:max-w-none sm:p-4 md:-start-4 md:p-5"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-sm font-bold text-foreground shadow-gold sm:h-11 sm:w-11 sm:text-base md:h-12 md:w-12 md:text-lg">
@@ -66,7 +66,7 @@ export function HeroSection() {
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.95, duration: 0.45 }}
-            className="glass-card absolute end-2 top-4 z-10 rounded-full px-3 py-1.5 md:end-[-0.5rem] md:top-8 md:px-4 md:py-2"
+            className="glass-card absolute end-2 top-4 z-10 max-w-[calc(100%-1rem)] rounded-full px-3 py-1.5 md:end-2 md:top-8 md:px-4 md:py-2"
           >
             <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
               باقة عائلية — قيمة ممتازة

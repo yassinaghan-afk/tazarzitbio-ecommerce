@@ -143,7 +143,7 @@ export function EditableVerificationField({
               rows={3}
               placeholder={placeholder}
               className={cn(
-                "flex w-full resize-none rounded-xl border border-border bg-card/90 px-4 py-3 text-base font-medium leading-relaxed text-foreground",
+                "checkout-field flex w-full resize-none rounded-xl border border-border bg-card/90 px-4 py-3 text-base font-medium leading-relaxed text-foreground",
                 "placeholder:text-muted-foreground/70",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               )}
@@ -157,7 +157,7 @@ export function EditableVerificationField({
               dir={dir}
               placeholder={placeholder}
               className={cn(
-                variant === "phone" && "h-14 text-xl font-bold tabular-nums",
+                variant === "phone" && "h-14 text-base font-bold tabular-nums sm:text-xl",
               )}
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitSave();

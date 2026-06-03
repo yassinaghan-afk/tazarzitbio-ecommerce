@@ -13,7 +13,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         ref={ref}
         className={cn(
-          "flex h-12 w-full rounded-xl border bg-card/80 px-4 text-sm text-foreground",
+          "checkout-field flex h-12 w-full max-w-full rounded-xl border bg-card/80 px-4 text-base text-foreground",
           "placeholder:text-muted-foreground/70",
           "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           error

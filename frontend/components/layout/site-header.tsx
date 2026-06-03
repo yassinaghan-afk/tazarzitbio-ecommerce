@@ -44,10 +44,10 @@ export function SiteHeader() {
           scrolled ? "glass-nav-solid" : "glass-nav",
         )}
       >
-        <div className="mx-auto flex min-h-[var(--header-height,5.75rem)] max-w-7xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[var(--header-height,5.75rem)] w-full max-w-7xl min-w-0 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="flex shrink-0 items-center pe-1 transition-opacity hover:opacity-90 sm:pe-2"
+            className="flex max-w-[40vw] shrink-0 items-center pe-1 transition-opacity hover:opacity-90 sm:max-w-none sm:pe-2"
             onClick={() => setMenuOpen(false)}
           >
             <BrandLogo variant="header" priority />

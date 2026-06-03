@@ -14,7 +14,7 @@ export function HeroBundleImage({ className }: HeroBundleImageProps) {
     <div className={cn("relative mx-auto w-full max-w-[min(100%,28rem)]", className)}>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-[-12%] rounded-full bg-[radial-gradient(circle,hsl(42_75%_50%/0.35)_0%,transparent_65%)] blur-2xl"
+        className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(42_75%_50%/0.35)_0%,transparent_65%)] blur-2xl"
       />
       <div
         aria-hidden

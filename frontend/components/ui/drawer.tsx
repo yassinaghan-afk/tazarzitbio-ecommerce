@@ -57,7 +57,7 @@ export function Drawer({
             exit={{ x: slideFrom }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
             className={cn(
-              "fixed top-0 z-[70] flex h-full w-full max-w-md flex-col bg-card shadow-warm-xl",
+              "fixed top-0 z-[70] flex h-full w-full max-w-[100dvw] flex-col overflow-hidden bg-card shadow-warm-xl sm:max-w-md",
               side === "start" ? "start-0" : "end-0",
               className,
             )}
@@ -74,11 +74,11 @@ export function Drawer({
                 <X className="size-5" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+            <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-5">
               {children}
             </div>
             {footer && (
-              <div className="border-t border-border/60 bg-card/95 p-5 backdrop-blur-md">
+              <div className="min-w-0 shrink-0 border-t border-border/60 bg-card/95 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-md">
                 {footer}
               </div>
             )}
