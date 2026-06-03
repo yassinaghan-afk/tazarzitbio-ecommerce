@@ -3,6 +3,7 @@
 import { Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface QuantitySelectorProps {
@@ -20,6 +21,8 @@ export function QuantitySelector({
   max = 99,
   className,
 }: QuantitySelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={cn(
@@ -31,7 +34,7 @@ export function QuantitySelector({
         type="button"
         variant="ghost"
         size="icon-sm"
-        aria-label="تقليل الكمية"
+        aria-label={t("product.decreaseQty")}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
       >
@@ -44,7 +47,7 @@ export function QuantitySelector({
         type="button"
         variant="ghost"
         size="icon-sm"
-        aria-label="زيادة الكمية"
+        aria-label={t("product.increaseQty")}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}
       >

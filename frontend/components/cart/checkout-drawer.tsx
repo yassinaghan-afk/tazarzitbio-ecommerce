@@ -16,8 +16,9 @@ import { Label } from "@/components/ui/label";
 import type { CheckoutFormData, CheckoutFormErrors } from "@/lib/checkout/types";
 import {
   hasCheckoutErrors,
-  validateCheckoutForm,
-} from "@/lib/checkout/validation";
+  validateCheckoutFormLocalized,
+} from "@/lib/i18n/checkout-validation";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 import { trackInitiateCheckout } from "@/lib/tracking/events";
 
@@ -29,18 +30,8 @@ const emptyForm: CheckoutFormData = {
 
 type CheckoutStep = "review" | "details";
 
-const STEP_LABELS: Record<CheckoutStep, { title: string; subtitle: string }> = {
-  review: {
-    title: "مراجعة الطلب",
-    subtitle: "الخطوة 1 من 2",
-  },
-  details: {
-    title: "بيانات التوصيل",
-    subtitle: "الخطوة 2 من 2",
-  },
-};
-
 export function CheckoutDrawer() {
+  const { t, locale } = useTranslation();
   const {
     items,
     shipping,
@@ -85,7 +76,7 @@ export function CheckoutDrawer() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const nextErrors = validateCheckoutForm(form);
+    const nextErrors = validateCheckoutFormLocalized(form, locale);
     setErrors(nextErrors);
     if (hasCheckoutErrors(nextErrors)) return;
 
@@ -116,7 +107,10 @@ export function CheckoutDrawer() {
     form.phone.trim().length > 0 &&
     form.address.trim().length > 0;
 
-  const { title, subtitle } = STEP_LABELS[step];
+  const title =
+    step === "review" ? t("checkout.reviewTitle") : t("checkout.detailsTitle");
+  const subtitle =
+    step === "review" ? t("checkout.reviewSub") : t("checkout.detailsSub");
 
   const footer =
     step === "review" ? (
@@ -124,11 +118,11 @@ export function CheckoutDrawer() {
         type="button"
         variant="gold"
         size="lg"
-        className="w-full rounded-full shadow-gold"
+        className="min-h-12 w-full rounded-full shadow-gold"
         disabled={items.length === 0}
         onClick={() => setStep("details")}
       >
-        إتمام الطلب
+        {t("checkout.complete")}
       </Button>
     ) : (
       <div className="space-y-2">
@@ -137,20 +131,20 @@ export function CheckoutDrawer() {
           form="checkout-form"
           variant="gold"
           size="lg"
-          className="w-full rounded-full shadow-gold"
+          className="min-h-12 w-full rounded-full shadow-gold"
           disabled={submitting || items.length === 0}
         >
-          {submitting ? "جاري الإرسال..." : "تأكيد الطلب - الدفع عند الاستلام"}
+          {submitting ? t("checkout.submitting") : t("checkout.confirm")}
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="w-full gap-2 text-muted-foreground"
+          className="min-h-11 w-full gap-2 text-muted-foreground"
           onClick={() => setStep("review")}
         >
           <ArrowRight className="size-4 rotate-180" />
-          رجوع لمراجعة السلة
+          {t("checkout.back")}
         </Button>
       </div>
     );
@@ -194,7 +188,7 @@ export function CheckoutDrawer() {
         <div className="space-y-5">
           {items.length > 0 ? (
             <div className="rounded-2xl border border-border/60 bg-background/60 p-4 shadow-warm-sm">
-              <p className="mb-3 text-xs font-bold text-accent">منتجاتك</p>
+              <p className="mb-3 text-xs font-bold text-accent">{t("checkout.yourProducts")}</p>
               <ul className="space-y-4">
                 {items.map((item) => (
                   <CartLineRow key={item.lineId} item={item} compact />
@@ -206,7 +200,7 @@ export function CheckoutDrawer() {
             </div>
           ) : (
             <p className="text-center text-sm text-muted-foreground">
-              سلتك فارغة — أضف منتجاً للمتابعة
+              {t("checkout.emptyCart")}
             </p>
           )}
 
@@ -214,10 +208,7 @@ export function CheckoutDrawer() {
 
           <div className="flex items-start gap-2 rounded-xl border border-accent/15 bg-secondary/40 p-3 text-xs text-muted-foreground">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>
-              يمكنك إضافة منتجات مقترحة ثم الضغط على «إتمام الطلب» لإدخال بياناتك.
-              الدفع عند الاستلام فقط.
-            </p>
+            <p>{t("checkout.reviewHint")}</p>
           </div>
         </div>
       ) : (
@@ -228,16 +219,16 @@ export function CheckoutDrawer() {
         >
           <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/85">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>أدخل بياناتك — سيتصل بك فريقنا لتأكيد الطلب قبل الشحن.</p>
+            <p>{t("checkout.detailsHint")}</p>
           </div>
 
           <div>
-            <Label htmlFor="fullName">الاسم الكامل *</Label>
+            <Label htmlFor="fullName">{t("checkout.fullName")}</Label>
             <Input
               id="fullName"
               name="fullName"
               autoComplete="name"
-              placeholder="مثال: محمد العلمي"
+              placeholder={t("checkout.placeholderName")}
               value={form.fullName}
               onChange={(e) => update("fullName", e.target.value)}
               error={errors.fullName}
@@ -245,7 +236,7 @@ export function CheckoutDrawer() {
           </div>
 
           <div>
-            <Label htmlFor="phone">رقم الهاتف *</Label>
+            <Label htmlFor="phone">{t("checkout.phone")}</Label>
             <Input
               id="phone"
               name="phone"
@@ -253,24 +244,24 @@ export function CheckoutDrawer() {
               inputMode="tel"
               dir="ltr"
               className="text-end"
-              placeholder="06 XX XX XX XX"
+              placeholder={t("checkout.placeholderPhone")}
               value={form.phone}
               onChange={(e) => update("phone", e.target.value)}
               error={errors.phone}
             />
             <p className="mt-1 flex items-center gap-1 text-2xs text-muted-foreground">
               <Phone className="size-3" />
-              أرقام مغربية فقط (06 أو 07)
+              {t("checkout.phoneHint")}
             </p>
           </div>
 
           <div>
-            <Label htmlFor="address">العنوان الكامل *</Label>
+            <Label htmlFor="address">{t("checkout.address")}</Label>
             <Input
               id="address"
               name="address"
               autoComplete="street-address"
-              placeholder="المدينة، الحي، الشارع، رقم المنزل..."
+              placeholder={t("checkout.placeholderAddress")}
               value={form.address}
               onChange={(e) => update("address", e.target.value)}
               error={errors.address}

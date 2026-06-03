@@ -33,7 +33,9 @@ import { StarRating } from "@/components/ui/star-rating";
 import { useCatalogProduct } from "@/hooks/use-catalog";
 import { fadeUp } from "@/lib/animations";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products";
-import { BADGE_LABELS, getRelatedProducts } from "@/lib/products";
+import { getBadgeLabel } from "@/lib/i18n/badges";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getRelatedProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/tracking/events";
 
@@ -42,18 +44,18 @@ interface ProductPageClientProps {
   initialProduct?: PublicProduct;
 }
 
-const pdpTrust = [
-  { icon: Truck, text: "الدفع عند الاستلام" },
-  { icon: MapPin, text: "توصيل لجميع المدن" },
-  { icon: Phone, text: "فريقنا يتصل بك لتأكيد الطلب" },
-  { icon: Leaf, text: "منتجات طبيعية من قلب سوس" },
-];
-
 export function ProductPageClient({
   slug,
   initialProduct,
 }: ProductPageClientProps) {
+  const { t, locale } = useTranslation();
   const { orderNow, addToCart } = useCommerce();
+  const pdpTrust = [
+    { icon: Truck, text: t("product.trustCod") },
+    { icon: MapPin, text: t("product.trustDelivery") },
+    { icon: Phone, text: t("product.trustCall") },
+    { icon: Leaf, text: t("product.trustNatural") },
+  ];
   const { publicProduct: liveProduct } = useCatalogProduct(slug);
   const product = liveProduct ?? initialProduct;
 
@@ -131,7 +133,7 @@ export function ProductPageClient({
               <div className="flex flex-wrap items-center gap-3">
                 {product.badges.map((b) => (
                   <Badge key={b} variant="premium">
-                    {BADGE_LABELS[b]}
+                    {getBadgeLabel(b, locale)}
                   </Badge>
                 ))}
                 <StarRating rating={product.rating} showValue />
@@ -380,7 +382,7 @@ export function ProductPageClient({
         <Section spacing="lg">
           <Container>
             <h2 className="text-display mb-8 text-2xl text-foreground">
-              منتجات ذات صلة
+              {t("product.related")}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((p) => (
@@ -418,7 +420,7 @@ export function ProductPageClient({
               }
             >
               <Zap className="size-5" />
-              اطلب الآن
+              {t("product.orderNow")}
             </Button>
             {!orderOnly && (
               <Button
@@ -435,7 +437,7 @@ export function ProductPageClient({
                 }
               >
                 <ShoppingBag className="size-5" />
-                أضف للسلة
+                {t("product.addToCart")}
               </Button>
             )}
           </div>

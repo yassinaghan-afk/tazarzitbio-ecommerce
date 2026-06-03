@@ -11,6 +11,7 @@ import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { getListingProducts } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
@@ -18,6 +19,7 @@ import type { ProductCategory } from "@/lib/products";
 const HOME_CATEGORIES: ProductCategory[] = ["all", "honey", "amlou"];
 
 export function BestSellersSection() {
+  const { t } = useTranslation();
   const allProducts = useCatalogProducts();
   const [category, setCategory] = useState<ProductCategory>("all");
 
@@ -39,15 +41,15 @@ export function BestSellersSection() {
       <Container>
         <div className="flex flex-col items-end justify-between gap-6 md:flex-row md:items-end">
           <SectionHeader
-            label="منتجاتنا"
-            title="عسل وأملو من قلب سوس"
-            description="جودة فاخرة، تقييمات حقيقية، والدفع عند الاستلام — اختر فئتك واطلب الآن."
+            label={t("bestSellers.label")}
+            title={t("bestSellers.title")}
+            description={t("bestSellers.desc")}
             align="start"
             className="mb-0 md:max-w-xl"
           />
           <Button variant="outline" className="shrink-0 gap-2" asChild>
             <Link href="/products">
-              عرض الكل
+              {t("bestSellers.viewAll")}
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
@@ -61,10 +63,10 @@ export function BestSellersSection() {
               id,
               label:
                 id === "all"
-                  ? "الكل"
+                  ? t("bestSellers.catAll")
                   : id === "honey"
-                    ? "عسل"
-                    : "أملو",
+                    ? t("bestSellers.catHoney")
+                    : t("bestSellers.catAmlou"),
             }))}
           />
         </div>
@@ -85,12 +87,12 @@ export function BestSellersSection() {
 
         {products.length === 0 && (
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            لا توجد منتجات في هذه الفئة حالياً.
+            {t("bestSellers.empty")}
           </p>
         )}
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          جميع الأسعار بالدرهم المغربي · الدفع عند الاستلام في كل الطلبات
+          {t("bestSellers.footer")}
         </p>
       </Container>
     </Section>

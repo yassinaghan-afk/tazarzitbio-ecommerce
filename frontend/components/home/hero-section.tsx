@@ -8,6 +8,7 @@ import { HeroBundleImage } from "@/components/home/hero-bundle-image";
 import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import {
   heroImage,
   heroText,
@@ -15,17 +16,18 @@ import {
   staggerItem,
 } from "@/lib/animations";
 
-const trustPills = [
-  { icon: ShieldCheck, text: "طبيعي 100%" },
-  { icon: Truck, text: "الدفع عند الاستلام" },
-  { icon: Award, text: "4.9 تقييم العملاء" },
-];
-
 export function HeroSection() {
+  const { t } = useTranslation();
+  const trustPills = [
+    { icon: ShieldCheck, text: t("hero.trustNatural") },
+    { icon: Truck, text: t("hero.trustCod") },
+    { icon: Award, text: t("hero.trustRating") },
+  ];
+
   return (
     <section
       className="texture-grain relative min-h-[94vh] overflow-hidden bg-hero-premium"
-      aria-label="الصفحة الرئيسية"
+      aria-label={t("hero.homeAria")}
     >
       <div
         aria-hidden
@@ -57,8 +59,8 @@ export function HeroSection() {
                 4.9
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">+2000 عميل</p>
-                <p className="text-xs text-muted-foreground">يثقون بجودتنا</p>
+                <p className="text-sm font-bold text-foreground">{t("hero.clients")}</p>
+                <p className="text-xs text-muted-foreground">{t("hero.clientsSub")}</p>
               </div>
             </div>
           </motion.div>
@@ -70,7 +72,7 @@ export function HeroSection() {
             className="glass-card absolute end-2 top-4 z-10 max-w-[calc(100%-1rem)] rounded-full px-3 py-1.5 md:end-2 md:top-8 md:px-4 md:py-2"
           >
             <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
-              باقة عائلية — قيمة ممتازة
+              {t("hero.familyPack")}
             </p>
           </motion.div>
         </motion.div>
@@ -87,7 +89,7 @@ export function HeroSection() {
               className="gap-2 border-accent/25 px-4 py-2 text-sm shadow-warm-sm"
             >
               <span aria-hidden>🌿</span>
-              من قلب سوس · حرفية مغربية أصيلة
+              {t("hero.badge")}
             </Badge>
           </motion.div>
 
@@ -96,14 +98,13 @@ export function HeroSection() {
               Tazarzit Bio
             </p>
             <h1 className="text-display text-4xl text-foreground sm:text-5xl lg:text-[3.5rem]">
-              <span className="block text-gold-gradient">طعم سوس</span>
+              <span className="block text-gold-gradient">{t("hero.title1")}</span>
               <span className="mt-2 block font-bold text-foreground/90">
-                في أبهى صورة
+                {t("hero.title2")}
               </span>
             </h1>
             <p className="max-w-md text-lg leading-[1.8] text-muted-foreground md:text-xl">
-              أملو، زيت أركان، وعسل نقي — منتجات طبيعية 100% تحمل دفء المغرب
-              وفخامة الحرف اليدوية إلى مائدتك.
+              {t("hero.subtitle")}
             </p>
           </motion.div>
 
@@ -119,7 +120,7 @@ export function HeroSection() {
             >
               <Link href="/products">
                 <ShoppingBag className="size-5" strokeWidth={2} />
-                اكتشف المجموعة
+                {t("hero.discover")}
               </Link>
             </Button>
             <Button
@@ -129,7 +130,7 @@ export function HeroSection() {
               asChild
             >
               <Link href="/#story">
-                قصتنا
+                {t("hero.ourStory")}
                 <ArrowLeft className="size-5" />
               </Link>
             </Button>

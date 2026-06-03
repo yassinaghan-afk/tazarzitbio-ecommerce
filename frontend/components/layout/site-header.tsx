@@ -1,27 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, ShoppingBag, X } from "lucide-react";
 
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
-  { href: "/products", label: "منتجاتنا" },
-  { href: "/#bundles", label: "عروض العائلة" },
-  { href: "/#story", label: "قصتنا" },
-  { href: "/#reviews", label: "آراء العملاء" },
-  { href: "/#faq", label: "الأسئلة الشائعة" },
+const NAV_KEYS: { href: string; key: TranslationKey }[] = [
+  { href: "/products", key: "nav.products" },
+  { href: "/#bundles", key: "nav.bundles" },
+  { href: "/#story", key: "nav.story" },
+  { href: "/#reviews", key: "nav.reviews" },
+  { href: "/#faq", key: "nav.faq" },
 ];
 
 export function SiteHeader() {
+  const { t } = useTranslation();
   const { itemCount, openCart } = useCommerce();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navLinks = useMemo(
+    () => NAV_KEYS.map((link) => ({ ...link, label: t(link.key) })),
+    [t],
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -55,7 +64,7 @@ export function SiteHeader() {
 
           <nav
             className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1"
-            aria-label="التنقل الرئيسي"
+            aria-label={t("nav.main")}
           >
             {navLinks.map((link) => (
               <Link
@@ -68,11 +77,13 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+            <LanguageSwitcher />
+
             <Button
               variant="ghost"
               size="icon"
-              aria-label="سلة التسوق"
+              aria-label={t("nav.cart")}
               className="relative size-11 min-h-11 min-w-11 rounded-full hover:bg-secondary/80"
               onClick={openCart}
             >
@@ -90,14 +101,14 @@ export function SiteHeader() {
               className="hidden rounded-full px-6 shadow-gold lg:inline-flex"
               asChild
             >
-              <Link href="/products">تسوق الآن</Link>
+              <Link href="/products">{t("nav.shopNow")}</Link>
             </Button>
 
             <Button
               variant="ghost"
               size="icon"
               className="size-11 min-h-11 min-w-11 rounded-full lg:hidden"
-              aria-label={menuOpen ? "أغلق القائمة" : "افتح القائمة"}
+              aria-label={menuOpen ? t("nav.menuClose") : t("nav.menuOpen")}
               onClick={() => setMenuOpen((v) => !v)}
             >
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -136,21 +147,24 @@ export function SiteHeader() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className="block rounded-xl px-4 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-secondary/60"
+                    className="block min-h-11 rounded-xl px-4 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-secondary/60"
                   >
                     {link.label}
                   </Link>
                 </motion.div>
               ))}
+              <div className="mt-4 flex justify-center border-t border-border/50 pt-4">
+                <LanguageSwitcher />
+              </div>
               <div className="mt-4 border-t border-border/50 pt-4">
                 <Button
                   variant="gold"
                   size="lg"
-                  className="w-full rounded-full shadow-gold"
+                  className="min-h-12 w-full rounded-full shadow-gold"
                   asChild
                   onClick={() => setMenuOpen(false)}
                 >
-                  <Link href="/products">تسوق الآن</Link>
+                  <Link href="/products">{t("nav.shopNow")}</Link>
                 </Button>
               </div>
             </nav>

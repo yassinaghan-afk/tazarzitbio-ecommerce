@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { QuantitySelector } from "@/components/product/quantity-selector";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface ProductPurchaseActionsProps {
@@ -31,6 +32,7 @@ export function ProductPurchaseActions({
   className,
   layout = "stack",
 }: ProductPurchaseActionsProps) {
+  const { t } = useTranslation();
   const { orderNow, addToCart } = useCommerce();
 
   const payload = () =>
@@ -63,7 +65,7 @@ export function ProductPurchaseActions({
           onClick={handleOrderNow}
         >
           <Zap className="size-5" />
-          اطلب الآن
+          {t("product.orderNow")}
         </Button>
         {!orderOnly && (
           <Button
@@ -73,7 +75,7 @@ export function ProductPurchaseActions({
             onClick={handleAddToCart}
           >
             <ShoppingBag className="size-5" />
-            أضف للسلة
+            {t("product.addToCart")}
           </Button>
         )}
       </div>

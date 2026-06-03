@@ -1,39 +1,49 @@
+"use client";
+
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Container } from "@/components/layout/container";
+import { useTranslation } from "@/lib/i18n/language-provider";
 
-const shopLinks   = ["أملو", "أملو بالفستق", "زيت أركان", "عسل طبيعي", "مكسرات بالعسل"];
-const infoLinks   = ["من نحن", "سياسة التوصيل", "سياسة الإرجاع", "الأسئلة الشائعة"];
-const legalLinks  = [
-  { label: "سياسة الخصوصية", href: "#" },
-  { label: "الشروط والأحكام",  href: "#" },
+/** Product category names — kept in Arabic per catalog */
+const shopLinks = [
+  "أملو",
+  "أملو بالفستق",
+  "زيت أركان",
+  "عسل طبيعي",
+  "مكسرات بالعسل",
 ];
 
 export function SiteFooter() {
+  const { t } = useTranslation();
+
+  const infoLinks = [
+    { label: t("footer.about"), href: "/#story" },
+    { label: t("footer.delivery"), href: "/products" },
+    { label: t("footer.returns"), href: "/products" },
+    { label: t("nav.faq"), href: "/#faq" },
+  ];
+
   return (
     <footer className="border-t border-border bg-card">
       <Container>
         <div className="grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-
-          {/* Brand column */}
           <div className="lg:col-span-1">
             <Link href="/" className="inline-flex transition-opacity hover:opacity-90">
               <BrandLogo variant="footer" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              منتجات مغربية طبيعية فاخرة — أملو، زيت أركان، عسل، ومكسرات
-              مختارة من سوس. الدفع عند الاستلام في جميع أنحاء المغرب.
+              {t("footer.tagline")}
             </p>
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-medium text-accent-foreground">
-              الدفع عند الاستلام · COD
+              {t("footer.codBadge")}
             </div>
           </div>
 
-          {/* Shop links */}
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              تسوق
+              {t("footer.shop")}
             </p>
             <ul className="mt-4 space-y-3">
               {shopLinks.map((name) => (
@@ -51,43 +61,33 @@ export function SiteFooter() {
                   href="/#bundles"
                   className="inline-flex min-h-11 items-center text-sm font-semibold text-accent transition-colors hover:text-accent/80"
                 >
-                  علب الهدايا والعروض العائلية →
+                  {t("footer.gifts")}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Info links */}
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              معلومات
+              {t("footer.info")}
             </p>
             <ul className="mt-4 space-y-3">
-              {infoLinks.map((name) => {
-                const href =
-                  name === "من نحن"
-                    ? "/#story"
-                    : name === "الأسئلة الشائعة"
-                      ? "/#faq"
-                      : "/products";
-                return (
-                  <li key={name}>
-                    <Link
-                      href={href}
-                      className="inline-flex min-h-11 items-center text-sm text-foreground/70 transition-colors hover:text-accent"
-                    >
-                      {name}
-                    </Link>
-                  </li>
-                );
-              })}
+              {infoLinks.map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="inline-flex min-h-11 items-center text-sm text-foreground/70 transition-colors hover:text-accent"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              تواصل معنا
+              {t("footer.contact")}
             </p>
             <ul className="mt-4 space-y-3 text-sm text-foreground/70">
               <li>
@@ -95,7 +95,7 @@ export function SiteFooter() {
                   href="https://wa.me/212600000000"
                   className="transition-colors hover:text-accent"
                 >
-                  واتساب · WhatsApp
+                  WhatsApp
                 </a>
               </li>
               <li>
@@ -103,37 +103,25 @@ export function SiteFooter() {
                   href="tel:+212600000000"
                   className="transition-colors hover:text-accent"
                 >
-                  اتصل بنا · Call
+                  +212 600 000 000
                 </a>
               </li>
             </ul>
             <div className="mt-6 rounded-xl border border-border bg-secondary/50 p-4">
               <p className="text-xs font-semibold text-foreground">
-                ساعات الدعم
+                {t("footer.supportTitle")}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                الإثنين – السبت · ٩ص – ٨م
+                {t("footer.supportHours")}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border py-6 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Tazarzit Bio · جميع الحقوق محفوظة
+            © {new Date().getFullYear()} Tazarzit Bio · {t("footer.rights")}
           </p>
-          <div className="flex items-center gap-4">
-            {legalLinks.map((l) => (
-              <Link
-                key={l.label}
-                href={l.href}
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
         </div>
       </Container>
     </footer>

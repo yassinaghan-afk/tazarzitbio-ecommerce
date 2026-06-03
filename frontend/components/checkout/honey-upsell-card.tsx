@@ -8,6 +8,7 @@ import { Plus, Zap } from "lucide-react";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export function HoneyUpsellCard({
   className,
   ctaMode = "addToOrder",
 }: HoneyUpsellCardProps) {
+  const { t } = useTranslation();
   const { addToCart, orderNow } = useCommerce();
   const productHref = `/products/${product.slug}`;
   const [selectedOfferId, setSelectedOfferId] = useState(
@@ -105,12 +107,12 @@ export function HoneyUpsellCard({
               <span className="text-lg font-extrabold tabular-nums text-accent">
                 {selectedOffer.price}
               </span>
-              <span className="text-xs font-semibold text-accent">د.م.</span>
+              <span className="text-xs font-semibold text-accent">{t("common.currency")}</span>
             </p>
           </div>
 
           {showVariants && (
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="اختر الحجم">
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("honey.pickSize")}>
               {product.offers.map((offer) => (
                 <button
                   key={offer.id}
@@ -144,7 +146,7 @@ export function HoneyUpsellCard({
             ) : (
               <Plus className={compact ? "size-3.5" : "size-4"} />
             )}
-            {isOrderNow ? "اطلب الآن" : "أضف إلى الطلب"}
+            {isOrderNow ? t("catalog.orderNow") : t("honey.addToOrder")}
           </Button>
         </div>
       </div>

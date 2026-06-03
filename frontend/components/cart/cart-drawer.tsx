@@ -10,8 +10,10 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
+import { useTranslation } from "@/lib/i18n/language-provider";
 
 export function CartDrawer() {
+  const { t } = useTranslation();
   const {
     items,
     shipping,
@@ -27,22 +29,22 @@ export function CartDrawer() {
     <Drawer
       open={cartOpen}
       onClose={closeCart}
-      title="سلة التسوق"
+      title={t("cart.title")}
       footer={
         items.length > 0 ? (
           <div className="space-y-4">
             <OrderTotals shipping={shipping} />
             <div className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2.5 text-xs text-muted-foreground">
               <Truck className="size-4 shrink-0 text-accent" />
-              الدفع عند الاستلام — بدون دفع مسبق
+              {t("cart.codNote")}
             </div>
             <Button
               variant="gold"
               size="lg"
-              className="w-full rounded-full shadow-gold"
+              className="min-h-12 w-full rounded-full shadow-gold"
               onClick={openCheckout}
             >
-              إتمام الطلب (COD)
+              {t("cart.checkout")}
             </Button>
           </div>
         ) : undefined
@@ -56,12 +58,10 @@ export function CartDrawer() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
             <ShoppingBag className="size-8 text-muted-foreground" />
           </div>
-          <p className="font-bold text-foreground">سلتك فارغة</p>
-          <p className="text-sm text-muted-foreground">
-            اكتشف منتجاتنا الطبيعية من سوس
-          </p>
-          <Button variant="gold" className="rounded-full" asChild onClick={closeCart}>
-            <Link href="/products">تسوق المنتجات</Link>
+          <p className="font-bold text-foreground">{t("cart.empty")}</p>
+          <p className="text-sm text-muted-foreground">{t("cart.emptySub")}</p>
+          <Button variant="gold" className="min-h-12 rounded-full" asChild onClick={closeCart}>
+            <Link href="/products">{t("cart.shopProducts")}</Link>
           </Button>
         </div>
       ) : (
@@ -101,7 +101,7 @@ export function CartDrawer() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="تقليل الكمية"
+                        aria-label={t("cart.decrease")}
                         onClick={() =>
                           updateQuantity(item.lineId, item.quantity - 1)
                         }
@@ -114,7 +114,7 @@ export function CartDrawer() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="زيادة الكمية"
+                        aria-label={t("cart.increase")}
                         onClick={() =>
                           updateQuantity(item.lineId, item.quantity + 1)
                         }
@@ -123,14 +123,14 @@ export function CartDrawer() {
                       </Button>
                     </div>
                     <span className="text-sm font-extrabold tabular-nums text-accent">
-                      {item.unitPrice * item.quantity} د.م.
+                      {item.unitPrice * item.quantity} {t("common.currency")}
                     </span>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="حذف"
+                  aria-label={t("cart.remove")}
                   className="shrink-0 self-start text-muted-foreground hover:text-destructive"
                   onClick={() => removeItem(item.lineId)}
                 >
@@ -142,17 +142,14 @@ export function CartDrawer() {
 
           <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/80">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>
-              طلبك آمن — نتصل بك لتأكيد العنوان قبل الشحن. الدفع نقداً عند
-              الاستلام فقط.
-            </p>
+            <p>{t("cart.secureNote")}</p>
           </div>
 
           {crossSellProducts.length > 0 && (
             <HoneyUpsellSection
               products={crossSellProducts}
-              title="أكمل طلبك بعسل سوس"
-              subtitle="أنواع مختلفة — اختر 250غ أو 500غ أو 750غ"
+              title={t("cart.honeyTitle")}
+              subtitle={t("cart.honeySub")}
               layout="inline"
               compact
             />

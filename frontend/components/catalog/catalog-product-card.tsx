@@ -16,7 +16,8 @@ import {
 } from "@/lib/cart/product-payload";
 import { isFamilyPackProduct } from "@/lib/brand";
 import type { PublicProduct } from "@/lib/products";
-import { BADGE_LABELS } from "@/lib/products";
+import { getBadgeLabel } from "@/lib/i18n/badges";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface CatalogProductCardProps {
@@ -34,6 +35,7 @@ export function CatalogProductCard({
   className,
   showAddToCart = true,
 }: CatalogProductCardProps) {
+  const { t, locale } = useTranslation();
   const { orderNow, addToCart } = useCommerce();
   const startingOffer = getStartingOffer(product);
   const fromPrice = startingOffer.price;
@@ -84,7 +86,7 @@ export function CatalogProductCard({
         <div className="absolute start-3 top-3 z-[2] flex flex-wrap gap-1.5">
           {product.badges.slice(0, 2).map((b) => (
             <Badge key={b} variant={b === "bestseller" ? "premium" : "gold"}>
-              {BADGE_LABELS[b]}
+              {getBadgeLabel(b, locale)}
             </Badge>
           ))}
         </div>
@@ -109,11 +111,11 @@ export function CatalogProductCard({
 
         <div className="flex flex-wrap items-baseline gap-2">
           {hasVariants && (
-            <span className="text-sm text-muted-foreground">ابتداءً من</span>
+            <span className="text-sm text-muted-foreground">{t("common.from")}</span>
           )}
           <span className="text-xl font-extrabold tabular-nums text-accent">
             {fromPrice}
-            <span className="ms-1 text-sm font-semibold">د.م.</span>
+            <span className="ms-1 text-sm font-semibold">{t("common.currency")}</span>
           </span>
         </div>
 
@@ -130,7 +132,7 @@ export function CatalogProductCard({
             onClick={handleOrderNow}
           >
             <Zap className="size-4" />
-            اطلب الآن
+            {t("catalog.orderNow")}
           </Button>
           {showAddToCart && !orderOnly && (
             <Button
@@ -140,7 +142,7 @@ export function CatalogProductCard({
               onClick={handleAddToCart}
             >
               <ShoppingBag className="size-4" />
-              أضف للسلة
+              {t("catalog.addToCart")}
             </Button>
           )}
         </div>
@@ -152,7 +154,7 @@ export function CatalogProductCard({
             asChild
             onClick={(e) => e.stopPropagation()}
           >
-            <Link href={productHref}>عرض التفاصيل</Link>
+            <Link href={productHref}>{t("catalog.viewDetails")}</Link>
           </Button>
         )}
       </div>

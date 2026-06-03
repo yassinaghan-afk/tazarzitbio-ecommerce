@@ -54,7 +54,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
+    <html
+      lang="ar"
+      dir="rtl"
+      className={tajawal.variable}
+      suppressHydrationWarning
+    >
       <body className="min-h-screen max-w-full overflow-x-hidden font-sans selection:bg-accent/20">
         <CommerceShell>
           <SiteHeader />

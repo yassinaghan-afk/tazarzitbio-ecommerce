@@ -20,9 +20,11 @@ import { Button } from "@/components/ui/button";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { trackPurchase } from "@/lib/tracking/events";
 
 export default function ThankYouPage() {
+  const { t } = useTranslation();
   const allProducts = useCatalogProducts();
   const [hydrated, setHydrated] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
@@ -89,36 +91,30 @@ export default function ThankYouPage() {
 
             <div className="mb-4 flex items-center justify-center gap-2 text-accent">
               <Sparkles className="size-4" />
-              <span className="text-sm font-bold">بارك الله فيك</span>
+              <span className="text-sm font-bold">{t("thankYou.blessing")}</span>
               <Heart className="size-4 fill-accent/30 text-accent" />
             </div>
 
             <h1 className="text-display text-3xl text-foreground sm:text-4xl">
-              شكراً من قلب سوس
+              {t("thankYou.title")}
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base leading-[1.9] text-muted-foreground sm:text-lg">
-              تم استلام طلبك بنجاح.{" "}
-              <strong className="font-bold text-foreground">
-                الدفع عند الاستلام
-              </strong>{" "}
-              — سيتصل بك فريق تازارزيت بيو خلال ساعات قليلة لتأكيد الطلب والعنوان
-              قبل الشحن.
+              {t("thankYou.subtitleBefore")}{" "}
+              <strong className="font-bold text-foreground">{t("common.cod")}</strong>{" "}
+              {t("thankYou.subtitleAfter")}
             </p>
 
             {!hydrated && (
               <p className="mt-8 text-sm text-muted-foreground" aria-live="polite">
-                جاري تحميل تفاصيل طلبك...
+                {t("thankYou.loading")}
               </p>
             )}
 
             {hydrated && !order && (
               <div className="glass-card mt-8 rounded-2xl border border-border/60 p-6 text-sm text-muted-foreground shadow-warm-md">
-                <p>
-                  لم نعثر على تفاصيل الطلب في هذا المتصفح. إذا أكملت الطلب للتو،
-                  تحقق من رسائلك — أو تواصل معنا عبر واتساب.
-                </p>
+                <p>{t("thankYou.notFound")}</p>
                 <Button variant="gold" className="mt-4 rounded-full" asChild>
-                  <Link href="/products">تسوق المنتجات</Link>
+                  <Link href="/products">{t("thankYou.shopMore")}</Link>
                 </Button>
               </div>
             )}
@@ -132,7 +128,7 @@ export default function ThankYouPage() {
 
                 <div className="glass-card mt-8 rounded-2xl border border-border/60 p-6 text-start shadow-warm-lg">
                   <p className="text-xs font-bold uppercase tracking-wider text-accent">
-                    ملخص المنتجات
+                    {t("thankYou.summary")}
                   </p>
                   <p className="mt-1 font-mono text-sm text-muted-foreground">
                     {order.id}
@@ -150,16 +146,16 @@ export default function ThankYouPage() {
                           </span>
                         </span>
                         <span className="shrink-0 font-bold tabular-nums text-accent">
-                          {item.unitPrice * item.quantity} د.م.
+                          {item.unitPrice * item.quantity} {t("common.currency")}
                         </span>
                       </li>
                     ))}
                   </ul>
                   <div className="mt-4 space-y-2 border-t border-border/50 pt-4 text-sm">
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">المجموع الفرعي</span>
+                      <span className="text-muted-foreground">{t("common.subtotal")}</span>
                       <span className="font-bold tabular-nums">
-                        {order.subtotal} د.م.
+                        {order.subtotal} {t("common.currency")}
                       </span>
                     </div>
                     <div className="flex justify-between gap-4">
@@ -168,7 +164,7 @@ export default function ThankYouPage() {
                           {order.shippingLabelFr ?? "Livraison gratuite"}
                         </span>
                         <span className="mt-0.5 block text-2xs">
-                          {order.shippingLabelAr ?? "التوصيل"}
+                          {order.shippingLabelAr ?? t("common.shipping")}
                         </span>
                       </span>
                       <span
@@ -179,14 +175,14 @@ export default function ThankYouPage() {
                         }
                       >
                         {(order.shippingFee ?? 0) === 0
-                          ? "مجاني"
-                          : `${order.shippingFee} د.م.`}
+                          ? t("common.free")
+                          : `${order.shippingFee} ${t("common.currency")}`}
                       </span>
                     </div>
                     <div className="flex justify-between gap-4 border-t border-border/40 pt-2 text-base font-bold">
-                      <span>الإجمالي</span>
+                      <span>{t("common.total")}</span>
                       <span className="text-accent">
-                        {order.total ?? order.subtotal} د.م.
+                        {order.total ?? order.subtotal} {t("common.currency")}
                       </span>
                     </div>
                   </div>
@@ -203,7 +199,7 @@ export default function ThankYouPage() {
               >
                 <Link href="/products">
                   <ShoppingBag className="size-5" />
-                  تسوق أكثر
+                  {t("thankYou.shopAgain")}
                 </Link>
               </Button>
               <Button
@@ -214,7 +210,7 @@ export default function ThankYouPage() {
               >
                 <Link href="/">
                   <Home className="size-5" />
-                  العودة للرئيسية
+                  {t("thankYou.home")}
                 </Link>
               </Button>
             </div>
@@ -233,12 +229,12 @@ export default function ThankYouPage() {
             >
               <motion.div variants={staggerItem}>
                 <h2 className="text-display mb-2 text-center text-2xl text-foreground">
-                  قد يعجبك أيضاً
+                  {t("thankYou.recommended")}
                 </h2>
               </motion.div>
               <motion.div variants={staggerItem}>
                 <p className="mb-8 text-center text-sm text-muted-foreground">
-                  اطلب منتجاً جديداً — يفتح الدفع مباشرة مع المنتج المختار
+                  {t("thankYou.recommendedSub")}
                 </p>
               </motion.div>
               <motion.div

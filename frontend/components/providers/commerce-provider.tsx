@@ -23,8 +23,9 @@ import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import {
   hasCheckoutErrors,
-  validateCheckoutForm,
-} from "@/lib/checkout/validation";
+  validateCheckoutFormLocalized,
+} from "@/lib/i18n/checkout-validation";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { getHoneyUpsellRecommendations } from "@/lib/products/honey-upsell";
 import {
   calculateShipping,
@@ -95,6 +96,7 @@ function applyAddToCart(
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [items, setItems] = useState<CartLineItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -204,7 +206,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
 
   const submitOrder = useCallback(
     (form: CheckoutFormData) => {
-      const errors = validateCheckoutForm(form);
+      const errors = validateCheckoutFormLocalized(form, locale);
       if (hasCheckoutErrors(errors)) return { success: false, errors };
       if (items.length === 0) return { success: false };
 
@@ -288,7 +290,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       router.push("/thank-you");
       return { success: true };
     },
-    [items, shipping, clearCart, router],
+    [items, shipping, clearCart, router, locale],
   );
 
   const value = useMemo(
@@ -346,5 +348,10 @@ export function useCommerce() {
 }
 
 export function useCheckoutValidation() {
-  return { validateCheckoutForm, hasCheckoutErrors };
+  const { locale } = useLanguage();
+  return {
+    validateCheckoutForm: (form: CheckoutFormData) =>
+      validateCheckoutFormLocalized(form, locale),
+    hasCheckoutErrors,
+  };
 }

@@ -12,8 +12,18 @@ import {
   VIEWPORT,
 } from "@/lib/animations";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
 
 export function CtaSection() {
+  const { t } = useTranslation();
+  const trustItems = [
+    t("cta.trust1"),
+    t("cta.trust2"),
+    t("cta.trust3"),
+    t("cta.trust4"),
+    t("cta.trust5"),
+  ];
+
   return (
     <Section
       spacing="xl"
@@ -40,24 +50,23 @@ export function CtaSection() {
             variants={staggerItem}
             className="text-sm font-semibold uppercase tracking-[0.2em] text-white/50"
           >
-            ابدأ رحلتك مع سوس
+            {t("cta.journey")}
           </motion.p>
 
           <motion.h2
             variants={fadeUp}
             className="text-3xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl"
           >
-            جرّب الطبيعة
+            {t("cta.title1")}
             <br />
-            <span className="text-gold-gradient">كما يجب أن تكون</span>
+            <span className="text-gold-gradient">{t("cta.title2")}</span>
           </motion.h2>
 
           <motion.p
             variants={staggerItem}
             className="max-w-lg text-base leading-relaxed text-white/75 md:text-lg"
           >
-            أكثر من ٢٠٠٠ عميل اختاروا تازارزيت بيو. اطلب الآن — الدفع عند
-            الاستلام، توصيل لجميع مدن المغرب، وضمان جودة في كل عبوة.
+            {t("cta.subtitle")}
           </motion.p>
 
           <motion.div
@@ -67,12 +76,12 @@ export function CtaSection() {
             <Button variant="gold" size="xl" className="min-h-12 gap-2 shadow-gold" asChild>
               <Link href="/products">
                 <ShoppingBag className="size-5" />
-                اطلب الآن
+                {t("cta.orderNow")}
               </Link>
             </Button>
             <Button variant="light" size="xl" className="min-h-12 gap-2" asChild>
               <Link href="/products">
-                تصفح المنتجات
+                {t("cta.browse")}
                 <ArrowLeft className="size-5" />
               </Link>
             </Button>
@@ -82,13 +91,7 @@ export function CtaSection() {
             variants={staggerItem}
             className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/60"
           >
-            {[
-              "لا دفع مسبق",
-              "توصيل سريع",
-              "طبيعي 100%",
-              "من قلب سوس",
-              "ضمان الجودة",
-            ].map((item) => (
+            {trustItems.map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-accent" />
                 {item}

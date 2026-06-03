@@ -1,7 +1,7 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n/language-provider";
 import type { ShippingResult } from "@/lib/shipping/calculate";
-import { FREE_SHIPPING_MARKETING_AR } from "@/lib/shipping/settings";
 import { cn } from "@/lib/utils";
 
 interface FreeShippingProgressProps {
@@ -15,6 +15,8 @@ export function FreeShippingProgress({
   className,
   compact = false,
 }: FreeShippingProgressProps) {
+  const { t, dir } = useTranslation();
+
   if (shipping.subtotal <= 0 || shipping.isFreeShipping) return null;
 
   return (
@@ -25,10 +27,13 @@ export function FreeShippingProgress({
         aria-valuenow={shipping.progressPercent}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="التقدم نحو التوصيل المجاني"
+        aria-label={t("shipping.progressAria")}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-l from-accent to-amber-500 transition-[width] duration-300 ease-out"
+          className={cn(
+            "h-full rounded-full bg-gradient-to-r from-accent to-amber-500 transition-[width] duration-300 ease-out",
+            dir === "rtl" && "bg-gradient-to-l",
+          )}
           style={{ width: `${shipping.progressPercent}%` }}
         />
       </div>
@@ -39,11 +44,11 @@ export function FreeShippingProgress({
         )}
       >
         <span className="font-semibold text-foreground">
-          باقي {shipping.amountRemaining} د.م.
+          {t("shipping.remaining")} {shipping.amountRemaining} {t("common.currency")}
         </span>{" "}
-        للتوصيل المجاني
+        {t("shipping.forFree")}
         {!compact && (
-          <span className="mt-0.5 block text-2xs">{FREE_SHIPPING_MARKETING_AR}</span>
+          <span className="mt-0.5 block text-2xs">{t("shipping.marketing")}</span>
         )}
       </p>
     </div>
