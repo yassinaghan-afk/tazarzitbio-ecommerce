@@ -10,8 +10,10 @@ import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { getListingProducts } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
+import { useTranslation } from "@/lib/i18n/language-provider";
 
 export function ProductsCatalog() {
+  const { t } = useTranslation();
   const [category, setCategory] = useState<ProductCategory>("all");
   const allProducts = useCatalogProducts();
 
@@ -31,8 +33,8 @@ export function ProductsCatalog() {
         <CategoryFilters active={category} onChange={setCategory} />
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          {filtered.length} منتج
-          {category !== "all" ? " في هذه الفئة" : ""}
+          {t("catalog.productCount", { count: filtered.length })}
+          {category !== "all" ? t("catalog.inCategory") : ""}
         </p>
 
         <motion.div

@@ -6,6 +6,7 @@ import { Check, Pencil, type LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 type FieldVariant = "default" | "phone" | "address";
@@ -49,6 +50,7 @@ export function EditableVerificationField({
   placeholder,
   className,
 }: EditableVerificationFieldProps) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -112,7 +114,7 @@ export function EditableVerificationField({
                 exit={{ scale: 0, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 22 }}
                 className="flex size-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
-                aria-label="تم الحفظ"
+                aria-label={t("common.savedAria")}
               >
                 <Check className="size-4 stroke-[2.5]" />
               </motion.span>
@@ -125,7 +127,7 @@ export function EditableVerificationField({
               size="icon-sm"
               className="size-8 rounded-full text-muted-foreground hover:bg-accent/10 hover:text-accent"
               onClick={startEdit}
-              aria-label={`تعديل ${label}`}
+              aria-label={t("common.editLabel", { label })}
             >
               <Pencil className="size-3.5" />
             </Button>
@@ -173,7 +175,7 @@ export function EditableVerificationField({
               className="flex-1 rounded-full"
               onClick={commitSave}
             >
-              حفظ
+              {t("common.save")}
             </Button>
             <Button
               type="button"
@@ -182,7 +184,7 @@ export function EditableVerificationField({
               className="rounded-full"
               onClick={cancelEdit}
             >
-              إلغاء
+              {t("common.cancel")}
             </Button>
           </div>
         </div>

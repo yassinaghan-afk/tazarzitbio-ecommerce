@@ -8,12 +8,16 @@ import { Container, Section } from "@/components/layout/container";
 import { MixedNutsJarVisual } from "@/components/product/mixed-nuts-jar-visual";
 import {
   FAMILY_PACK_CONTENTS,
-  FAMILY_PACK_CONTENTS_TITLE_AR,
-  FAMILY_PACK_CONTENTS_TITLE_EN,
   type FamilyPackContentItem,
 } from "@/lib/products/family-pack-contents";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/translations";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
+
+function benefitKey(id: string): TranslationKey {
+  return `familyPack.item.${id}.benefit` as TranslationKey;
+}
 
 function PackItemVisual({ item }: { item: FamilyPackContentItem }) {
   if (item.id === "mixed-nuts-honey") {
@@ -38,7 +42,13 @@ function PackItemVisual({ item }: { item: FamilyPackContentItem }) {
   );
 }
 
-function PackContentCard({ item }: { item: FamilyPackContentItem }) {
+function PackContentCard({
+  item,
+  benefit,
+}: {
+  item: FamilyPackContentItem;
+  benefit: string;
+}) {
   return (
     <motion.article
       variants={staggerItem}
@@ -69,15 +79,15 @@ function PackContentCard({ item }: { item: FamilyPackContentItem }) {
         <p className="text-2xs font-medium uppercase tracking-wider text-accent/90">
           {item.nameEn}
         </p>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {item.benefit}
-        </p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{benefit}</p>
       </div>
     </motion.article>
   );
 }
 
 export function FamilyPackContentsSection() {
+  const { t } = useTranslation();
+
   return (
     <Section
       spacing="sm"
@@ -94,21 +104,20 @@ export function FamilyPackContentsSection() {
           <motion.div variants={staggerItem} className="flex items-center gap-2">
             <Sparkles className="size-4 text-accent" aria-hidden />
             <span className="text-2xs font-bold uppercase tracking-[0.2em] text-accent">
-              {FAMILY_PACK_CONTENTS_TITLE_EN}
+              {t("familyPack.contents.label")}
             </span>
           </motion.div>
           <motion.h2
             variants={staggerItem}
             className="text-display mt-2 text-2xl text-foreground sm:text-3xl"
           >
-            {FAMILY_PACK_CONTENTS_TITLE_AR}
+            {t("familyPack.contents.title")}
           </motion.h2>
           <motion.p
             variants={staggerItem}
             className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground"
           >
-            أربعة منتجات أساسية من سوس — كل واحد بحجم عائلي 250 غ أو 250 مل، جاهزة
-            لفطورك وضيافتك.
+            {t("familyPack.contents.desc")}
           </motion.p>
         </motion.div>
 
@@ -120,7 +129,11 @@ export function FamilyPackContentsSection() {
           className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-6"
         >
           {FAMILY_PACK_CONTENTS.map((item) => (
-            <PackContentCard key={item.id} item={item} />
+            <PackContentCard
+              key={item.id}
+              item={item}
+              benefit={t(benefitKey(item.id))}
+            />
           ))}
         </motion.div>
       </Container>

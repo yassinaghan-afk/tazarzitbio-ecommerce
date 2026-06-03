@@ -4,17 +4,21 @@ import { motion } from "framer-motion";
 
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
-import { transparencySteps } from "@/lib/home-data";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getTransparencySteps } from "@/lib/i18n/home-content";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
 export function IngredientsSection() {
+  const { t } = useTranslation();
+  const transparencySteps = getTransparencySteps(t);
+
   return (
     <Section id="transparency" spacing="lg">
       <Container>
         <SectionHeader
-          label="الشفافية"
-          title="من المكون إلى مائدتك"
-          description="نؤمن بأن الثقة تبدأ بالوضوح — إليك رحلة منتجاتنا من المصدر إلى التغليف."
+          label={t("ingredients.label")}
+          title={t("ingredients.title")}
+          description={t("ingredients.desc")}
         />
 
         <motion.div
@@ -30,10 +34,7 @@ export function IngredientsSection() {
               variants={staggerItem}
               className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-warm-sm transition-shadow hover:shadow-warm-lg"
             >
-              <span
-                className="text-4xl"
-                aria-hidden
-              >
+              <span className="text-4xl" aria-hidden>
                 {step.icon}
               </span>
               <span className="absolute end-4 top-4 text-3xl font-bold text-accent/15">
@@ -57,10 +58,10 @@ export function IngredientsSection() {
           className="mt-12 rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/5 to-transparent p-8 text-center md:p-10"
         >
           <p className="text-lg font-bold text-foreground">
-            وعدنا: لا إضافات صناعية · لا مواد حافظة · لا تنازل عن الجودة
+            {t("ingredients.promise")}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            كل دفعة تُفحص قبل التغليف — لأن سمعة تازارزيت بيو تُبنى على الثقة.
+            {t("ingredients.promiseSub")}
           </p>
         </motion.div>
       </Container>

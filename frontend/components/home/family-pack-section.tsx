@@ -17,18 +17,28 @@ import {
   getStartingOffer,
 } from "@/lib/cart/product-payload";
 import { getPublicProductBySlug } from "@/lib/products/catalog";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getFamilyHospitality } from "@/lib/i18n/home-content";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const hospitalityPoints = [
-  { icon: Package, title: "قيمة عائلية", desc: "تشكيلة عملية بسعر أوفر" },
-  { icon: Coffee, title: "فطور العائلة", desc: "مائدة مغربية في باقة واحدة" },
-  { icon: Heart, title: "جودة سوس", desc: "منتجات طبيعية من مصدر موثوق" },
-];
-
+const HOSPITALITY_ICONS = [Package, Coffee, Heart];
 const FEATURED_PACK_SLUG = "premium-family-pack";
 
+function packTitleKey(id: string): TranslationKey {
+  return `family.pack.${id}.title` as TranslationKey;
+}
+
+function packDescKey(id: string): TranslationKey {
+  return `family.pack.${id}.desc` as TranslationKey;
+}
+
 export function FamilyPackSection() {
+  const { t } = useTranslation();
   const { orderNow } = useCommerce();
-  const featuredPack = familyPacks.find((p) => p.isPopular) ?? familyPacks[0];
+  const hospitalityPoints = getFamilyHospitality(t).map((point, i) => ({
+    ...point,
+    icon: HOSPITALITY_ICONS[i]!,
+  }));
 
   const handleFeaturedOrder = () => {
     const product = getPublicProductBySlug(FEATURED_PACK_SLUG);
@@ -40,9 +50,9 @@ export function FamilyPackSection() {
     <Section id="bundles" spacing="lg" bg="alt" className="texture-grain">
       <Container>
         <SectionHeader
-          label="عرض العائلة"
-          title="باقة العائلة — قيمة ممتازة"
-          description="تشكيلة فاخرة من أملو، مكسرات، وزيت أركان — اطلب الآن والدفع عند الاستلام."
+          label={t("family.label")}
+          title={t("family.title")}
+          description={t("family.desc")}
           align="center"
         />
 
@@ -60,7 +70,7 @@ export function FamilyPackSection() {
             >
               <PremiumImage
                 src="/images/products/pack.png"
-                alt="باقة عائلية تازارزيت بيو"
+                alt={t("family.packAlt")}
                 aspect="landscape"
                 sizes="(max-width: 768px) 100vw, 480px"
                 className="shadow-warm-md"
@@ -68,17 +78,17 @@ export function FamilyPackSection() {
             </Link>
             <div className="flex flex-col gap-5 text-center md:text-start">
               <div>
-                <p className="text-sm font-bold text-accent">الأكثر طلباً ⭐</p>
+                <p className="text-sm font-bold text-accent">{t("family.popular")}</p>
                 <h3 className="mt-1 text-2xl font-extrabold text-foreground sm:text-3xl">
-                  {featuredPack.title}
+                  {t(packTitleKey(FEATURED_PACK_SLUG))}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  {featuredPack.description}
+                  {t(packDescKey(FEATURED_PACK_SLUG))}
                 </p>
               </div>
               <p className="text-3xl font-extrabold tabular-nums text-accent">
-                {featuredPack.price}
-                <span className="ms-1 text-lg font-semibold">د.م.</span>
+                {familyPacks.find((p) => p.isPopular)?.price ?? familyPacks[0].price}
+                <span className="ms-1 text-lg font-semibold">{t("common.currency")}</span>
               </p>
               <Button
                 variant="gold"
@@ -87,7 +97,7 @@ export function FamilyPackSection() {
                 onClick={handleFeaturedOrder}
               >
                 <Zap className="size-5" />
-                اطلب الآن
+                {t("catalog.orderNow")}
               </Button>
             </div>
           </div>
@@ -124,8 +134,8 @@ export function FamilyPackSection() {
           {familyPacks.map((pack) => (
             <motion.div key={pack.id} variants={staggerItem}>
               <BundleCard
-                title={pack.title}
-                description={pack.description}
+                title={t(packTitleKey(pack.id))}
+                description={t(packDescKey(pack.id))}
                 price={pack.price}
                 items={pack.items}
                 isPopular={pack.isPopular}

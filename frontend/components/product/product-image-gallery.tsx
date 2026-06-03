@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface ProductImageGalleryProps {
@@ -19,6 +20,7 @@ export function ProductImageGallery({
   alt,
   className,
 }: ProductImageGalleryProps) {
+  const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
   const list = images.length > 0 ? images : ["/images/products/pack.png"];
 
@@ -63,7 +65,7 @@ export function ProductImageGallery({
               variant="light"
               size="icon-sm"
               onClick={prev}
-              aria-label="الصورة السابقة"
+              aria-label={t("gallery.prev")}
               className="absolute start-3 top-1/2 z-10 -translate-y-1/2 bg-white/85 text-foreground shadow-warm-sm"
             >
               <ChevronRight className="size-4" />
@@ -72,7 +74,7 @@ export function ProductImageGallery({
               variant="light"
               size="icon-sm"
               onClick={next}
-              aria-label="الصورة التالية"
+              aria-label={t("gallery.next")}
               className="absolute end-3 top-1/2 z-10 -translate-y-1/2 bg-white/85 text-foreground shadow-warm-sm"
             >
               <ChevronLeft className="size-4" />
@@ -88,7 +90,7 @@ export function ProductImageGallery({
               key={src}
               type="button"
               onClick={() => setActiveIdx(i)}
-              aria-label={`صورة ${i + 1}`}
+              aria-label={t("gallery.thumb", { n: i + 1 })}
               className={cn(
                 "relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all",
                 i === activeIdx

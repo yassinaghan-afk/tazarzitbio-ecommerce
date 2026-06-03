@@ -1,3 +1,9 @@
+import { extraAr, extraEn, extraFr } from "./extra-messages";
+import {
+  packExtraAr,
+  packExtraEn,
+  packExtraFr,
+} from "./extra-messages-pack";
 import type { Language } from "./types";
 
 const arMessages = {
@@ -175,9 +181,14 @@ const arMessages = {
   "footer.supportTitle": "ساعات الدعم",
   "footer.supportHours": "الإثنين – السبت · ٩ص – ٨م",
   "footer.rights": "جميع الحقوق محفوظة",
+  ...extraAr,
+  ...packExtraAr,
 } as const;
 
-export type TranslationKey = keyof typeof arMessages;
+export type TranslationKey =
+  | keyof typeof arMessages
+  | keyof typeof extraAr
+  | keyof typeof packExtraAr;
 
 const fr: Record<TranslationKey, string> = {
   "lang.select": "Choisir la langue",
@@ -356,6 +367,8 @@ const fr: Record<TranslationKey, string> = {
   "footer.supportTitle": "Horaires support",
   "footer.supportHours": "Lun – Sam · 9h – 20h",
   "footer.rights": "Tous droits réservés",
+  ...extraFr,
+  ...packExtraFr,
 };
 
 const en: Record<TranslationKey, string> = {
@@ -534,9 +547,15 @@ const en: Record<TranslationKey, string> = {
   "footer.supportTitle": "Support hours",
   "footer.supportHours": "Mon – Sat · 9am – 8pm",
   "footer.rights": "All rights reserved",
+  ...extraEn,
+  ...packExtraEn,
 };
 
-export const translations: Record<Language, Record<TranslationKey, string>> = {
+export const translations: Record<TranslationKey, string> = {
+  ...arMessages,
+};
+
+export const translationsByLocale: Record<Language, Record<TranslationKey, string>> = {
   ar: arMessages,
   fr,
   en,
@@ -545,6 +564,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
 export function translate(
   locale: Language,
   key: TranslationKey,
+  params?: Record<string, string | number>,
 ): string {
-  return translations[locale][key] ?? translations.ar[key] ?? key;
+  const template =
+    translationsByLocale[locale][key] ??
+    translationsByLocale.ar[key] ??
+    key;
+  if (!params) return template;
+  return Object.entries(params).reduce(
+    (text, [name, value]) =>
+      text.replaceAll(`{${name}}`, String(value)),
+    template,
+  );
 }

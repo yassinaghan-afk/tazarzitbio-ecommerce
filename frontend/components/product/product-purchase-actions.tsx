@@ -49,7 +49,7 @@ export function ProductPurchaseActions({
   return (
     <div className={cn("space-y-4", className)}>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-bold text-foreground">الكمية</p>
+        <p className="text-sm font-bold text-foreground">{t("product.quantity")}</p>
         <QuantitySelector value={quantity} onChange={onQuantityChange} />
       </div>
 

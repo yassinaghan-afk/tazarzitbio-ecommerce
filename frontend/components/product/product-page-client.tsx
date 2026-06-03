@@ -111,13 +111,13 @@ export function ProductPageClient({
         <Container>
           <nav className="mb-8 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-accent">
-              الرئيسية
+              {t("product.home")}
             </Link>
-            <span className="mx-2">/</span>
+            <span className="mx-2">{t("common.breadcrumbSep")}</span>
             <Link href="/products" className="hover:text-accent">
-              المنتجات
+              {t("product.products")}
             </Link>
-            <span className="mx-2">/</span>
+            <span className="mx-2">{t("common.breadcrumbSep")}</span>
             <span className="text-foreground">{product.nameAr}</span>
           </nav>
 
@@ -138,7 +138,7 @@ export function ProductPageClient({
                 ))}
                 <StarRating rating={product.rating} showValue />
                 <span className="text-xs text-muted-foreground">
-                  ({product.reviewCount} تقييم)
+                  ({t("product.reviewsCount", { count: product.reviewCount })})
                 </span>
               </div>
 
@@ -168,7 +168,9 @@ export function ProductPageClient({
                   <span className="text-4xl font-extrabold tabular-nums text-accent">
                     {selectedOffer.price}
                   </span>
-                  <span className="text-lg font-semibold text-accent">د.م.</span>
+                  <span className="text-lg font-semibold text-accent">
+                    {t("common.currency")}
+                  </span>
                   <span className="text-sm text-muted-foreground">
                     {selectedOffer.weight}
                   </span>
@@ -182,7 +184,9 @@ export function ProductPageClient({
 
               {showSizePicker && (
                 <div className="space-y-3">
-                  <p className="text-sm font-bold text-foreground">اختر الحجم</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {t("product.pickSize")}
+                  </p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {product.offers.map((offer) => (
                       <button
@@ -203,7 +207,7 @@ export function ProductPageClient({
                           </p>
                         )}
                         <p className="mt-2 text-sm font-extrabold text-accent">
-                          {offer.price} د.م.
+                          {offer.price} {t("common.currency")}
                         </p>
                       </button>
                     ))}
@@ -230,7 +234,9 @@ export function ProductPageClient({
 
       <Section spacing="md" bg="alt" className="!pt-8 sm:!pt-10">
         <Container className="max-w-3xl">
-          <h2 className="text-display mb-4 text-2xl text-foreground">عن المنتج</h2>
+          <h2 className="text-display mb-4 text-2xl text-foreground">
+            {t("product.about")}
+          </h2>
           <p className="text-base leading-[1.85] text-muted-foreground">
             {product.description}
           </p>
@@ -244,7 +250,9 @@ export function ProductPageClient({
         <Container>
           <div className="grid gap-10 md:grid-cols-3">
             <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
-              <h2 className="text-display mb-4 text-xl text-foreground">المكونات</h2>
+              <h2 className="text-display mb-4 text-xl text-foreground">
+                {t("product.ingredientsTitle")}
+              </h2>
               <ul className="space-y-2">
                 {product.ingredients.map((item) => (
                   <li
@@ -257,12 +265,13 @@ export function ProductPageClient({
                 ))}
               </ul>
               <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                مكونات طبيعية مختارة من مزارعي سوس — دون مواد حافظة أو إضافات
-                صناعية.
+                {t("product.ingredientsNote")}
               </p>
             </div>
             <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
-              <h2 className="text-display mb-4 text-xl text-foreground">لماذا تازارزيت؟</h2>
+              <h2 className="text-display mb-4 text-xl text-foreground">
+                {t("product.whyUs")}
+              </h2>
               <ul className="space-y-2">
                 {product.benefits.map((item) => (
                   <li
@@ -277,7 +286,7 @@ export function ProductPageClient({
             </div>
             <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
               <h2 className="text-display mb-4 text-xl text-foreground">
-                اقتراحات الاستخدام
+                {t("product.usageTitle")}
               </h2>
               <ul className="space-y-2">
                 {product.usageSuggestions.map((item) => (
@@ -299,9 +308,11 @@ export function ProductPageClient({
           <div className="mb-8 flex items-center gap-3">
             <ShieldCheck className="size-8 text-accent" />
             <div>
-              <h2 className="text-display text-2xl text-foreground">ثقة وخدمة</h2>
+              <h2 className="text-display text-2xl text-foreground">
+                {t("product.trustSectionTitle")}
+              </h2>
               <p className="text-sm text-muted-foreground">
-                نرافقك من الطلب حتى الاستلام
+                {t("product.trustSectionSub")}
               </p>
             </div>
           </div>
@@ -322,10 +333,10 @@ export function ProductPageClient({
       <Section spacing="md">
         <Container>
           <h2 className="text-display mb-2 text-2xl text-foreground">
-            آراء الزبناء
+            {t("product.reviewsTitle")}
           </h2>
           <p className="mb-8 text-sm text-muted-foreground">
-            تعليقات بالدارجة من مدن مغربية مختلفة
+            {t("product.reviewsSub")}
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {product.reviews.map((review) => (
@@ -346,7 +357,7 @@ export function ProductPageClient({
       <Section spacing="md" bg="alt">
         <Container className="max-w-2xl">
           <h2 className="text-display mb-6 text-2xl text-foreground">
-            أسئلة شائعة
+            {t("product.faqTitle")}
           </h2>
           <div className="space-y-2">
             {product.faq.map((item, i) => (
@@ -399,7 +410,7 @@ export function ProductPageClient({
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{product.nameAr}</p>
               <p className="text-lg font-extrabold tabular-nums text-accent">
-                {selectedOffer.price * quantity} د.م.
+                {selectedOffer.price * quantity} {t("common.currency")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {selectedOffer.label}

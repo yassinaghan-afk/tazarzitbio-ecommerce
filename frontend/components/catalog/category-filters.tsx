@@ -3,17 +3,9 @@
 import { motion } from "framer-motion";
 
 import type { ProductCategory } from "@/lib/products";
-import { CATEGORY_LABELS } from "@/lib/products";
+import { getDefaultCategoryFilters } from "@/lib/i18n/category-labels";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
-
-const defaultFilters: { id: ProductCategory; label: string }[] = [
-  { id: "all", label: "الكل" },
-  { id: "honey", label: CATEGORY_LABELS.honey },
-  { id: "amlou", label: CATEGORY_LABELS.amlou },
-  { id: "bundles", label: CATEGORY_LABELS.bundles },
-  { id: "oils", label: CATEGORY_LABELS.oils },
-  { id: "honey-nuts", label: CATEGORY_LABELS["honey-nuts"] },
-];
 
 interface CategoryFiltersProps {
   active: ProductCategory;
@@ -21,14 +13,21 @@ interface CategoryFiltersProps {
   filters?: { id: ProductCategory; label: string }[];
 }
 
-export function CategoryFilters({ active, onChange, filters = defaultFilters }: CategoryFiltersProps) {
+export function CategoryFilters({
+  active,
+  onChange,
+  filters,
+}: CategoryFiltersProps) {
+  const { t, locale } = useTranslation();
+  const resolvedFilters = filters ?? getDefaultCategoryFilters(locale);
+
   return (
     <div
       className="scrollbar-hide flex w-full max-w-full gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible"
       role="tablist"
-      aria-label="تصفية حسب الفئة"
+      aria-label={t("category.filterAria")}
     >
-      {filters.map((filter) => (
+      {resolvedFilters.map((filter) => (
         <button
           key={filter.id}
           type="button"

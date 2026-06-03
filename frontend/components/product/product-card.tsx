@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { cardHoverProps } from "@/lib/animations";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 export interface ProductCardProps {
@@ -43,6 +44,7 @@ export function ProductCard({
   soldLabel,
   className,
 }: ProductCardProps) {
+  const { t } = useTranslation();
   const savings = comparePrice ? comparePrice - price : 0;
 
   return (
@@ -92,10 +94,10 @@ export function ProductCard({
         )}
         <div className="absolute start-3 top-3 z-[2] flex flex-col gap-1.5">
           {soldLabel && <Badge variant="premium">{soldLabel}</Badge>}
-          {isNew && <Badge variant="gold">جديد</Badge>}
-          {!inStock && <Badge variant="sand">نفذ المخزون</Badge>}
+          {isNew && <Badge variant="gold">{t("badge.new")}</Badge>}
+          {!inStock && <Badge variant="sand">{t("product.outOfStock")}</Badge>}
           {savings > 0 && (
-            <Badge variant="success">وفّر {savings} د.م.</Badge>
+            <Badge variant="success">{t("bundle.save", { amount: savings })}</Badge>
           )}
         </div>
       </div>
@@ -125,17 +127,17 @@ export function ProductCard({
         <div className="flex items-baseline gap-2">
           <span className="text-xl font-extrabold tabular-nums text-accent">
             {price}
-            <span className="ms-1 text-sm font-semibold">د.م.</span>
+            <span className="ms-1 text-sm font-semibold">{t("common.currency")}</span>
           </span>
           {comparePrice && (
             <span className="text-sm text-muted-foreground line-through tabular-nums">
-              {comparePrice} د.م.
+              {comparePrice} {t("common.currency")}
             </span>
           )}
         </div>
 
         <p className="text-2xs font-medium tracking-wide text-primary/60">
-          طبيعي 100% · COD
+          {t("product.naturalCod")}
         </p>
 
         <Button
@@ -145,7 +147,7 @@ export function ProductCard({
           disabled={!inStock}
         >
           <ShoppingBag className="size-4" />
-          {inStock ? "أضف إلى السلة" : "غير متوفر"}
+          {inStock ? t("catalog.addToCart") : t("product.outOfStock")}
         </Button>
       </div>
     </motion.article>

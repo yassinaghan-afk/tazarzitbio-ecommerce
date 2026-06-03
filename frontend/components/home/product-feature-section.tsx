@@ -16,6 +16,7 @@ import {
   getStartingOffer,
 } from "@/lib/cart/product-payload";
 import { getPublicProductBySlug } from "@/lib/products/catalog";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 export interface ProductFeatureProps {
@@ -48,6 +49,7 @@ export function ProductFeatureSection({
   badge,
 }: ProductFeatureProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const { orderNow } = useCommerce();
   const productHref = `/products/${id}`;
   const savings = comparePrice ? comparePrice - price : 0;
@@ -104,11 +106,13 @@ export function ProductFeatureSection({
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold tabular-nums text-accent sm:text-3xl">
               {price}
-              <span className="ms-1 text-base font-semibold">د.م.</span>
+              <span className="ms-1 text-base font-semibold">
+                {t("common.currency")}
+              </span>
             </span>
             {comparePrice && (
               <span className="text-sm text-muted-foreground line-through tabular-nums">
-                {comparePrice} د.م.
+                {comparePrice} {t("common.currency")}
               </span>
             )}
           </div>
@@ -117,7 +121,7 @@ export function ProductFeatureSection({
           )}
           {savings > 0 && (
             <p className="mt-1 text-xs font-semibold text-primary">
-              وفّر {savings} د.م. · الدفع عند الاستلام
+              {t("feature.codNote", { amount: savings })}
             </p>
           )}
         </div>
@@ -128,7 +132,7 @@ export function ProductFeatureSection({
           onClick={handleOrderNow}
         >
           <Zap className="size-4" />
-          اطلب الآن
+          {t("catalog.orderNow")}
         </Button>
       </div>
     </motion.div>

@@ -7,20 +7,23 @@ import { ChevronDown, MessageCircle } from "lucide-react";
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
-import { faqs } from "@/lib/home-data";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getFaqs } from "@/lib/i18n/home-content";
 import { accordionContent, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 export function FaqSection() {
+  const { t } = useTranslation();
+  const faqs = getFaqs(t);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <Section id="faq" spacing="lg">
       <Container size="md">
         <SectionHeader
-          label="الأسئلة الشائعة"
-          title="كل ما تريد معرفته"
-          description="إجابات واضحة قبل الطلب — ونحن هنا إن احتجت المزيد."
+          label={t("faq.label")}
+          title={t("faq.title")}
+          description={t("faq.desc")}
         />
 
         <div className="space-y-3">
@@ -43,7 +46,7 @@ export function FaqSection() {
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start"
+                  className="flex min-h-11 w-full items-center justify-between gap-4 px-5 py-4 text-start"
                   aria-expanded={isOpen}
                 >
                   <span className="text-sm font-semibold text-foreground sm:text-base">
@@ -85,13 +88,11 @@ export function FaqSection() {
           className="mt-10 flex flex-col items-center gap-4 rounded-2xl border border-border bg-secondary/40 p-8 text-center"
         >
           <MessageCircle className="size-8 text-accent" />
-          <p className="font-semibold text-foreground">لم تجد إجابتك؟</p>
-          <p className="text-sm text-muted-foreground">
-            تواصل معنا على واتساب — نرد خلال ساعات العمل.
-          </p>
-          <Button variant="gold" className="gap-2">
+          <p className="font-semibold text-foreground">{t("faq.notFound")}</p>
+          <p className="text-sm text-muted-foreground">{t("faq.contact")}</p>
+          <Button variant="gold" className="min-h-11 gap-2">
             <MessageCircle className="size-4" />
-            راسلنا على واتساب
+            {t("faq.whatsapp")}
           </Button>
         </motion.div>
       </Container>

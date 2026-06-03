@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface DrawerProps {
@@ -26,6 +27,8 @@ export function Drawer({
   side = "start",
   className,
 }: DrawerProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -41,7 +44,7 @@ export function Drawer({
         <>
           <motion.button
             type="button"
-            aria-label="إغلاق"
+            aria-label={t("drawer.closeOverlay")}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -68,7 +71,7 @@ export function Drawer({
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                aria-label="إغلاق"
+                aria-label={t("drawer.close")}
                 className="rounded-full"
               >
                 <X className="size-5" />

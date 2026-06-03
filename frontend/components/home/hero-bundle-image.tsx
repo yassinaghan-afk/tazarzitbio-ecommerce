@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface HeroBundleImageProps {
@@ -10,6 +11,8 @@ interface HeroBundleImageProps {
 }
 
 export function HeroBundleImage({ className }: HeroBundleImageProps) {
+  const { t } = useTranslation();
+
   return (
     <div className={cn("relative mx-auto w-full max-w-[min(100%,28rem)]", className)}>
       <div
@@ -32,7 +35,7 @@ export function HeroBundleImage({ className }: HeroBundleImageProps) {
         />
         <Image
           src="/images/products/pack.png"
-          alt="باقة عائلية تازارزيت بيو — أملو، زيت أركان، ومكسرات بالعسل"
+          alt={t("hero.bundleAlt")}
           fill
           priority
           sizes="(max-width: 768px) 92vw, (max-width: 1200px) 45vw, 32rem"

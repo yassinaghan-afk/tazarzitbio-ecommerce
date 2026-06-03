@@ -4,18 +4,22 @@ import { motion } from "framer-motion";
 
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
-import { lifestyleMoments } from "@/lib/home-data";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getLifestyleMoments } from "@/lib/i18n/home-content";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 export function LifestyleSection() {
+  const { t } = useTranslation();
+  const lifestyleMoments = getLifestyleMoments(t);
+
   return (
     <Section id="lifestyle" spacing="lg" bg="alt">
       <Container>
         <SectionHeader
-          label="أسلوب الحياة"
-          title="لحظات مغربية دافئة"
-          description="منتجاتنا جزء من طقوس يومية — فطور، ضيافة، واحتفال — بلمسة فاخرة وطبيعية."
+          label={t("lifestyle.label")}
+          title={t("lifestyle.title")}
+          description={t("lifestyle.desc")}
         />
 
         <motion.div
@@ -42,7 +46,7 @@ export function LifestyleSection() {
                   {moment.emoji}
                 </span>
                 <p className="text-xs font-medium text-muted-foreground/80">
-                  صورة قريباً
+                  {t("lifestyle.photoSoon")}
                 </p>
               </div>
               <div className="p-5">
@@ -61,10 +65,9 @@ export function LifestyleSection() {
           viewport={VIEWPORT}
           className="mt-14 border-s-4 border-accent ps-6 text-lg font-medium italic text-foreground/80 md:text-xl"
         >
-          «الضيافة المغربية ليست عادة — إنها فن. ونحن نقدّم لكم أفضل ما في سوس
-          لتحييوا به من تحبون.»
+          {t("lifestyle.quote")}
           <footer className="mt-3 text-sm font-normal not-italic text-muted-foreground">
-            — فريق تازارزيت بيو
+            {t("lifestyle.quoteAuthor")}
           </footer>
         </motion.blockquote>
       </Container>

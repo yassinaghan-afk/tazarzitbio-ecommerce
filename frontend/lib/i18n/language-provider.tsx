@@ -25,7 +25,10 @@ interface LanguageContextValue {
   /** False until client has read localStorage — use Arabic until then */
   ready: boolean;
   setLocale: (locale: Language) => void;
-  t: (key: TranslationKey) => string;
+  t: (
+    key: TranslationKey,
+    params?: Record<string, string | number>,
+  ) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -72,7 +75,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const dir = languageDir(effectiveLocale);
 
   const t = useCallback(
-    (key: TranslationKey) => translate(effectiveLocale, key),
+    (key: TranslationKey, params?: Record<string, string | number>) =>
+      translate(effectiveLocale, key, params),
     [effectiveLocale],
   );
 

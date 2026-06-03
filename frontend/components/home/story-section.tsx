@@ -6,24 +6,22 @@ import { CheckCircle2 } from "lucide-react";
 
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
-import { storyPillars } from "@/lib/home-data";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getStoryPillars, getStoryValues } from "@/lib/i18n/home-content";
 import { slideInEnd, slideInStart, staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
-const values = [
-  "مكونات مختارة يدوياً من مزارعي سوس",
-  "تحضير تقليدي دون مواد حافظة",
-  "شراكات مباشرة مع منتجين محليين",
-  "تغليف فاخر يليق بالإهداء والضيافة",
-];
-
 export function StorySection() {
+  const { t } = useTranslation();
+  const values = getStoryValues(t);
+  const pillars = getStoryPillars(t);
+
   return (
     <Section id="story" spacing="lg">
       <Container>
         <SectionHeader
-          label="قصتنا"
-          title="من قلب سوس إلى مائدتك"
-          description="في تازارزيت بيو نحمل موروثاً غذائياً أصيلاً — بجودة تليق بكرم الضيافة المغربية."
+          label={t("story.label")}
+          title={t("story.title")}
+          description={t("story.desc")}
           align="center"
         />
 
@@ -37,7 +35,7 @@ export function StorySection() {
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-border/40 bg-card shadow-warm-xl">
               <Image
                 src="/images/sections/tazar.jpeg"
-                alt="سوس — أرض الأركان والعسل"
+                alt={t("story.caption")}
                 fill
                 className="object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 560px"
@@ -49,7 +47,7 @@ export function StorySection() {
               />
               <div className="absolute bottom-0 inset-x-0 p-5">
                 <p className="rounded-2xl border border-white/20 bg-black/35 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm">
-                  سوس — أرض الأركان والعسل
+                  {t("story.caption")}
                 </p>
               </div>
             </div>
@@ -63,9 +61,7 @@ export function StorySection() {
             className="flex flex-col gap-8"
           >
             <p className="text-lg leading-relaxed text-muted-foreground">
-              وُلدت تازارزيت بيو من حبٍّ للأرض والتقاليد. في كل مرحلة — من الحصاد
-              إلى التغليف — نحرص على أن تبقى المنتجات <strong className="text-foreground">طبيعية 100%</strong>،
-              بلا اختصارات ولا إضافات صناعية.
+              {t("story.body")}
             </p>
 
             <ul className="space-y-3">
@@ -84,7 +80,7 @@ export function StorySection() {
               viewport={VIEWPORT}
               className="grid gap-4 sm:grid-cols-2"
             >
-              {storyPillars.map((pillar) => (
+              {pillars.map((pillar) => (
                 <motion.li
                   key={pillar.step}
                   variants={staggerItem}

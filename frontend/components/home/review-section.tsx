@@ -7,20 +7,20 @@ import { Container, Section } from "@/components/layout/container";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { SectionHeader } from "@/components/sections/section-header";
 import { reviews } from "@/lib/home-data";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getMoroccanCitiesLabel } from "@/lib/i18n/home-content";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
-const moroccanCities = [
-  "الدار البيضاء", "الرباط", "مراكش", "أكادير", "طنجة", "فاس", "مكناس", "وجدة",
-];
-
 export function ReviewSection() {
+  const { t, locale } = useTranslation();
+
   return (
     <Section id="reviews" spacing="lg" bg="alt">
       <Container>
         <SectionHeader
-          label="آراء العملاء"
-          title="مغاربة يثقون بتازارزيت بيو"
-          description="تجارب حقيقية من مدن مختلفة — جودة، توصيل، وضيافة في كل طلب."
+          label={t("reviews.label")}
+          title={t("reviews.title")}
+          description={t("reviews.desc")}
         />
 
         <motion.div
@@ -36,11 +36,13 @@ export function ReviewSection() {
               ))}
             </div>
             <span className="text-lg font-bold">4.9</span>
-            <span className="text-sm text-muted-foreground">· +2000 تقييم</span>
+            <span className="text-sm text-muted-foreground">
+              {t("reviews.ratingLabel")}
+            </span>
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            عملاؤنا في: {moroccanCities.join(" · ")}
+            {t("reviews.citiesPrefix")} {getMoroccanCitiesLabel(locale)}
           </p>
         </motion.div>
 
@@ -65,7 +67,6 @@ export function ReviewSection() {
           ))}
         </motion.div>
 
-        {/* UGC-ready strip */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -74,11 +75,9 @@ export function ReviewSection() {
           className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
         >
           <p className="text-sm font-semibold text-foreground">
-            شاركنا تجربتك على إنستغرام
+            {t("reviews.ugcTitle")}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            @tazarzitbio · #تازارزيت_بيو · مساحة جاهزة لصور عملائكم (UGC)
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("reviews.ugcDesc")}</p>
           <div className="mt-6 flex justify-center gap-3">
             {["📸", "🫙", "🍯", "🎁", "✨", "🌿"].map((e) => (
               <span

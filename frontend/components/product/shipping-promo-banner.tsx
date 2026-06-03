@@ -4,10 +4,8 @@ import { Truck } from "lucide-react";
 
 import { FreeShippingProgress } from "@/components/shipping/free-shipping-progress";
 import { useCommerce } from "@/components/providers/commerce-provider";
-import {
-  DEFAULT_SHIPPING_SETTINGS,
-  FREE_SHIPPING_MARKETING_AR,
-} from "@/lib/shipping/settings";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { DEFAULT_SHIPPING_SETTINGS } from "@/lib/shipping/settings";
 import { cn } from "@/lib/utils";
 
 interface ShippingPromoBannerProps {
@@ -15,8 +13,10 @@ interface ShippingPromoBannerProps {
 }
 
 export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
+  const { t } = useTranslation();
   const { shipping } = useCommerce();
   const threshold = shipping.freeShippingThreshold;
+  const fee = DEFAULT_SHIPPING_SETTINGS.defaultShippingPrice;
 
   if (shipping.isFreeShipping && shipping.productCount > 0) {
     return (
@@ -28,8 +28,10 @@ export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
       >
         <Truck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
         <div>
-          <p className="font-semibold text-emerald-800">Livraison gratuite</p>
-          <p className="text-emerald-700/90">توصيل مجاني على طلبك الحالي ✓</p>
+          <p className="font-semibold text-emerald-800">
+            {t("shipping.freeNow")}
+          </p>
+          <p className="text-emerald-700/90">{t("shipping.freeNowSub")}</p>
         </div>
       </div>
     );
@@ -46,9 +48,7 @@ export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
         <div className="flex items-start gap-2">
           <Truck className="mt-0.5 size-4 shrink-0 text-accent" />
           <p className="leading-relaxed text-foreground/90">
-            {FREE_SHIPPING_MARKETING_AR} — رسوم التوصيل{" "}
-            {DEFAULT_SHIPPING_SETTINGS.defaultShippingPrice} د.م. للطلبات الأقل من{" "}
-            {threshold} د.م.
+            {t("shipping.promoDetail", { threshold, fee })}
           </p>
         </div>
         <FreeShippingProgress shipping={shipping} compact />
@@ -64,7 +64,7 @@ export function ShippingPromoBanner({ className }: ShippingPromoBannerProps) {
       )}
     >
       <Truck className="mt-0.5 size-4 shrink-0 text-accent" />
-      <p>{FREE_SHIPPING_MARKETING_AR}</p>
+      <p>{t("shipping.marketingThreshold")}</p>
     </div>
   );
 }

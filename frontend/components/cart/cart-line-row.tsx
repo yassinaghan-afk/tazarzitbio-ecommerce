@@ -7,6 +7,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import type { CartLineItem } from "@/lib/cart/types";
+import { useTranslation } from "@/lib/i18n/language-provider";
 
 interface CartLineRowProps {
   item: CartLineItem;
@@ -21,6 +22,7 @@ export function CartLineRow({
   showRemove = true,
   linkToProduct = false,
 }: CartLineRowProps) {
+  const { t } = useTranslation();
   const { updateQuantity, removeItem } = useCommerce();
   const imageSize = compact ? "h-12 w-12" : "h-16 w-16";
 
@@ -71,7 +73,7 @@ export function CartLineRow({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="تقليل الكمية"
+              aria-label={t("cart.decrease")}
               onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
             >
               <Minus className="size-3.5" />
@@ -83,14 +85,14 @@ export function CartLineRow({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="زيادة الكمية"
+              aria-label={t("cart.increase")}
               onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
             >
               <Plus className="size-3.5" />
             </Button>
           </div>
           <span className="text-sm font-extrabold tabular-nums text-accent">
-            {item.unitPrice * item.quantity} د.م.
+            {item.unitPrice * item.quantity} {t("common.currency")}
           </span>
         </div>
       </div>
@@ -100,7 +102,7 @@ export function CartLineRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="حذف"
+          aria-label={t("cart.remove")}
           className="shrink-0 self-start text-muted-foreground hover:text-destructive"
           onClick={() => removeItem(item.lineId)}
         >

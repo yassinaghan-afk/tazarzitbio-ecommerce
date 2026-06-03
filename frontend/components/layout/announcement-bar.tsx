@@ -22,6 +22,8 @@ import {
   HEADER_HEIGHT_MOBILE_PX,
 } from "@/lib/brand";
 import { useAnnouncementBar } from "@/hooks/use-announcement-bar";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { resolveAnnouncementText } from "@/lib/i18n/announcement-text";
 import { cn } from "@/lib/utils";
 
 const ICON_MAP: Record<AnnouncementIcon, LucideIcon> = {
@@ -34,6 +36,7 @@ const ICON_MAP: Record<AnnouncementIcon, LucideIcon> = {
 };
 
 export function AnnouncementBar() {
+  const { t, locale } = useTranslation();
   const config = useAnnouncementBar();
   const messages = useMemo(
     () => getActiveAnnouncementMessages(config),
@@ -45,6 +48,9 @@ export function AnnouncementBar() {
   const visible = config.isEnabled && messages.length > 0;
   const current = messages[index] ?? messages[0];
   const Icon = current ? ICON_MAP[current.icon] ?? Truck : Truck;
+  const displayText = current
+    ? resolveAnnouncementText(current, locale)
+    : "";
 
   useEffect(() => {
     const root = document.documentElement;
@@ -94,13 +100,13 @@ export function AnnouncementBar() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
       role="region"
-      aria-label="إعلانات تازارزيت بيو"
+      aria-label={t("announce.regionAria")}
       aria-live="polite"
     >
       <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 items-center justify-center px-4 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={current.id}
+            key={`${current.id}-${locale}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -115,7 +121,7 @@ export function AnnouncementBar() {
               aria-hidden
             />
             <p className="truncate text-[0.7rem] font-semibold leading-tight text-[hsl(42_42%_96%)] sm:text-xs sm:leading-snug">
-              {current.text}
+              {displayText}
             </p>
           </motion.div>
         </AnimatePresence>

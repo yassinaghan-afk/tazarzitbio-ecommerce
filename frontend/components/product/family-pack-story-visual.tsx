@@ -1,8 +1,9 @@
+"use client";
+
 import Image from "next/image";
 
 import { Container } from "@/components/layout/container";
 import {
-  FAMILY_PACK_STORY_ALT,
   FAMILY_PACK_STORY_DESKTOP_HEIGHT,
   FAMILY_PACK_STORY_DESKTOP_SRC,
   FAMILY_PACK_STORY_DESKTOP_WIDTH,
@@ -10,6 +11,7 @@ import {
   FAMILY_PACK_STORY_MOBILE_SRC,
   FAMILY_PACK_STORY_MOBILE_WIDTH,
 } from "@/lib/products/family-pack-story";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 const frameClass =
@@ -20,19 +22,18 @@ interface FamilyPackStoryVisualProps {
 }
 
 export function FamilyPackStoryVisual({ className }: FamilyPackStoryVisualProps) {
-  return (
-    <figure
-      className={cn("w-full", className)}
-      aria-label={FAMILY_PACK_STORY_ALT}
-    >
-      <figcaption className="sr-only">{FAMILY_PACK_STORY_ALT}</figcaption>
+  const { t } = useTranslation();
+  const alt = t("familyPack.storyAlt");
 
-      {/* Mobile — vertical storytelling, full width */}
+  return (
+    <figure className={cn("w-full", className)} aria-label={alt}>
+      <figcaption className="sr-only">{alt}</figcaption>
+
       <div className="px-4 sm:px-6 md:hidden">
         <div className={frameClass}>
           <Image
             src={FAMILY_PACK_STORY_MOBILE_SRC}
-            alt={FAMILY_PACK_STORY_ALT}
+            alt={alt}
             width={FAMILY_PACK_STORY_MOBILE_WIDTH}
             height={FAMILY_PACK_STORY_MOBILE_HEIGHT}
             sizes="100vw"
@@ -42,22 +43,19 @@ export function FamilyPackStoryVisual({ className }: FamilyPackStoryVisualProps)
         </div>
       </div>
 
-      {/* Tablet / desktop — wide centered container */}
-      <div className="hidden md:block">
-        <Container className="max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className={frameClass}>
-            <Image
-              src={FAMILY_PACK_STORY_DESKTOP_SRC}
-              alt={FAMILY_PACK_STORY_ALT}
-              width={FAMILY_PACK_STORY_DESKTOP_WIDTH}
-              height={FAMILY_PACK_STORY_DESKTOP_HEIGHT}
-              sizes="(min-width: 1024px) 1024px, 90vw"
-              loading="lazy"
-              className="mx-auto h-auto w-full max-w-full object-contain object-center"
-            />
-          </div>
-        </Container>
-      </div>
+      <Container size="lg" className="hidden md:block">
+        <div className={frameClass}>
+          <Image
+            src={FAMILY_PACK_STORY_DESKTOP_SRC}
+            alt={alt}
+            width={FAMILY_PACK_STORY_DESKTOP_WIDTH}
+            height={FAMILY_PACK_STORY_DESKTOP_HEIGHT}
+            sizes="(max-width: 1280px) 90vw, 1100px"
+            loading="lazy"
+            className="h-auto w-full object-contain object-center"
+          />
+        </div>
+      </Container>
     </figure>
   );
 }

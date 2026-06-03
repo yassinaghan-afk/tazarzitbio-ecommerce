@@ -11,18 +11,19 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import { getTrustBadges } from "@/lib/i18n/home-content";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
-const badges = [
-  { icon: Leaf,        title: "طبيعي 100%",          desc: "بدون إضافات صناعية" },
-  { icon: MapPin,      title: "من قلب سوس",          desc: "أصالة مغربية موثقة" },
-  { icon: ShieldCheck, title: "الدفع عند الاستلام", desc: "بدون مخاطرة مالية" },
-  { icon: Package,     title: "تغليف فاخر",          desc: "جاهز للإهداء" },
-  { icon: Truck,       title: "توصيل لجميع المدن",   desc: "سريع وموثوق" },
-  { icon: BadgeCheck,  title: "ضمان الجودة",        desc: "رضا أو استبدال" },
-];
+const TRUST_ICONS = [Leaf, MapPin, ShieldCheck, Package, Truck, BadgeCheck];
 
 export function TrustBadges() {
+  const { t } = useTranslation();
+  const badges = getTrustBadges(t).map((badge, i) => ({
+    ...badge,
+    icon: TRUST_ICONS[i]!,
+  }));
+
   return (
     <motion.div
       className="relative z-20 -mt-8 md:-mt-10"

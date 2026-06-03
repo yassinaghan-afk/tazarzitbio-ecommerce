@@ -12,6 +12,7 @@ import {
   getStartingOffer,
 } from "@/lib/cart/product-payload";
 import { getPublicProductBySlug } from "@/lib/products/catalog";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 export interface BundleItem {
@@ -51,6 +52,7 @@ export function BundleCard({
   productSlug,
   className,
 }: BundleCardProps) {
+  const { t } = useTranslation();
   const { orderNow } = useCommerce();
   const savings = comparePrice != null ? comparePrice - price : 0;
 
@@ -72,7 +74,9 @@ export function BundleCard({
     >
       {isPopular && (
         <div className="absolute end-0 top-0 overflow-hidden rounded-bl-2xl rounded-tr-2xl bg-gold-gradient px-4 py-1.5">
-          <span className="text-xs font-bold text-foreground">الأكثر مبيعاً ⭐</span>
+          <span className="text-xs font-bold text-foreground">
+            {t("bundle.popular")}
+          </span>
         </div>
       )}
 
@@ -107,16 +111,18 @@ export function BundleCard({
               <span className="text-2xl font-bold tabular-nums text-accent">
                 {price}
               </span>
-              <span className="text-sm font-medium text-accent">د.م.</span>
+              <span className="text-sm font-medium text-accent">
+                {t("common.currency")}
+              </span>
               {comparePrice != null && (
                 <span className="text-sm text-muted-foreground line-through tabular-nums">
-                  {comparePrice} د.م.
+                  {comparePrice} {t("common.currency")}
                 </span>
               )}
             </div>
             {savings > 0 && (
               <Badge variant="success" className="mt-1">
-                وفّر {savings} د.م.
+                {t("bundle.save", { amount: savings })}
               </Badge>
             )}
           </div>
@@ -129,7 +135,7 @@ export function BundleCard({
             disabled={!productSlug}
           >
             <Zap className="size-4" />
-            اطلب الآن
+            {t("bundle.orderNow")}
           </Button>
         </div>
       </div>
