@@ -2,6 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { ADMIN_COOKIE_NAME, isAdminRequest } from "@/lib/admin/auth";
 
+/**
+ * Protects /admin pages and /api/admin/* using the httpOnly tazarzit_admin cookie.
+ * Login sets the cookie after ADMIN_PASSWORD matches (see /api/admin/login).
+ */
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 

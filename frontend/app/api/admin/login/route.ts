@@ -1,8 +1,25 @@
 import { NextResponse } from "next/server";
 
-import { ADMIN_COOKIE_NAME, createAdminCookieValue } from "@/lib/admin/auth";
+import {
+  ADMIN_COOKIE_NAME,
+  createAdminCookieValue,
+  getAdminPassword,
+} from "@/lib/admin/auth";
 
+/**
+ * POST /api/admin/login
+ * Body: { "password": "..." }
+ * Compares password to process.env.ADMIN_PASSWORD (see lib/admin/auth.ts).
+ */
 export async function POST(req: Request) {
+  const expected = getAdminPassword();
+  if (!expected) {
+    return NextResponse.json(
+      { error: "Admin password not configured on server" },
+      { status: 503 },
+    );
+  }
+
   let body: { password?: string } | null = null;
   try {
     body = (await req.json()) as { password?: string };
@@ -11,8 +28,7 @@ export async function POST(req: Request) {
   }
 
   const provided = (body?.password ?? "").toString();
-  const expected = process.env.ADMIN_PASSWORD ?? "";
-  if (!expected || provided !== expected) {
+  if (provided !== expected) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -26,4 +42,3 @@ export async function POST(req: Request) {
   });
   return res;
 }
-
