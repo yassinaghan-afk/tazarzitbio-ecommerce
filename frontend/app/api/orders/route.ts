@@ -62,9 +62,17 @@ export async function POST(req: Request) {
     orders: [order, ...prev.orders],
   }));
 
-  // Non-blocking: export to Google Sheets (if configured). Never affects checkout.
+  // Await export so the serverless handler does not exit before fetch completes.
+  // Errors are caught inside sendOrderToGoogleSheet — checkout still succeeds.
   const sourcePage = req.headers.get("referer") ?? "";
-  void sendOrderToGoogleSheet(order, { sourcePage });
+  try {
+    await sendOrderToGoogleSheet(order, { sourcePage });
+  } catch (err) {
+    console.error("Google Sheets error", {
+      orderId: order.orderId,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   const res: CreateOrderResponse = { order };
   return NextResponse.json(res);
