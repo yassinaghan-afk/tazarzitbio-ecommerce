@@ -73,7 +73,7 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               aria-label="سلة التسوق"
-              className="relative rounded-full hover:bg-secondary/80"
+              className="relative size-11 min-h-11 min-w-11 rounded-full hover:bg-secondary/80"
               onClick={openCart}
             >
               <ShoppingBag className="size-5" strokeWidth={1.75} />
@@ -96,7 +96,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full lg:hidden"
+              className="size-11 min-h-11 min-w-11 rounded-full lg:hidden"
               aria-label={menuOpen ? "أغلق القائمة" : "افتح القائمة"}
               onClick={() => setMenuOpen((v) => !v)}
             >
@@ -118,7 +118,13 @@ export function SiteHeader() {
           >
             <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6">
               <div className="mb-5 flex justify-center border-b border-border/50 pb-6 pt-1">
-                <BrandLogo variant="compact" />
+                <Link
+                  href="/"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <BrandLogo variant="compact" />
+                </Link>
               </div>
               {navLinks.map((link, i) => (
                 <motion.div

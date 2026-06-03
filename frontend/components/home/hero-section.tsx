@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Award, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 
@@ -114,17 +115,23 @@ export function HeroSection() {
               variant="gold"
               size="xl"
               className="min-h-[3rem] flex-1 gap-2 rounded-full px-6 shadow-gold sm:flex-none sm:px-8"
+              asChild
             >
-              <ShoppingBag className="size-5" strokeWidth={2} />
-              اكتشف المجموعة
+              <Link href="/products">
+                <ShoppingBag className="size-5" strokeWidth={2} />
+                اكتشف المجموعة
+              </Link>
             </Button>
             <Button
               variant="outline"
               size="xl"
               className="min-h-[3rem] gap-2 rounded-full border-foreground/15 bg-card/50 px-6 backdrop-blur-sm sm:px-8"
+              asChild
             >
-              قصتنا
-              <ArrowLeft className="size-5" />
+              <Link href="/#story">
+                قصتنا
+                <ArrowLeft className="size-5" />
+              </Link>
             </Button>
           </motion.div>
 

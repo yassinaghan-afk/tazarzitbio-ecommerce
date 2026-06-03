@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShoppingBag, Zap } from "lucide-react";
 
@@ -23,13 +22,18 @@ import { cn } from "@/lib/utils";
 interface CatalogProductCardProps {
   product: PublicProduct;
   className?: string;
+  /** Thank-you upsell: single «اطلب الآن» → checkout (new order) */
+  showAddToCart?: boolean;
 }
 
 const MOBILE_CTA =
   "min-h-12 h-12 w-full text-base font-bold rounded-xl sm:min-h-11 sm:h-11 sm:flex-1";
 
-export function CatalogProductCard({ product, className }: CatalogProductCardProps) {
-  const router = useRouter();
+export function CatalogProductCard({
+  product,
+  className,
+  showAddToCart = true,
+}: CatalogProductCardProps) {
   const { orderNow, addToCart } = useCommerce();
   const startingOffer = getStartingOffer(product);
   const fromPrice = startingOffer.price;
@@ -51,28 +55,20 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
     );
   };
 
-  const goToProduct = () => {
-    router.push(productHref);
-  };
+  const orderOnlyCard = orderOnly || !showAddToCart;
 
   return (
     <motion.article
       {...cardHoverProps}
-      role="link"
-      tabIndex={0}
-      onClick={goToProduct}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          goToProduct();
-        }
-      }}
       className={cn(
-        "group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md",
+        "group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md",
         className,
       )}
     >
-      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810]">
+      <Link
+        href={productHref}
+        className="relative block aspect-square overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,hsl(45_80%_55%/0.18)_0%,transparent_55%)]"
@@ -92,7 +88,7 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
             </Badge>
           ))}
         </div>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-center justify-between gap-2">
@@ -102,14 +98,14 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
           )}
         </div>
 
-        <div>
+        <Link href={productHref} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
             {product.nameAr}
           </h3>
           <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {product.shortDescription}
           </p>
-        </div>
+        </Link>
 
         <div className="flex flex-wrap items-baseline gap-2">
           {hasVariants && (
@@ -124,20 +120,19 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
         <div
           className={cn(
             "mt-auto flex flex-col gap-2.5",
-            !orderOnly && "sm:flex-row",
+            !orderOnlyCard && "sm:flex-row",
           )}
-          onClick={(e) => e.stopPropagation()}
         >
           <Button
             variant="gold"
             size="lg"
-            className={cn(MOBILE_CTA, "gap-2 shadow-gold", orderOnly && "sm:w-full")}
+            className={cn(MOBILE_CTA, "gap-2 shadow-gold", orderOnlyCard && "sm:w-full")}
             onClick={handleOrderNow}
           >
             <Zap className="size-4" />
             اطلب الآن
           </Button>
-          {!orderOnly && (
+          {showAddToCart && !orderOnly && (
             <Button
               variant="outline"
               size="lg"
@@ -149,7 +144,7 @@ export function CatalogProductCard({ product, className }: CatalogProductCardPro
             </Button>
           )}
         </div>
-        {!orderOnly && (
+        {showAddToCart && !orderOnly && (
           <Button
             variant="ghost"
             size="sm"

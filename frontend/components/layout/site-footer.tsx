@@ -39,8 +39,8 @@ export function SiteFooter() {
               {shopLinks.map((name) => (
                 <li key={name}>
                   <Link
-                    href="#"
-                    className="text-sm text-foreground/70 transition-colors hover:text-accent"
+                    href="/products"
+                    className="inline-flex min-h-11 items-center text-sm text-foreground/70 transition-colors hover:text-accent"
                   >
                     {name}
                   </Link>
@@ -48,8 +48,8 @@ export function SiteFooter() {
               ))}
               <li>
                 <Link
-                  href="#"
-                  className="text-sm font-semibold text-accent transition-colors hover:text-accent/80"
+                  href="/#bundles"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-accent transition-colors hover:text-accent/80"
                 >
                   علب الهدايا والعروض العائلية →
                 </Link>
@@ -63,16 +63,24 @@ export function SiteFooter() {
               معلومات
             </p>
             <ul className="mt-4 space-y-3">
-              {infoLinks.map((name) => (
-                <li key={name}>
-                  <Link
-                    href="#"
-                    className="text-sm text-foreground/70 transition-colors hover:text-accent"
-                  >
-                    {name}
-                  </Link>
-                </li>
-              ))}
+              {infoLinks.map((name) => {
+                const href =
+                  name === "من نحن"
+                    ? "/#story"
+                    : name === "الأسئلة الشائعة"
+                      ? "/#faq"
+                      : "/products";
+                return (
+                  <li key={name}>
+                    <Link
+                      href={href}
+                      className="inline-flex min-h-11 items-center text-sm text-foreground/70 transition-colors hover:text-accent"
+                    >
+                      {name}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

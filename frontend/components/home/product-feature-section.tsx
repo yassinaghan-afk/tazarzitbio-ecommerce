@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Zap } from "lucide-react";
@@ -60,8 +61,6 @@ export function ProductFeatureSection({
     orderNow(buildAddToCartPayload(product, getStartingOffer(product)));
   };
 
-  const goToProduct = () => router.push(productHref);
-
   const copy = (
     <motion.div
       variants={fadeUp}
@@ -74,9 +73,11 @@ export function ProductFeatureSection({
         <Badge variant="premium" className="w-fit gap-1.5 px-3 py-1.5 text-xs">
           {label}
         </Badge>
-        <h2 className="text-display text-3xl text-foreground sm:text-4xl lg:text-[2.35rem]">
-          {title}
-        </h2>
+        <Link href={productHref}>
+          <h2 className="text-display text-3xl text-foreground transition-colors hover:text-accent sm:text-4xl lg:text-[2.35rem]">
+            {title}
+          </h2>
+        </Link>
         <p className="max-w-lg text-base leading-[1.85] text-muted-foreground sm:text-lg">
           {description}
         </p>
@@ -134,15 +135,17 @@ export function ProductFeatureSection({
   );
 
   const visual = (
-    <motion.button
-      type="button"
+    <motion.div
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
       viewport={VIEWPORT}
-      onClick={goToProduct}
-      className="relative w-full cursor-pointer text-start"
+      className="relative w-full text-start"
     >
+      <Link
+        href={productHref}
+        className="relative block w-full rounded-[1.75rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:rounded-[2rem]"
+      >
       {badge && (
         <div className="glass-card absolute start-4 top-4 z-10 rounded-full px-3 py-1.5 text-xs font-semibold text-accent shadow-warm-sm">
           {badge}
@@ -166,7 +169,8 @@ export function ProductFeatureSection({
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1a1008]/35 via-transparent to-[hsl(45_80%_55%/0.06)]"
         />
       </div>
-    </motion.button>
+      </Link>
+    </motion.div>
   );
 
   return (

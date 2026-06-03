@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -11,18 +11,19 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { HoneyUpsellSection } from "@/components/checkout/honey-upsell-section";
+import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { useCatalogProducts } from "@/hooks/use-catalog";
 import { Container, Section } from "@/components/layout/container";
 import { ThankYouVerification } from "@/components/thank-you/thank-you-verification";
 import { Button } from "@/components/ui/button";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
-import { getHoneyUpsellRecommendations } from "@/lib/products/honey-upsell";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import { trackPurchase } from "@/lib/tracking/events";
 
 export default function ThankYouPage() {
+  const allProducts = useCatalogProducts();
   const [hydrated, setHydrated] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
 
@@ -53,13 +54,6 @@ export default function ThankYouPage() {
       shipping: order.shippingFee,
       total: order.total,
     });
-  }, [order]);
-
-  const recommended = useMemo(() => {
-    const slugs =
-      order?.items.map((i) => i.slug).filter((s): s is string => Boolean(s)) ??
-      [];
-    return getHoneyUpsellRecommendations(slugs);
   }, [order]);
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {
@@ -228,7 +222,7 @@ export default function ThankYouPage() {
         </Container>
       </Section>
 
-      {recommended.length > 0 && (
+      {allProducts.length > 0 && (
         <Section spacing="lg" bg="alt">
           <Container>
             <motion.div
@@ -244,17 +238,22 @@ export default function ThankYouPage() {
               </motion.div>
               <motion.div variants={staggerItem}>
                 <p className="mb-8 text-center text-sm text-muted-foreground">
-                  عسل طبيعي من سوس — أضف نوعاً آخر إلى طلبك القادم
+                  اطلب منتجاً جديداً — يفتح الدفع مباشرة مع المنتج المختار
                 </p>
               </motion.div>
-              <div className="mx-auto max-w-3xl">
-                <HoneyUpsellSection
-                  products={recommended}
-                  title="عسل مقترح لك"
-                  subtitle="عسل الدغموس · الزعتر · الأوكالبتوس"
-                  layout="grid"
-                />
-              </div>
+              <motion.div
+                variants={staggerContainer}
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              >
+                {allProducts.map((product) => (
+                  <motion.div key={product.id} variants={staggerItem}>
+                    <CatalogProductCard
+                      product={product}
+                      showAddToCart={false}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
             </motion.div>
           </Container>
         </Section>

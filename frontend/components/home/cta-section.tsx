@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 
@@ -63,13 +64,17 @@ export function CtaSection() {
             variants={staggerItem}
             className="flex flex-wrap justify-center gap-4"
           >
-            <Button variant="gold" size="xl" className="gap-2 shadow-gold">
-              <ShoppingBag className="size-5" />
-              اطلب الآن
+            <Button variant="gold" size="xl" className="min-h-12 gap-2 shadow-gold" asChild>
+              <Link href="/products">
+                <ShoppingBag className="size-5" />
+                اطلب الآن
+              </Link>
             </Button>
-            <Button variant="light" size="xl" className="gap-2">
-              تصفح المنتجات
-              <ArrowLeft className="size-5" />
+            <Button variant="light" size="xl" className="min-h-12 gap-2" asChild>
+              <Link href="/products">
+                تصفح المنتجات
+                <ArrowLeft className="size-5" />
+              </Link>
             </Button>
           </motion.div>
 
