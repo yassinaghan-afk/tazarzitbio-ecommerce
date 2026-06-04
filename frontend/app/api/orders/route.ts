@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
 import type { OrderRecord } from "@/lib/orders/types";
 import { sendOrderToGoogleSheet } from "@/lib/google-sheets";
+import { sendOrderTelegramNotification } from "@/lib/telegram";
 import { updateStore } from "@/lib/server/store";
 import crypto from "node:crypto";
 
@@ -69,6 +70,15 @@ export async function POST(req: Request) {
     await sendOrderToGoogleSheet(order, { sourcePage });
   } catch (err) {
     console.error("Google Sheets error", {
+      orderId: order.orderId,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  try {
+    await sendOrderTelegramNotification(order);
+  } catch (err) {
+    console.error("Telegram notification error", {
       orderId: order.orderId,
       message: err instanceof Error ? err.message : String(err),
     });
