@@ -21,7 +21,6 @@ import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import { useTranslation } from "@/lib/i18n/language-provider";
-import { trackPurchase } from "@/lib/tracking/events";
 
 export default function ThankYouPage() {
   const { t } = useTranslation();
@@ -41,22 +40,8 @@ export default function ThankYouPage() {
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (!order) return;
-    trackPurchase({
-      orderId: order.id,
-      products: order.items.map((item, index) => ({
-        productId: item.slug ?? `order-item-${index}`,
-        slug: item.slug ?? "",
-        name: item.nameAr,
-        price: item.unitPrice,
-        quantity: item.quantity,
-      })),
-      subtotal: order.subtotal,
-      shipping: order.shippingFee,
-      total: order.total,
-    });
-  }, [order]);
+  // Purchase is tracked only after POST /api/orders succeeds (Pixel + CAPI).
+  // Do not fire Purchase on thank-you open/refresh.
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {
     setOrder((prev) => {

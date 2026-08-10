@@ -55,6 +55,8 @@ export interface ViewContentPayload {
   name: string;
   price: number;
   quantity?: number;
+  /** Shared Meta Pixel + CAPI event_id for deduplication */
+  eventId?: string;
 }
 
 export interface AddToCartTrackingPayload {
@@ -63,12 +65,14 @@ export interface AddToCartTrackingPayload {
   name: string;
   price: number;
   quantity: number;
+  eventId?: string;
 }
 
 export interface CheckoutTrackingPayload {
   products: TrackingProduct[];
   subtotal: number;
   total: number;
+  eventId?: string;
 }
 
 export interface PurchaseTrackingPayload {
@@ -78,6 +82,8 @@ export interface PurchaseTrackingPayload {
   shipping?: number;
   total: number;
   currency?: typeof TRACKING_CURRENCY;
+  /** Must match server CAPI Purchase event_id */
+  eventId?: string;
 }
 
 export const PURCHASE_TRACKED_PREFIX = "tazarzit-tracked-purchase-";

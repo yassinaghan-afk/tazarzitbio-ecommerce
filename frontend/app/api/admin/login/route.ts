@@ -4,7 +4,8 @@ import {
   ADMIN_COOKIE_NAME,
   ADMIN_SESSION_MAX_AGE,
   createAdminSessionToken,
-  getAdminPassword,
+  isAdminPasswordConfigured,
+  shouldUseSecureAdminCookie,
   verifyAdminPassword,
 } from "@/lib/admin/auth";
 import { logAudit } from "@/lib/server/audit";
@@ -13,7 +14,13 @@ import { logAudit } from "@/lib/server/audit";
  * POST /api/admin/login
  * Body: { "password": "..." }
  * Rate-limited per IP. On success sets a signed httpOnly session cookie.
+ *
+ * Reads ADMIN_PASSWORD / ADMIN_PASSWORD_SHA256 from the *runtime* process
+ * environment (EasyPanel Environment variables), not from client code.
  */
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 8;
@@ -44,11 +51,12 @@ function recordFailure(ip: string) {
 }
 
 export async function POST(req: Request) {
-  const configured =
-    Boolean(getAdminPassword()) || Boolean(process.env.ADMIN_PASSWORD_SHA256);
-  if (!configured) {
+  if (!isAdminPasswordConfigured()) {
     return NextResponse.json(
-      { error: "Admin password not configured on server" },
+      {
+        error: "Admin password not configured on server",
+        code: "ADMIN_PASSWORD_MISSING",
+      },
       { status: 503 },
     );
   }
@@ -56,7 +64,10 @@ export async function POST(req: Request) {
   const ip = clientIp(req);
   if (isRateLimited(ip)) {
     return NextResponse.json(
-      { error: "Too many attempts. Try again in a few minutes." },
+      {
+        error: "Too many attempts. Try again in a few minutes.",
+        code: "RATE_LIMITED",
+      },
       { status: 429 },
     );
   }
@@ -72,20 +83,33 @@ export async function POST(req: Request) {
   const ok = await verifyAdminPassword(provided);
   if (!ok) {
     recordFailure(ip);
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized", code: "INVALID_PASSWORD" },
+      { status: 401 },
+    );
   }
 
   attempts.delete(ip);
   void logAudit("Admin signed in", "auth");
 
-  const token = await createAdminSessionToken();
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(ADMIN_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: ADMIN_SESSION_MAX_AGE,
-  });
-  return res;
+  try {
+    const token = await createAdminSessionToken();
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set(ADMIN_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: shouldUseSecureAdminCookie(),
+      path: "/",
+      maxAge: ADMIN_SESSION_MAX_AGE,
+    });
+    return res;
+  } catch {
+    return NextResponse.json(
+      {
+        error: "Admin session secret is not configured on server",
+        code: "SESSION_SECRET_MISSING",
+      },
+      { status: 503 },
+    );
+  }
 }

@@ -61,6 +61,10 @@ export interface CreateOrderInput {
 
 export interface CreateOrderResponse {
   order: OrderRecord;
+  /** Shared Meta Pixel + CAPI event_id for Purchase deduplication */
+  meta?: {
+    purchaseEventId: string;
+  };
 }
 
 export const ORDER_STATUSES: { id: OrderStatus; labelAr: string; label: string }[] = [

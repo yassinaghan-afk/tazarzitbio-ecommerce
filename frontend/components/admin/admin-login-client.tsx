@@ -26,7 +26,22 @@ export function AdminLoginClient() {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setError("Incorrect password. Please try again.");
+        let code = "";
+        try {
+          const data = (await res.json()) as { code?: string; error?: string };
+          code = data.code ?? "";
+        } catch {
+          /* ignore non-JSON bodies */
+        }
+        if (res.status === 503 || code === "ADMIN_PASSWORD_MISSING") {
+          setError(
+            "Admin password is not configured on the server. Add ADMIN_PASSWORD in EasyPanel Environment and redeploy.",
+          );
+        } else if (res.status === 429 || code === "RATE_LIMITED") {
+          setError("Too many attempts. Wait a few minutes and try again.");
+        } else {
+          setError("Incorrect password. Please try again.");
+        }
         return;
       }
       router.push("/admin");

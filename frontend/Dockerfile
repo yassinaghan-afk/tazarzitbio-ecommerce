@@ -8,6 +8,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Only public build-time vars belong here (NEXT_PUBLIC_*).
+# Admin secrets (ADMIN_PASSWORD, ADMIN_SESSION_SECRET, …) must NOT be build args.
+# Set them as EasyPanel *Environment* (runtime) variables so login reads them live.
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ARG NEXT_PUBLIC_SITE_URL=https://tazarzitbio.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
@@ -22,6 +25,8 @@ ENV NODE_ENV=production
 # Internal container port — EasyPanel domain proxy must target this port (3000).
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+# Runtime secrets come from the host/orchestrator env at container start
+# (EasyPanel Environment). Do not hard-code them in this image.
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

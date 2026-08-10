@@ -2,6 +2,7 @@ import * as facebookPixel from "@/lib/facebook-pixel";
 import * as tiktokPixel from "@/lib/tiktok-pixel";
 import * as snapchatPixel from "@/lib/snapchat-pixel";
 import * as googleAnalytics from "@/lib/google-analytics";
+import { createMetaEventId, getMetaBrowserIds } from "@/lib/meta/browser";
 import { logTracking } from "@/lib/tracking/logger";
 import { isTrackingPlatformActive } from "@/lib/tracking/runtime";
 import {
@@ -35,12 +36,67 @@ export function trackPageView(url?: string): void {
   }
 }
 
+/** Mirror browser Meta events to server CAPI with the same event_id (fire-and-forget). */
+function sendMetaCapiMirror(payload: {
+  eventName: "ViewContent" | "AddToCart" | "InitiateCheckout";
+  eventId: string;
+  customData: Record<string, unknown>;
+}): void {
+  if (typeof window === "undefined") return;
+  if (!isTrackingPlatformActive("facebook")) return;
+
+  const ids = getMetaBrowserIds();
+  const body = {
+    eventName: payload.eventName,
+    eventId: payload.eventId,
+    eventSourceUrl: window.location.href,
+    customData: payload.customData,
+    userData: {
+      ...(ids.fbp ? { fbp: ids.fbp } : {}),
+      ...(ids.fbc ? { fbc: ids.fbc } : {}),
+    },
+  };
+
+  try {
+    const json = JSON.stringify(body);
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      const blob = new Blob([json], { type: "application/json" });
+      navigator.sendBeacon("/api/meta/capi", blob);
+      return;
+    }
+  } catch {
+    /* fall through to fetch */
+  }
+
+  void fetch("/api/meta/capi", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    keepalive: true,
+  }).catch(() => null);
+}
+
 export function trackViewContent(payload: ViewContentPayload): void {
   if (typeof window === "undefined") return;
-  logTracking("ViewContent", payload);
+  const eventId = payload.eventId || createMetaEventId("vc");
+  const quantity = payload.quantity ?? 1;
+  const value = payload.price * quantity;
+
+  logTracking("ViewContent", { ...payload, eventId });
   if (isTrackingPlatformActive("facebook")) {
-    logTracking("ViewContent", payload, "Meta");
-    facebookPixel.trackViewContent(payload);
+    logTracking("ViewContent", { ...payload, eventId }, "Meta");
+    facebookPixel.trackViewContent({ ...payload, eventId });
+    sendMetaCapiMirror({
+      eventName: "ViewContent",
+      eventId,
+      customData: {
+        content_ids: [payload.productId],
+        content_name: payload.name,
+        content_type: "product",
+        value,
+        currency: TRACKING_CURRENCY,
+      },
+    });
   }
   if (isTrackingPlatformActive("tiktok")) {
     logTracking("ViewContent", payload, "TikTok");
@@ -58,10 +114,32 @@ export function trackViewContent(payload: ViewContentPayload): void {
 
 export function trackAddToCart(payload: AddToCartTrackingPayload): void {
   if (typeof window === "undefined") return;
-  logTracking("AddToCart", payload);
+  const eventId = payload.eventId || createMetaEventId("atc");
+  const value = payload.price * payload.quantity;
+
+  logTracking("AddToCart", { ...payload, eventId });
   if (isTrackingPlatformActive("facebook")) {
-    logTracking("AddToCart", payload, "Meta");
-    facebookPixel.trackAddToCart(payload);
+    logTracking("AddToCart", { ...payload, eventId }, "Meta");
+    facebookPixel.trackAddToCart({ ...payload, eventId });
+    sendMetaCapiMirror({
+      eventName: "AddToCart",
+      eventId,
+      customData: {
+        content_ids: [payload.productId],
+        content_name: payload.name,
+        content_type: "product",
+        value,
+        currency: TRACKING_CURRENCY,
+        num_items: payload.quantity,
+        contents: [
+          {
+            id: payload.productId,
+            quantity: payload.quantity,
+            item_price: payload.price,
+          },
+        ],
+      },
+    });
   }
   if (isTrackingPlatformActive("tiktok")) {
     logTracking("AddToCart", payload, "TikTok");
@@ -79,10 +157,34 @@ export function trackAddToCart(payload: AddToCartTrackingPayload): void {
 
 export function trackInitiateCheckout(payload: CheckoutTrackingPayload): void {
   if (typeof window === "undefined") return;
-  logTracking("InitiateCheckout", payload);
+  const eventId = payload.eventId || createMetaEventId("ic");
+  const numItems = payload.products.reduce((sum, p) => sum + p.quantity, 0);
+  const contents = payload.products.map((p) => ({
+    id: p.productId,
+    quantity: p.quantity,
+    item_price: p.price,
+  }));
+
+  logTracking("InitiateCheckout", { ...payload, eventId });
   if (isTrackingPlatformActive("facebook")) {
-    logTracking("InitiateCheckout", payload, "Meta");
-    facebookPixel.trackInitiateCheckout(payload);
+    logTracking("InitiateCheckout", { ...payload, eventId }, "Meta");
+    facebookPixel.trackInitiateCheckout({
+      products: payload.products,
+      total: payload.total,
+      eventId,
+    });
+    sendMetaCapiMirror({
+      eventName: "InitiateCheckout",
+      eventId,
+      customData: {
+        content_ids: payload.products.map((p) => p.productId),
+        contents,
+        content_type: "product",
+        value: payload.total,
+        currency: TRACKING_CURRENCY,
+        num_items: numItems,
+      },
+    });
   }
   if (isTrackingPlatformActive("tiktok")) {
     logTracking("InitiateCheckout", payload, "TikTok");
@@ -98,13 +200,21 @@ export function trackInitiateCheckout(payload: CheckoutTrackingPayload): void {
   }
 }
 
+/**
+ * Browser-side Purchase (Meta Pixel + other platforms).
+ * Must only be called after the backend has accepted the order.
+ * Meta CAPI Purchase is sent from /api/orders with the same eventId.
+ */
 export function trackPurchase(payload: PurchaseTrackingPayload): void {
   if (typeof window === "undefined") return;
   if (isPurchaseAlreadyTracked(payload.orderId)) return;
 
+  const eventId =
+    payload.eventId || `purchase_${payload.orderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40)}`;
   const normalized = {
     ...payload,
     currency: payload.currency ?? TRACKING_CURRENCY,
+    eventId,
   };
 
   logTracking("Purchase", normalized);

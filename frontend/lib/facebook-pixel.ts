@@ -8,7 +8,7 @@ type FbqFn = {
   loaded?: boolean;
   version?: string;
   push?: FbqFn;
-}
+};
 
 declare global {
   interface Window {
@@ -29,6 +29,11 @@ function fbq(...args: unknown[]): void {
   window.fbq(...args);
 }
 
+/** Meta browser event options — eventID must match CAPI event_id for dedupe. */
+export interface MetaBrowserEventOptions {
+  eventId?: string;
+}
+
 export function initFacebookPixel(pixelId?: string): void {
   const id = pixelId ?? getPixelId();
   if (!id || initialized) return;
@@ -41,20 +46,34 @@ export function pageview(): void {
   fbq("track", "PageView");
 }
 
+function withEventId(
+  payload: Record<string, unknown>,
+  eventId?: string,
+): [Record<string, unknown>, { eventID: string }?] {
+  if (!eventId) return [payload];
+  return [payload, { eventID: eventId }];
+}
+
 export function trackViewContent(params: {
   productId: string;
   name: string;
   price: number;
   quantity?: number;
+  eventId?: string;
 }): void {
   if (!getPixelId()) return;
-  fbq("track", "ViewContent", {
-    content_ids: [params.productId],
-    content_name: params.name,
-    content_type: "product",
-    value: params.price * (params.quantity ?? 1),
-    currency: TRACKING_CURRENCY,
-  });
+  const [data, opts] = withEventId(
+    {
+      content_ids: [params.productId],
+      content_name: params.name,
+      content_type: "product",
+      value: params.price * (params.quantity ?? 1),
+      currency: TRACKING_CURRENCY,
+    },
+    params.eventId,
+  );
+  if (opts) fbq("track", "ViewContent", data, opts);
+  else fbq("track", "ViewContent", data);
 }
 
 export function trackAddToCart(params: {
@@ -62,45 +81,82 @@ export function trackAddToCart(params: {
   name: string;
   price: number;
   quantity: number;
+  eventId?: string;
 }): void {
   if (!getPixelId()) return;
-  fbq("track", "AddToCart", {
-    content_ids: [params.productId],
-    content_name: params.name,
-    content_type: "product",
-    value: params.price * params.quantity,
-    currency: TRACKING_CURRENCY,
-    num_items: params.quantity,
-  });
+  const [data, opts] = withEventId(
+    {
+      content_ids: [params.productId],
+      content_name: params.name,
+      content_type: "product",
+      value: params.price * params.quantity,
+      currency: TRACKING_CURRENCY,
+      num_items: params.quantity,
+    },
+    params.eventId,
+  );
+  if (opts) fbq("track", "AddToCart", data, opts);
+  else fbq("track", "AddToCart", data);
 }
 
 export function trackInitiateCheckout(params: {
-  products: { productId: string; price: number; quantity: number }[];
+  products: {
+    productId: string;
+    name?: string;
+    price: number;
+    quantity: number;
+  }[];
   total: number;
+  eventId?: string;
 }): void {
   if (!getPixelId()) return;
-  fbq("track", "InitiateCheckout", {
-    content_ids: params.products.map((p) => p.productId),
-    value: params.total,
-    currency: TRACKING_CURRENCY,
-    num_items: params.products.reduce((sum, p) => sum + p.quantity, 0),
-  });
+  const contents = params.products.map((p) => ({
+    id: p.productId,
+    quantity: p.quantity,
+    item_price: p.price,
+  }));
+  const [data, opts] = withEventId(
+    {
+      content_ids: params.products.map((p) => p.productId),
+      contents,
+      content_type: "product",
+      value: params.total,
+      currency: TRACKING_CURRENCY,
+      num_items: params.products.reduce((sum, p) => sum + p.quantity, 0),
+    },
+    params.eventId,
+  );
+  if (opts) fbq("track", "InitiateCheckout", data, opts);
+  else fbq("track", "InitiateCheckout", data);
 }
 
 export function trackPurchase(params: {
   orderId: string;
   products: { productId: string; name: string; price: number; quantity: number }[];
   total: number;
+  eventId?: string;
 }): void {
   if (!getPixelId()) return;
-  fbq("track", "Purchase", {
-    content_ids: params.products.map((p) => p.productId),
-    content_name: params.products.map((p) => p.name).join(", "),
-    value: params.total,
-    currency: TRACKING_CURRENCY,
-    num_items: params.products.reduce((sum, p) => sum + p.quantity, 0),
-    order_id: params.orderId,
-  });
+  const contents = params.products.map((p) => ({
+    id: p.productId,
+    quantity: p.quantity,
+    item_price: p.price,
+  }));
+  const [data, opts] = withEventId(
+    {
+      content_ids: params.products.map((p) => p.productId),
+      contents,
+      content_name: params.products.map((p) => p.name).join(", "),
+      content_type: "product",
+      value: params.total,
+      currency: TRACKING_CURRENCY,
+      num_items: params.products.reduce((sum, p) => sum + p.quantity, 0),
+      order_id: params.orderId,
+    },
+    params.eventId,
+  );
+  if (opts) fbq("track", "Purchase", data, opts);
+  else fbq("track", "Purchase", data);
 }
 
 /** Meta Pixel bootstrap snippet — injected once via next/script. */

@@ -34,6 +34,7 @@ import {
   type ShippingSettings,
 } from "@/lib/shipping";
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
+import { getMetaBrowserIds } from "@/lib/meta/browser";
 import { trackAddToCart, trackPurchase } from "@/lib/tracking/events";
 
 export interface AppliedCoupon {
@@ -289,8 +290,11 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       if (items.length === 0) return { success: false };
 
       const placedAt = new Date().toISOString();
+      const metaIds = getMetaBrowserIds();
 
-      const createPayload: CreateOrderInput = {
+      const createPayload: CreateOrderInput & {
+        meta?: { fbp?: string; fbc?: string; eventSourceUrl?: string };
+      } = {
         customerName: form.fullName,
         phone: form.phone,
         address: form.address,
@@ -309,20 +313,41 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         shippingPrice: shipping.shippingFee,
         total: shipping.total,
         ...(coupon ? { couponCode: coupon.code } : {}),
+        meta: {
+          ...(metaIds.fbp ? { fbp: metaIds.fbp } : {}),
+          ...(metaIds.fbc ? { fbc: metaIds.fbc } : {}),
+          eventSourceUrl:
+            typeof window !== "undefined" ? window.location.href : undefined,
+        },
       };
 
-      // Create a local optimistic order first (keeps UX fast and thank-you working).
+      // Optimistic local order for thank-you UX (does NOT fire Purchase yet).
       const optimisticId = `TZ-${placedAt.replace(/[-:TZ.]/g, "").slice(0, 14)}-LOCAL`;
+      const lineItems = items.map((i) => ({
+        nameAr: i.nameAr,
+        offerLabel: i.offerLabel,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        slug: i.slug,
+        productId: i.productId,
+      }));
+      const purchaseProducts = items.map((i) => ({
+        productId: i.productId,
+        slug: i.slug,
+        name: i.nameAr,
+        price: i.unitPrice,
+        quantity: i.quantity,
+      }));
       const optimistic: PlacedOrder = {
         id: optimisticId,
         placedAt,
         customer: form,
-        items: items.map((i) => ({
-          nameAr: i.nameAr,
-          offerLabel: i.offerLabel,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-          slug: i.slug,
+        items: lineItems.map(({ nameAr, offerLabel, quantity, unitPrice, slug }) => ({
+          nameAr,
+          offerLabel,
+          quantity,
+          unitPrice,
+          slug,
         })),
         subtotal: shipping.subtotal,
         shippingFee: shipping.shippingFee,
@@ -331,7 +356,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         shippingLabelAr: shipping.labelAr,
       };
 
-      // Fire-and-forget persistence. If it succeeds, update order id in sessionStorage.
+      sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(optimistic));
+
+      // Persist order. Purchase Meta Pixel fires ONLY after the backend accepts the order.
       void fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -343,26 +370,30 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         })
         .then((data) => {
           if (!data?.order?.orderId) return;
-          const updated: PlacedOrder = { ...optimistic, id: data.order.orderId };
-          sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(updated));
+
+          const realOrderId = data.order.orderId;
+          const eventId =
+            data.meta?.purchaseEventId ??
+            `purchase_${realOrderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40)}`;
+
+          const updated: PlacedOrder = { ...optimistic, id: realOrderId };
+          try {
+            sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(updated));
+          } catch {
+            /* ignore */
+          }
+
+          // Browser Pixel Purchase — same event_id as server CAPI (dedupe at Meta).
+          trackPurchase({
+            orderId: realOrderId,
+            products: purchaseProducts,
+            subtotal: data.order.subtotal ?? shipping.subtotal,
+            shipping: data.order.shippingPrice ?? shipping.shippingFee,
+            total: data.order.total ?? shipping.total,
+            eventId,
+          });
         })
         .catch(() => null);
-
-      sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(optimistic));
-
-      trackPurchase({
-        orderId: optimisticId,
-        products: items.map((i) => ({
-          productId: i.productId,
-          slug: i.slug,
-          name: i.nameAr,
-          price: i.unitPrice,
-          quantity: i.quantity,
-        })),
-        subtotal: shipping.subtotal,
-        shipping: shipping.shippingFee,
-        total: shipping.total,
-      });
 
       clearCart();
       setCoupon(null);

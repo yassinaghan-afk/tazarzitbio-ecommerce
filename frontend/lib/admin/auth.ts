@@ -3,21 +3,29 @@ import type { NextRequest } from "next/server";
 /**
  * Admin authentication (server-only)
  * ---------------------------------
- * Login: the password typed at /admin/login is checked against ADMIN_PASSWORD
- * (or ADMIN_PASSWORD_SHA256 — a hex SHA-256 hash — if you prefer not to store
- * the plaintext password in the environment).
+ * Login password (runtime env — set in EasyPanel → Environment, then redeploy):
+ *   ADMIN_PASSWORD              plain password typed at /admin/login
+ *   — OR —
+ *   ADMIN_PASSWORD_SHA256       hex SHA-256 of that password
  *
- * Sessions: after a successful login the browser receives an httpOnly cookie
- * containing a signed, expiring session token (HMAC-SHA256). The password is
- * NEVER stored in the cookie. Tokens are signed with ADMIN_SESSION_SECRET
- * (falls back to ADMIN_COOKIE_VALUE, then ADMIN_PASSWORD).
+ * Optional but strongly recommended:
+ *   ADMIN_SESSION_SECRET        long random secret used to sign session cookies
+ *   ADMIN_COOKIE_VALUE          legacy alias for the session signing secret
+ *
+ * NOT used / not required:
+ *   ADMIN_USERNAME, ADMIN_EMAIL, AUTH_SECRET, SESSION_SECRET, NEXTAUTH_*
+ *   NEXT_PUBLIC_*  (never put secrets here)
+ *
+ * Sessions: after login the browser receives an httpOnly cookie with a signed,
+ * expiring token (HMAC-SHA256). The password is NEVER stored in the cookie.
  *
  * Protection:
  *   - middleware.ts — blocks /admin/* and /api/admin/* (except login/logout)
  *   - isAdminRequest() — used by each /api/admin/* route handler
  *
- * Uses the Web Crypto API so it works in both the Edge runtime (middleware)
- * and the Node.js runtime (route handlers).
+ * Env is always read at runtime (process.env[name]), never hardcoded.
+ * Docker/EasyPanel must inject these as *runtime* container env vars
+ * (not only Dockerfile ARG / build args).
  */
 
 const COOKIE_NAME = "tazarzit_admin";
@@ -27,17 +35,58 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14; // 14 days
 export const ADMIN_COOKIE_NAME = COOKIE_NAME;
 export const ADMIN_SESSION_MAX_AGE = SESSION_MAX_AGE_SECONDS;
 
+/**
+ * Read a server env var at runtime.
+ * Trims whitespace and strips one layer of surrounding quotes
+ * (common when values are pasted into hosting UIs as "secret").
+ */
+function readEnv(name: string): string {
+  // Bracket access keeps this a true runtime lookup (not a build-time constant).
+  const raw = process.env[name];
+  if (raw == null) return "";
+  let value = String(raw).trim();
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    value = value.slice(1, -1).trim();
+  }
+  return value;
+}
+
 /** Login password from env. Empty means admin login is disabled. */
 export function getAdminPassword(): string {
-  return process.env.ADMIN_PASSWORD ?? "";
+  return readEnv("ADMIN_PASSWORD");
+}
+
+export function getAdminPasswordSha256(): string {
+  return readEnv("ADMIN_PASSWORD_SHA256").toLowerCase();
 }
 
 function getSessionSecret(): string {
   return (
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.ADMIN_COOKIE_VALUE ||
-    getAdminPassword()
+    readEnv("ADMIN_SESSION_SECRET") ||
+    readEnv("ADMIN_COOKIE_VALUE") ||
+    getAdminPassword() ||
+    getAdminPasswordSha256()
   );
+}
+
+/** True when either password form is configured at runtime. */
+export function isAdminPasswordConfigured(): boolean {
+  return Boolean(getAdminPassword() || getAdminPasswordSha256());
+}
+
+/**
+ * Whether the session cookie should use the Secure flag.
+ * Defaults to production. Override with ADMIN_COOKIE_SECURE=true|false
+ * when debugging behind an unusual proxy setup.
+ */
+export function shouldUseSecureAdminCookie(): boolean {
+  const override = readEnv("ADMIN_COOKIE_SECURE").toLowerCase();
+  if (override === "true" || override === "1") return true;
+  if (override === "false" || override === "0") return false;
+  return process.env.NODE_ENV === "production";
 }
 
 const encoder = new TextEncoder();
@@ -65,7 +114,7 @@ async function hmacHex(secret: string, data: string): Promise<string> {
   return bytesToHex(sig);
 }
 
-/** Constant-time string comparison (both inputs are hex of equal length in practice). */
+/** Constant-time string comparison. */
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -80,25 +129,34 @@ function timingSafeEqual(a: string, b: string): boolean {
  * constant-time regardless of password length. Supports either:
  *   - ADMIN_PASSWORD_SHA256 (hex hash of the password), or
  *   - ADMIN_PASSWORD (plaintext in env)
+ *
+ * ADMIN_PASSWORD_SHA256 takes priority when non-empty.
  */
 export async function verifyAdminPassword(provided: string): Promise<boolean> {
-  if (!provided) return false;
-  const storedHash = process.env.ADMIN_PASSWORD_SHA256;
+  const password = provided.toString();
+  if (!password) return false;
+
+  const storedHash = getAdminPasswordSha256();
   if (storedHash) {
-    const providedHash = await sha256Hex(provided);
-    return timingSafeEqual(providedHash, storedHash.trim().toLowerCase());
+    const providedHash = await sha256Hex(password);
+    return timingSafeEqual(providedHash, storedHash);
   }
+
   const expected = getAdminPassword();
   if (!expected) return false;
-  const [a, b] = await Promise.all([sha256Hex(provided), sha256Hex(expected)]);
+  const [a, b] = await Promise.all([sha256Hex(password), sha256Hex(expected)]);
   return timingSafeEqual(a, b);
 }
 
 /** Create a signed session token: "v2.<expiresEpochSeconds>.<hmac>" */
 export async function createAdminSessionToken(): Promise<string> {
+  const secret = getSessionSecret();
+  if (!secret) {
+    throw new Error("Admin session secret is not configured");
+  }
   const expires = Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS;
   const payload = `${TOKEN_PREFIX}.${expires}`;
-  const sig = await hmacHex(getSessionSecret(), payload);
+  const sig = await hmacHex(secret, payload);
   return `${payload}.${sig}`;
 }
 
