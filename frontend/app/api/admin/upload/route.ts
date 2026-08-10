@@ -9,7 +9,7 @@ const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products");
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function POST(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

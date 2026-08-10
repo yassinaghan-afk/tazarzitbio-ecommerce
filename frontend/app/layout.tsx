@@ -50,9 +50,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { readStore } = await import("@/lib/server/store");
+  const store = await readStore();
   return (
     <html
       lang="ar"
@@ -62,12 +64,15 @@ export default function RootLayout({
     >
       <body className="min-h-screen max-w-full overflow-x-hidden font-sans selection:bg-accent/20">
         <CommerceShell>
-          <SiteHeader />
+          <SiteHeader cmsNav={store.navigation.header} />
           <AnnouncementBar />
           <main className="max-w-full overflow-x-hidden pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
             {children}
           </main>
-          <SiteFooter />
+          <SiteFooter
+            cmsNavigation={store.navigation}
+            settings={store.siteSettings}
+          />
         </CommerceShell>
       </body>
     </html>

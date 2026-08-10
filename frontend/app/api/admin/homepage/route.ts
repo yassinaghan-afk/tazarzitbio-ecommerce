@@ -5,7 +5,7 @@ import type { HomepageContent } from "@/lib/admin/types";
 import { readStore, updateStore } from "@/lib/server/store";
 
 export async function GET(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const store = await readStore();
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = (await req.json()) as Partial<HomepageContent>;

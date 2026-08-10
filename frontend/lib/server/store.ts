@@ -20,6 +20,20 @@ import type {
 import { DEFAULT_ANNOUNCEMENT_BAR, normalizeAnnouncementBar } from "@/lib/admin/announcement-bar";
 import { DEFAULT_HOMEPAGE_CONTENT } from "@/lib/admin/types";
 import {
+  DEFAULT_HOME_SECTIONS,
+  DEFAULT_NAVIGATION,
+  DEFAULT_SITE_SETTINGS,
+  type AuditLogEntry,
+  type CategoryRecord,
+  type FaqRecord,
+  type HomeSectionConfig,
+  type MediaAssetMeta,
+  type NavigationSettings,
+  type Promotion,
+  type ReviewRecord,
+  type SiteSettings,
+} from "@/lib/admin/cms-types";
+import {
   DEFAULT_TRACKING_SETTINGS,
   normalizeTrackingSettings,
 } from "@/lib/tracking/settings";
@@ -52,9 +66,21 @@ export interface PersistedStore {
   productOrder: string[];
   landingPages: LandingPage[];
   homepageContent: HomepageContent;
+  homeSections: HomeSectionConfig[];
   banners: Banner[];
   announcementBar: AnnouncementBarConfig;
   trackingSettings: TrackingSettings;
+  categories: CategoryRecord[];
+  reviews: ReviewRecord[];
+  faqs: FaqRecord[];
+  navigation: NavigationSettings;
+  siteSettings: SiteSettings;
+  promotions: Promotion[];
+  auditLogs: AuditLogEntry[];
+  /** admin notes about customers, keyed by phone number */
+  customerNotes: Record<string, string>;
+  /** alt text and metadata for media library files, keyed by url */
+  mediaMeta: MediaAssetMeta[];
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -71,10 +97,36 @@ const DEFAULT_STORE: PersistedStore = {
   productOrder: [],
   landingPages: [],
   homepageContent: DEFAULT_HOMEPAGE_CONTENT,
+  homeSections: DEFAULT_HOME_SECTIONS,
   banners: [],
   announcementBar: DEFAULT_ANNOUNCEMENT_BAR,
   trackingSettings: DEFAULT_TRACKING_SETTINGS,
+  categories: [],
+  reviews: [],
+  faqs: [],
+  navigation: DEFAULT_NAVIGATION,
+  siteSettings: DEFAULT_SITE_SETTINGS,
+  promotions: [],
+  auditLogs: [],
+  customerNotes: {},
+  mediaMeta: [],
 };
+
+function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
+  if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_HOME_SECTIONS;
+  const known = new Set(DEFAULT_HOME_SECTIONS.map((s) => s.id));
+  const seen = new Set<string>();
+  const sections = (raw as HomeSectionConfig[]).filter((s) => {
+    if (!s || !known.has(s.id) || seen.has(s.id)) return false;
+    seen.add(s.id);
+    return true;
+  });
+  // append any newly added sections missing from stored config
+  for (const def of DEFAULT_HOME_SECTIONS) {
+    if (!seen.has(def.id)) sections.push(def);
+  }
+  return sections;
+}
 
 async function ensureDir() {
   const dir = path.dirname(STORE_PATH);
@@ -125,6 +177,35 @@ export async function readStore(): Promise<PersistedStore> {
       trackingSettings: normalizeTrackingSettings(
         parsed.trackingSettings as Partial<TrackingSettings> | undefined,
       ),
+      homeSections: normalizeHomeSections(parsed.homeSections),
+      categories: Array.isArray(parsed.categories)
+        ? (parsed.categories as CategoryRecord[])
+        : [],
+      reviews: Array.isArray(parsed.reviews)
+        ? (parsed.reviews as ReviewRecord[])
+        : [],
+      faqs: Array.isArray(parsed.faqs) ? (parsed.faqs as FaqRecord[]) : [],
+      navigation: {
+        ...DEFAULT_NAVIGATION,
+        ...((parsed.navigation as NavigationSettings | undefined) ?? {}),
+      },
+      siteSettings: {
+        ...DEFAULT_SITE_SETTINGS,
+        ...((parsed.siteSettings as SiteSettings | undefined) ?? {}),
+      },
+      promotions: Array.isArray(parsed.promotions)
+        ? (parsed.promotions as Promotion[])
+        : [],
+      auditLogs: Array.isArray(parsed.auditLogs)
+        ? (parsed.auditLogs as AuditLogEntry[])
+        : [],
+      customerNotes:
+        parsed.customerNotes && typeof parsed.customerNotes === "object"
+          ? (parsed.customerNotes as Record<string, string>)
+          : {},
+      mediaMeta: Array.isArray(parsed.mediaMeta)
+        ? (parsed.mediaMeta as MediaAssetMeta[])
+        : [],
     };
   } catch {
     return DEFAULT_STORE;

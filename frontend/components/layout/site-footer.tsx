@@ -4,10 +4,12 @@ import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Container } from "@/components/layout/container";
+import { pickNavLabel } from "@/components/layout/site-header";
+import type { NavigationSettings, SiteSettings } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
 
-/** Product category names — kept in Arabic per catalog */
-const shopLinks = [
+/** Product category names — default fallback (Arabic, per catalog) */
+const defaultShopLinks = [
   "أملو",
   "أملو بالفستق",
   "زيت أركان",
@@ -15,15 +17,42 @@ const shopLinks = [
   "مكسرات بالعسل",
 ];
 
-export function SiteFooter() {
-  const { t } = useTranslation();
+export function SiteFooter({
+  cmsNavigation,
+  settings,
+}: {
+  cmsNavigation?: NavigationSettings;
+  settings?: SiteSettings;
+}) {
+  const { t, locale } = useTranslation();
 
-  const infoLinks = [
-    { label: t("footer.about"), href: "/#story" },
-    { label: t("footer.delivery"), href: "/products" },
-    { label: t("footer.returns"), href: "/products" },
-    { label: t("nav.faq"), href: "/#faq" },
-  ];
+  const cmsShop = (cmsNavigation?.footerShop ?? []).filter((l) => l.isVisible);
+  const cmsInfo = (cmsNavigation?.footerInfo ?? []).filter((l) => l.isVisible);
+
+  const shopLinks =
+    cmsShop.length > 0
+      ? cmsShop.map((l) => ({ label: pickNavLabel(l, locale), href: l.href }))
+      : defaultShopLinks.map((name) => ({ label: name, href: "/products" }));
+
+  const infoLinks =
+    cmsInfo.length > 0
+      ? cmsInfo.map((l) => ({ label: pickNavLabel(l, locale), href: l.href }))
+      : [
+          { label: t("footer.about"), href: "/#story" },
+          { label: t("footer.delivery"), href: "/products" },
+          { label: t("footer.returns"), href: "/products" },
+          { label: t("nav.faq"), href: "/#faq" },
+        ];
+
+  const whatsappDigits = (settings?.whatsapp ?? "212600000000").replace(/\D/g, "");
+  const phone = settings?.phone || "+212 600 000 000";
+  const brandName = settings?.brandName || "Tazarzit Bio";
+
+  const socials = [
+    { label: "Instagram", href: settings?.instagram },
+    { label: "TikTok", href: settings?.tiktok },
+    { label: "Facebook", href: settings?.facebook },
+  ].filter((s): s is { label: string; href: string } => Boolean(s.href));
 
   return (
     <footer className="border-t border-border bg-card">
@@ -46,24 +75,26 @@ export function SiteFooter() {
               {t("footer.shop")}
             </p>
             <ul className="mt-4 space-y-3">
-              {shopLinks.map((name) => (
-                <li key={name}>
+              {shopLinks.map((link) => (
+                <li key={link.label + link.href}>
                   <Link
-                    href="/products"
+                    href={link.href}
                     className="inline-flex min-h-11 items-center text-sm text-foreground/70 transition-colors hover:text-accent"
                   >
-                    {name}
+                    {link.label}
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  href="/#bundles"
-                  className="inline-flex min-h-11 items-center text-sm font-semibold text-accent transition-colors hover:text-accent/80"
-                >
-                  {t("footer.gifts")}
-                </Link>
-              </li>
+              {cmsShop.length === 0 && (
+                <li>
+                  <Link
+                    href="/#bundles"
+                    className="inline-flex min-h-11 items-center text-sm font-semibold text-accent transition-colors hover:text-accent/80"
+                  >
+                    {t("footer.gifts")}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -92,7 +123,9 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-3 text-sm text-foreground/70">
               <li>
                 <a
-                  href="https://wa.me/212600000000"
+                  href={`https://wa.me/${whatsappDigits}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="transition-colors hover:text-accent"
                 >
                   WhatsApp
@@ -100,19 +133,43 @@ export function SiteFooter() {
               </li>
               <li>
                 <a
-                  href="tel:+212600000000"
+                  href={`tel:${phone.replace(/\s/g, "")}`}
                   className="transition-colors hover:text-accent"
+                  dir="ltr"
                 >
-                  +212 600 000 000
+                  {phone}
                 </a>
               </li>
+              {settings?.email && (
+                <li>
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="transition-colors hover:text-accent"
+                    dir="ltr"
+                  >
+                    {settings.email}
+                  </a>
+                </li>
+              )}
+              {socials.map((s) => (
+                <li key={s.label}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-accent"
+                  >
+                    {s.label}
+                  </a>
+                </li>
+              ))}
             </ul>
             <div className="mt-6 rounded-xl border border-border bg-secondary/50 p-4">
               <p className="text-xs font-semibold text-foreground">
                 {t("footer.supportTitle")}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("footer.supportHours")}
+                {settings?.supportHours || t("footer.supportHours")}
               </p>
             </div>
           </div>
@@ -120,7 +177,7 @@ export function SiteFooter() {
 
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border py-6 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Tazarzit Bio · {t("footer.rights")}
+            © {new Date().getFullYear()} {brandName} · {t("footer.rights")}
           </p>
         </div>
       </Container>

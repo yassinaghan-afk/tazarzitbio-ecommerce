@@ -6,13 +6,27 @@ import { Star } from "lucide-react";
 import { Container, Section } from "@/components/layout/container";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { SectionHeader } from "@/components/sections/section-header";
-import { reviews } from "@/lib/home-data";
+import type { ReviewRecord } from "@/lib/admin/cms-types";
+import { reviews as defaultReviews } from "@/lib/home-data";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import { getMoroccanCitiesLabel } from "@/lib/i18n/home-content";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
-export function ReviewSection() {
+export function ReviewSection({ cmsReviews }: { cmsReviews?: ReviewRecord[] }) {
   const { t, locale } = useTranslation();
+
+  const reviews =
+    cmsReviews && cmsReviews.length > 0
+      ? cmsReviews.map((r) => ({
+          id: r.id,
+          author: r.author,
+          city: r.city,
+          rating: r.rating,
+          date: r.date,
+          content: r.text,
+          product: "",
+        }))
+      : defaultReviews;
 
   return (
     <Section id="reviews" spacing="lg" bg="alt">

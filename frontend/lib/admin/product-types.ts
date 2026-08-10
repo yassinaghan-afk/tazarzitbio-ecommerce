@@ -15,6 +15,12 @@ export interface CmsProductVariant {
   hint?: string;
 }
 
+export interface BundleComponent {
+  slug: string;
+  label: string;
+  quantity: number;
+}
+
 export interface CmsProductRecord {
   id: string;
   source: CmsProductSource;
@@ -28,12 +34,24 @@ export interface CmsProductRecord {
   benefits: string[];
   usageSuggestions: string[];
   images: string[];
+  /** alt text keyed by image url */
+  imageAlts?: Record<string, string>;
+  videoUrl?: string;
   badges: ProductBadge[];
   offers: CmsProductVariant[];
   isVisible: boolean;
+  /** soft-deleted: hidden from public AND from the default admin list */
+  isArchived?: boolean;
   isBundle: boolean;
+  /** components of the pack (informational + free-shipping handling) */
+  bundleItems?: BundleComponent[];
+  /** grants free shipping when in cart & bundle free shipping is enabled */
+  bundleFreeShipping?: boolean;
   isFeatured: boolean;
   isBestseller: boolean;
+  deliveryText?: string;
+  storageText?: string;
+  additionalInfo?: string;
   seoTitle?: string;
   seoDescription?: string;
   sortOrder: number;

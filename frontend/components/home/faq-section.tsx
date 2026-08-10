@@ -7,14 +7,21 @@ import { ChevronDown, MessageCircle } from "lucide-react";
 import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
+import type { FaqRecord } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import { getFaqs } from "@/lib/i18n/home-content";
 import { accordionContent, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
-export function FaqSection() {
-  const { t } = useTranslation();
-  const faqs = getFaqs(t);
+export function FaqSection({ cmsFaqs }: { cmsFaqs?: FaqRecord[] }) {
+  const { t, locale } = useTranslation();
+  const faqs =
+    cmsFaqs && cmsFaqs.length > 0
+      ? cmsFaqs.map((f) => ({
+          q: (locale === "fr" || locale === "en") && f.questionFr ? f.questionFr : f.questionAr,
+          a: (locale === "fr" || locale === "en") && f.answerFr ? f.answerFr : f.answerAr,
+        }))
+      : getFaqs(t);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (

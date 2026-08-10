@@ -31,15 +31,25 @@ import {
   calculateShipping,
   loadShippingSettings,
   type ShippingResult,
+  type ShippingSettings,
 } from "@/lib/shipping";
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
 import { trackAddToCart, trackPurchase } from "@/lib/tracking/events";
+
+export interface AppliedCoupon {
+  code: string;
+  discount: number;
+  freeShipping: boolean;
+}
 
 interface CommerceContextValue {
   items: CartLineItem[];
   itemCount: number;
   subtotal: number;
   shipping: ShippingResult;
+  coupon: AppliedCoupon | null;
+  applyCoupon: (code: string) => Promise<{ ok: boolean; reason?: string }>;
+  removeCoupon: () => void;
   cartOpen: boolean;
   checkoutOpen: boolean;
   openCart: () => void;
@@ -102,6 +112,26 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [settingsVersion, setSettingsVersion] = useState(0);
+  const [serverSettings, setServerSettings] = useState<ShippingSettings | null>(
+    null,
+  );
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+
+  // Shipping rules are managed in Admin → Shipping and stored on the server.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/shipping-settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { shippingSettings?: ShippingSettings } | null) => {
+        if (!cancelled && data?.shippingSettings) {
+          setServerSettings(data.shippingSettings);
+        }
+      })
+      .catch(() => null);
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsVersion]);
 
   useEffect(() => {
     const stored = loadCartFromStorage();
@@ -128,10 +158,58 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const subtotal = useMemo(() => calcSubtotal(items), [items]);
 
   const shipping = useMemo(() => {
-    const settings = loadShippingSettings();
-    return calculateShipping(items, subtotal, settings);
+    const settings = serverSettings ?? loadShippingSettings();
+    const base = calculateShipping(items, subtotal, settings);
+    if (!coupon || items.length === 0) return base;
+    // apply coupon on top of the base shipping computation
+    const shippingFee = coupon.freeShipping ? 0 : base.shippingFee;
+    const discount = Math.min(coupon.discount, base.subtotal);
+    return {
+      ...base,
+      shippingFee,
+      isFreeShipping: shippingFee === 0,
+      freeShippingReason:
+        coupon.freeShipping && base.shippingFee > 0
+          ? ("coupon" as const)
+          : base.freeShippingReason,
+      total: Math.max(0, base.subtotal - discount + shippingFee),
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, subtotal, settingsVersion]);
+  }, [items, subtotal, settingsVersion, serverSettings, coupon]);
+
+  const applyCoupon = useCallback(
+    async (code: string): Promise<{ ok: boolean; reason?: string }> => {
+      try {
+        const res = await fetch("/api/promotions/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, subtotal }),
+        });
+        const data = (await res.json()) as {
+          valid?: boolean;
+          reason?: string;
+          code?: string;
+          discount?: number;
+          freeShipping?: boolean;
+        };
+        if (!data.valid) {
+          setCoupon(null);
+          return { ok: false, reason: data.reason ?? "not_found" };
+        }
+        setCoupon({
+          code: data.code ?? code.trim().toUpperCase(),
+          discount: data.discount ?? 0,
+          freeShipping: Boolean(data.freeShipping),
+        });
+        return { ok: true };
+      } catch {
+        return { ok: false, reason: "network" };
+      }
+    },
+    [subtotal],
+  );
+
+  const removeCoupon = useCallback(() => setCoupon(null), []);
 
   const cartSlugs = useMemo(() => [...new Set(items.map((i) => i.slug))], [items]);
 
@@ -230,6 +308,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         subtotal: shipping.subtotal,
         shippingPrice: shipping.shippingFee,
         total: shipping.total,
+        ...(coupon ? { couponCode: coupon.code } : {}),
       };
 
       // Create a local optimistic order first (keeps UX fast and thank-you working).
@@ -286,11 +365,12 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       });
 
       clearCart();
+      setCoupon(null);
       setCheckoutOpen(false);
       router.push("/thank-you");
       return { success: true };
     },
-    [items, shipping, clearCart, router, locale],
+    [items, shipping, coupon, clearCart, router, locale],
   );
 
   const value = useMemo(
@@ -299,6 +379,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       shipping,
+      coupon,
+      applyCoupon,
+      removeCoupon,
       cartOpen,
       checkoutOpen,
       openCart,
@@ -318,6 +401,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       shipping,
+      coupon,
+      applyCoupon,
+      removeCoupon,
       cartOpen,
       checkoutOpen,
       openCart,

@@ -3,10 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE_NAME, isAdminRequest } from "@/lib/admin/auth";
 
 /**
- * Protects /admin pages and /api/admin/* using the httpOnly tazarzit_admin cookie.
- * Login sets the cookie after ADMIN_PASSWORD matches (see /api/admin/login).
+ * Protects /admin pages and /api/admin/* using the httpOnly tazarzit_admin
+ * session cookie (signed HMAC token — see lib/admin/auth.ts).
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isAdminPath =
@@ -25,7 +25,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isAdminRequest(req)) return NextResponse.next();
+  if (await isAdminRequest(req)) return NextResponse.next();
+
+  if (pathname.startsWith("/api/admin/")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   // clear invalid cookie if present
   const res = NextResponse.redirect(new URL("/admin/login", req.url));
@@ -36,4 +40,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
-

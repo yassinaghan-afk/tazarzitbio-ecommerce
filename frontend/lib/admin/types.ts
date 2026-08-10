@@ -55,10 +55,19 @@ export interface LandingPage {
   headline: string;
   subheadline: string;
   ctaText: string;
+  /** @deprecated legacy field — replaced by blocks */
   sections: LandingPageSection[];
+  /** block-based page builder content (v2) */
+  blocks?: import("./cms-types").LpBlock[];
   isEnabled: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: string;
+  updatedAt?: string;
   createdAt: string;
 }
+
+export * from "./cms-types";
 
 export interface HomepageTrustBadge {
   icon: string;

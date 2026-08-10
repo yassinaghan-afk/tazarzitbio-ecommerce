@@ -9,6 +9,7 @@ import { useCommerce } from "@/components/providers/commerce-provider";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@/components/ui/button";
+import type { NavLinkRecord } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils";
@@ -21,16 +22,25 @@ const NAV_KEYS: { href: string; key: TranslationKey }[] = [
   { href: "/#faq", key: "nav.faq" },
 ];
 
-export function SiteHeader() {
-  const { t } = useTranslation();
+export function pickNavLabel(link: NavLinkRecord, locale: string): string {
+  if (locale === "fr") return link.labelFr || link.labelAr || link.labelEn;
+  if (locale === "en") return link.labelEn || link.labelFr || link.labelAr;
+  return link.labelAr || link.labelFr || link.labelEn;
+}
+
+export function SiteHeader({ cmsNav }: { cmsNav?: NavLinkRecord[] }) {
+  const { t, locale } = useTranslation();
   const { itemCount, openCart } = useCommerce();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const navLinks = useMemo(
-    () => NAV_KEYS.map((link) => ({ ...link, label: t(link.key) })),
-    [t],
-  );
+  const navLinks = useMemo(() => {
+    const cms = (cmsNav ?? []).filter((l) => l.isVisible);
+    if (cms.length > 0) {
+      return cms.map((l) => ({ href: l.href, label: pickNavLabel(l, locale) }));
+    }
+    return NAV_KEYS.map((link) => ({ href: link.href, label: t(link.key) }));
+  }, [cmsNav, locale, t]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

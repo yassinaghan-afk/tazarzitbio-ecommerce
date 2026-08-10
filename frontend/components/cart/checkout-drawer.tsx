@@ -30,6 +30,106 @@ const emptyForm: CheckoutFormData = {
 
 type CheckoutStep = "review" | "details";
 
+const COUPON_LABELS = {
+  ar: {
+    placeholder: "كود التخفيض (اختياري)",
+    apply: "تطبيق",
+    applied: "تم تطبيق الكود",
+    remove: "إزالة",
+    invalid: "كود غير صالح أو منتهي",
+    minSubtotal: "قيمة السلة أقل من الحد الأدنى لهذا الكود",
+  },
+  fr: {
+    placeholder: "Code promo (optionnel)",
+    apply: "Appliquer",
+    applied: "Code appliqué",
+    remove: "Retirer",
+    invalid: "Code invalide ou expiré",
+    minSubtotal: "Sous-total insuffisant pour ce code",
+  },
+  en: {
+    placeholder: "Promo code (optional)",
+    apply: "Apply",
+    applied: "Code applied",
+    remove: "Remove",
+    invalid: "Invalid or expired code",
+    minSubtotal: "Cart subtotal too low for this code",
+  },
+} as const;
+
+function CouponField() {
+  const { locale } = useTranslation();
+  const { coupon, applyCoupon, removeCoupon } = useCommerce();
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const labels =
+    COUPON_LABELS[locale as keyof typeof COUPON_LABELS] ?? COUPON_LABELS.ar;
+
+  const handleApply = async () => {
+    if (!code.trim()) return;
+    setBusy(true);
+    setError(null);
+    const result = await applyCoupon(code);
+    setBusy(false);
+    if (!result.ok) {
+      setError(
+        result.reason === "min_subtotal" ? labels.minSubtotal : labels.invalid,
+      );
+    } else {
+      setCode("");
+    }
+  };
+
+  if (coupon) {
+    return (
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
+        <span className="font-semibold text-emerald-700">
+          {labels.applied}: <span className="font-mono">{coupon.code}</span>
+          {coupon.discount > 0 && (
+            <span className="ms-2 tabular-nums">-{coupon.discount} MAD</span>
+          )}
+        </span>
+        <button
+          type="button"
+          onClick={removeCoupon}
+          className="text-xs font-semibold text-emerald-700 underline"
+        >
+          {labels.remove}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex gap-2">
+        <Input
+          value={code}
+          onChange={(e) => {
+            setCode(e.target.value);
+            setError(null);
+          }}
+          placeholder={labels.placeholder}
+          className="h-10 flex-1 font-mono uppercase"
+          dir="ltr"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 rounded-xl px-4"
+          disabled={busy || !code.trim()}
+          onClick={handleApply}
+        >
+          {labels.apply}
+        </Button>
+      </div>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+    </div>
+  );
+}
+
 export function CheckoutDrawer() {
   const { t, locale } = useTranslation();
   const {
@@ -196,6 +296,7 @@ export function CheckoutDrawer() {
               </ul>
               <div className="mt-4 border-t border-border/50 pt-4">
                 <OrderTotals shipping={shipping} showUpsell />
+                <CouponField />
               </div>
             </div>
           ) : (

@@ -1,12 +1,22 @@
-import type { CartLineItem } from "@/lib/cart/types";
-
 import {
   DEFAULT_SHIPPING_SETTINGS,
   FREE_SHIPPING_MARKETING_AR,
   type ShippingSettings,
 } from "./settings";
 
-export type FreeShippingReason = "minimum_amount";
+export type FreeShippingReason =
+  | "minimum_amount"
+  | "minimum_products"
+  | "bundle"
+  | "coupon";
+
+/** Minimal line shape — works for cart lines and order line items. */
+export interface ShippableLine {
+  quantity: number;
+  isBundle?: boolean;
+  /** set when the product/bundle record grants free shipping */
+  freeShipping?: boolean;
+}
 
 export interface ShippingResult {
   shippingFee: number;
@@ -26,12 +36,33 @@ export interface ShippingResult {
   upsellMessageAr?: string;
 }
 
-function countProducts(items: CartLineItem[]): number {
+function countProducts(items: ShippableLine[]): number {
   return items.reduce((sum, item) => sum + item.quantity, 0);
 }
 
+function resolveFreeShippingReason(
+  items: ShippableLine[],
+  subtotal: number,
+  productCount: number,
+  settings: ShippingSettings,
+): FreeShippingReason | undefined {
+  if (settings.freeShippingByAmountEnabled !== false &&
+      subtotal >= settings.freeShippingMinimumAmount) {
+    return "minimum_amount";
+  }
+  if (settings.freeShippingByQuantityEnabled &&
+      productCount >= settings.freeShippingMinimumProducts) {
+    return "minimum_products";
+  }
+  if (settings.bundleFreeShippingEnabled &&
+      items.some((i) => i.isBundle && i.freeShipping !== false)) {
+    return "bundle";
+  }
+  return undefined;
+}
+
 export function calculateShipping(
-  items: CartLineItem[],
+  items: ShippableLine[],
   subtotal: number,
   settings: ShippingSettings = DEFAULT_SHIPPING_SETTINGS,
 ): ShippingResult {
@@ -53,8 +84,13 @@ export function calculateShipping(
     };
   }
 
-  const isFreeShipping = subtotal >= threshold;
-  const freeShippingReason = isFreeShipping ? "minimum_amount" : undefined;
+  const freeShippingReason = resolveFreeShippingReason(
+    items,
+    subtotal,
+    productCount,
+    settings,
+  );
+  const isFreeShipping = Boolean(freeShippingReason);
   const shippingFee = isFreeShipping ? 0 : settings.defaultShippingPrice;
   const total = subtotal + shippingFee;
   const amountRemaining = isFreeShipping
@@ -72,7 +108,10 @@ export function calculateShipping(
     ? "توصيل مجاني"
     : `رسوم التوصيل: ${settings.defaultShippingPrice} د.م.`;
 
-  const showUpsell = !isFreeShipping && amountRemaining > 0;
+  const showUpsell =
+    !isFreeShipping &&
+    settings.freeShippingByAmountEnabled !== false &&
+    amountRemaining > 0;
 
   return {
     shippingFee,

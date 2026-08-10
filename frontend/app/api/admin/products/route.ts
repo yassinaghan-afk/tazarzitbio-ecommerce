@@ -4,6 +4,8 @@ import { isAdminRequest } from "@/lib/admin/auth";
 import type { CmsProductRecord } from "@/lib/admin/product-types";
 import { buildCatalog } from "@/lib/products/catalog-base";
 import { buildMergedCatalog, loadCmsCatalogState } from "@/lib/products/cms-catalog";
+import { logAudit } from "@/lib/server/audit";
+import { revalidatePublicContent } from "@/lib/server/revalidate";
 import { updateStore } from "@/lib/server/store";
 
 function catalogProductToCms(product: ReturnType<typeof buildCatalog>[number]): CmsProductRecord {
@@ -59,7 +61,7 @@ function mergeAdminView(
 }
 
 export async function GET(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -101,7 +103,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -156,11 +158,13 @@ export async function POST(req: NextRequest) {
     return { ...prev, cmsProducts, hiddenCatalogIds, featuredProductSlugs };
   });
 
+  void logAudit(`Product "${record.nameAr}" updated`, "product", record.id);
+  revalidatePublicContent();
   return NextResponse.json({ product: record, products: store.cmsProducts });
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -175,6 +179,8 @@ export async function PATCH(req: NextRequest) {
     featuredProductSlugs: body.featuredProductSlugs ?? prev.featuredProductSlugs,
   }));
 
+  void logAudit("Product order/featured updated", "product");
+  revalidatePublicContent();
   return NextResponse.json({
     productOrder: store.productOrder,
     featuredProductSlugs: store.featuredProductSlugs,
@@ -182,7 +188,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -214,5 +220,7 @@ export async function DELETE(req: NextRequest) {
     };
   });
 
+  void logAudit("Product deleted/archived", "product", id);
+  revalidatePublicContent();
   return NextResponse.json({ ok: true, cmsProducts: store.cmsProducts });
 }
