@@ -1,4 +1,5 @@
 import { TRACKING_CURRENCY } from "@/lib/tracking/types";
+import { resolveMetaPixelId } from "@/lib/meta/pixel-id";
 import { getActiveTrackingSettings, isTrackingPlatformActive } from "@/lib/tracking/runtime";
 
 type FbqFn = {
@@ -17,11 +18,23 @@ declare global {
   }
 }
 
+/** Guard against double `fbq('init')`. */
 let initialized = false;
+/**
+ * True after the official bootstrap snippet already fired the initial PageView.
+ * The SPA PageView tracker skips the first Meta PageView so we don't double-count.
+ */
+let suppressNextPageView = false;
 
 function getPixelId(): string {
-  if (!isTrackingPlatformActive("facebook")) return "";
-  return getActiveTrackingSettings().facebook.id;
+  if (typeof window !== "undefined") {
+    // Prefer runtime-resolved admin/env settings when available.
+    if (isTrackingPlatformActive("facebook")) {
+      const id = getActiveTrackingSettings().facebook.id;
+      if (id) return resolveMetaPixelId(id);
+    }
+  }
+  return resolveMetaPixelId();
 }
 
 function fbq(...args: unknown[]): void {
@@ -29,13 +42,49 @@ function fbq(...args: unknown[]): void {
   window.fbq(...args);
 }
 
-/** Meta browser event options — eventID must match CAPI event_id for dedupe. */
-export interface MetaBrowserEventOptions {
-  eventId?: string;
+/**
+ * Official Meta Pixel bootstrap (equivalent to Meta's provided base code):
+ * - loads fbevents.js once
+ * - fbq('init', PIXEL_ID)
+ * - fbq('track', 'PageView') for the first hit
+ *
+ * Pixel ID is injected safely as digits-only.
+ */
+export function buildMetaPixelBootstrap(pixelId: string): string {
+  const id = resolveMetaPixelId(pixelId);
+  return `
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${id}');
+fbq('track', 'PageView');
+`.trim();
+}
+
+/** @deprecated use buildMetaPixelBootstrap(pixelId) — kept for any old imports */
+export const FACEBOOK_PIXEL_BOOTSTRAP = buildMetaPixelBootstrap(resolveMetaPixelId());
+
+/**
+ * Call when the official bootstrap (init + PageView) is about to mount so the
+ * SPA PageView tracker skips only the first Meta PageView (no double count).
+ */
+export function primeMetaPixelBootstrap(): void {
+  initialized = true;
+  suppressNextPageView = true;
+}
+
+/** @deprecated use primeMetaPixelBootstrap */
+export function acknowledgeMetaPixelBootstrap(): void {
+  primeMetaPixelBootstrap();
 }
 
 export function initFacebookPixel(pixelId?: string): void {
-  const id = pixelId ?? getPixelId();
+  const id = resolveMetaPixelId(pixelId ?? getPixelId());
   if (!id || initialized) return;
   fbq("init", id);
   initialized = true;
@@ -43,6 +92,10 @@ export function initFacebookPixel(pixelId?: string): void {
 
 export function pageview(): void {
   if (!getPixelId()) return;
+  if (suppressNextPageView) {
+    suppressNextPageView = false;
+    return;
+  }
   fbq("track", "PageView");
 }
 
@@ -159,14 +212,8 @@ export function trackPurchase(params: {
   else fbq("track", "Purchase", data);
 }
 
-/** Meta Pixel bootstrap snippet — injected once via next/script. */
-export const FACEBOOK_PIXEL_BOOTSTRAP = `
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-`;
+/** Noscript fallback image URL (Meta base code). */
+export function metaPixelNoscriptSrc(pixelId?: string): string {
+  const id = resolveMetaPixelId(pixelId);
+  return `https://www.facebook.com/tr?id=${encodeURIComponent(id)}&ev=PageView&noscript=1`;
+}

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 
 import { clarityBootstrap, initClarity } from "@/lib/clarity";
 import {
-  FACEBOOK_PIXEL_BOOTSTRAP,
-  initFacebookPixel,
+  buildMetaPixelBootstrap,
+  metaPixelNoscriptSrc,
+  primeMetaPixelBootstrap,
 } from "@/lib/facebook-pixel";
 import {
   GA4_BOOTSTRAP,
@@ -33,12 +35,12 @@ import {
   setActiveTrackingSettings,
 } from "@/lib/tracking/runtime";
 import {
-  hasAnyActivePlatform,
   isPlatformActive,
+  isProductionEnvironment,
   resolveTrackingSettings,
-  shouldInjectTrackingScripts,
 } from "@/lib/tracking/settings";
 import type { TrackingSettings } from "@/lib/tracking/types";
+import { resolveMetaPixelId } from "@/lib/meta/pixel-id";
 import { PageViewTracker } from "@/components/tracking/page-view-tracker";
 
 interface TrackingScriptsProps {
@@ -46,38 +48,48 @@ interface TrackingScriptsProps {
 }
 
 /**
- * Loads marketing pixels client-side only in production.
- * Scripts inject once per platform — no duplicates on navigation.
+ * Loads marketing pixels once for the storefront.
+ * Meta Pixel: official bootstrap (fbevents.js + init + PageView) — single init.
  */
 export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
-  const [settings, setSettings] = useState<TrackingSettings | null>(
-    initialSettings ?? null,
+  const pathname = usePathname();
+  const metaPrimed = useRef(false);
+  const [settings, setSettings] = useState<TrackingSettings>(() =>
+    resolveTrackingSettings(initialSettings ?? undefined),
   );
-  const [ready, setReady] = useState(Boolean(initialSettings));
 
   useEffect(() => {
     if (initialSettings) {
-      setActiveTrackingSettings(initialSettings);
-      setReady(true);
+      const resolved = resolveTrackingSettings(initialSettings);
+      setActiveTrackingSettings(resolved);
+      setSettings(resolved);
       return;
     }
 
     let cancelled = false;
+    const fallback = resolveTrackingSettings();
+    setActiveTrackingSettings(fallback);
+    setSettings(fallback);
+
     void fetch("/api/tracking", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { tracking?: Partial<TrackingSettings> } | null) => {
         if (cancelled) return;
         const resolved = resolveTrackingSettings(data?.tracking);
+        if (!resolved.facebook.id) {
+          resolved.facebook = {
+            id: resolveMetaPixelId(),
+            enabled: resolved.facebook.enabled !== false,
+          };
+        }
         setActiveTrackingSettings(resolved);
         setSettings(resolved);
-        setReady(true);
       })
       .catch(() => {
         if (cancelled) return;
-        const fallback = resolveTrackingSettings();
-        setActiveTrackingSettings(fallback);
-        setSettings(fallback);
-        setReady(true);
+        const fallbackSettings = resolveTrackingSettings();
+        setActiveTrackingSettings(fallbackSettings);
+        setSettings(fallbackSettings);
       });
 
     return () => {
@@ -85,21 +97,26 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
     };
   }, [initialSettings]);
 
-  if (!ready || !settings) {
+  // Marketing pixels are storefront-only.
+  if (pathname?.startsWith("/admin")) {
     return null;
   }
 
-  const shouldTrack =
-    settings.testMode || hasAnyActivePlatform(settings);
-  if (!shouldTrack) {
+  const allowPixels = isProductionEnvironment() || settings.testMode;
+  if (!allowPixels) {
     return null;
   }
 
-  const injectScripts = shouldInjectTrackingScripts(settings);
+  const facebookId = resolveMetaPixelId(settings.facebook.id);
+  const loadFacebook =
+    facebookId.length > 0 && settings.facebook.enabled !== false;
 
-  const facebookId = isPlatformActive(settings, "facebook")
-    ? settings.facebook.id
-    : "";
+  // Before paint effects race PageViewTracker: mark bootstrap PageView as already counted.
+  if (loadFacebook && !metaPrimed.current) {
+    metaPrimed.current = true;
+    primeMetaPixelBootstrap();
+  }
+
   const tiktokId = isPlatformActive(settings, "tiktok")
     ? settings.tiktok.id
     : "";
@@ -118,102 +135,123 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
 
   return (
     <>
-      {injectScripts && (
+      {loadFacebook && (
         <>
-          {gtmId && !isScriptLoaded("gtm") && (
-            <>
-              <Script
-                id="gtm-bootstrap"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{ __html: GTM_BOOTSTRAP }}
-              />
-              <Script
-                id="gtm-script"
-                strategy="afterInteractive"
-                src={gtmScriptSrc(gtmId)}
-                onLoad={() => {
-                  markScriptLoaded("gtm");
-                  initGoogleTagManager(gtmId);
-                  logTrackingScript("GTM", "loaded");
-                }}
-              />
-            </>
-          )}
-
-          {gaId && !isScriptLoaded("ga4") && (
-            <>
-              <Script
-                id="ga4-bootstrap"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{ __html: GA4_BOOTSTRAP }}
-              />
-              <Script
-                id="ga4-script"
-                strategy="afterInteractive"
-                src={ga4ScriptSrc(gaId)}
-                onLoad={() => {
-                  markScriptLoaded("ga4");
-                  initGoogleAnalytics(gaId);
-                  logTrackingScript("GA4", "loaded");
-                }}
-              />
-            </>
-          )}
-
-          {facebookId && !isScriptLoaded("facebook") && (
-            <Script
-              id="facebook-pixel"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{ __html: FACEBOOK_PIXEL_BOOTSTRAP }}
-              onReady={() => {
+          <Script
+            id="facebook-pixel"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: buildMetaPixelBootstrap(facebookId),
+            }}
+            onReady={() => {
+              if (!isScriptLoaded("facebook")) {
                 markScriptLoaded("facebook");
-                initFacebookPixel(facebookId);
                 logTrackingScript("Meta", "loaded");
-              }}
+              }
+            }}
+          />
+          <noscript>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              height="1"
+              width="1"
+              style={{ display: "none" }}
+              src={metaPixelNoscriptSrc(facebookId)}
+              alt=""
             />
-          )}
-
-          {tiktokId && !isScriptLoaded("tiktok") && (
-            <Script
-              id="tiktok-pixel"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{ __html: TIKTOK_PIXEL_BOOTSTRAP }}
-              onReady={() => {
-                markScriptLoaded("tiktok");
-                initTikTokPixel(tiktokId);
-                logTrackingScript("TikTok", "loaded");
-              }}
-            />
-          )}
-
-          {snapchatId && !isScriptLoaded("snapchat") && (
-            <Script
-              id="snapchat-pixel"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{ __html: SNAPCHAT_PIXEL_BOOTSTRAP }}
-              onReady={() => {
-                markScriptLoaded("snapchat");
-                initSnapchatPixel(snapchatId);
-                logTrackingScript("Snapchat", "loaded");
-              }}
-            />
-          )}
-
-          {clarityId && !isScriptLoaded("clarity") && (
-            <Script
-              id="microsoft-clarity"
-              strategy="lazyOnload"
-              dangerouslySetInnerHTML={{
-                __html: clarityBootstrap(clarityId),
-              }}
-              onReady={() => {
-                markScriptLoaded("clarity");
-                initClarity(clarityId);
-                logTrackingScript("Clarity", "loaded");
-              }}
-            />
-          )}
+          </noscript>
         </>
+      )}
+
+      {gtmId && (
+        <>
+          <Script
+            id="gtm-bootstrap"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: GTM_BOOTSTRAP }}
+          />
+          <Script
+            id="gtm-script"
+            strategy="afterInteractive"
+            src={gtmScriptSrc(gtmId)}
+            onLoad={() => {
+              if (!isScriptLoaded("gtm")) {
+                markScriptLoaded("gtm");
+                initGoogleTagManager(gtmId);
+                logTrackingScript("GTM", "loaded");
+              }
+            }}
+          />
+        </>
+      )}
+
+      {gaId && (
+        <>
+          <Script
+            id="ga4-bootstrap"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: GA4_BOOTSTRAP }}
+          />
+          <Script
+            id="ga4-script"
+            strategy="afterInteractive"
+            src={ga4ScriptSrc(gaId)}
+            onLoad={() => {
+              if (!isScriptLoaded("ga4")) {
+                markScriptLoaded("ga4");
+                initGoogleAnalytics(gaId);
+                logTrackingScript("GA4", "loaded");
+              }
+            }}
+          />
+        </>
+      )}
+
+      {tiktokId && (
+        <Script
+          id="tiktok-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: TIKTOK_PIXEL_BOOTSTRAP }}
+          onReady={() => {
+            if (!isScriptLoaded("tiktok")) {
+              markScriptLoaded("tiktok");
+              initTikTokPixel(tiktokId);
+              logTrackingScript("TikTok", "loaded");
+            }
+          }}
+        />
+      )}
+
+      {snapchatId && (
+        <Script
+          id="snapchat-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: SNAPCHAT_PIXEL_BOOTSTRAP }}
+          onReady={() => {
+            if (!isScriptLoaded("snapchat")) {
+              markScriptLoaded("snapchat");
+              initSnapchatPixel(snapchatId);
+              logTrackingScript("Snapchat", "loaded");
+            }
+          }}
+        />
+      )}
+
+      {clarityId && (
+        <Script
+          id="microsoft-clarity"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: clarityBootstrap(clarityId),
+          }}
+          onReady={() => {
+            if (!isScriptLoaded("clarity")) {
+              markScriptLoaded("clarity");
+              initClarity(clarityId);
+              logTrackingScript("Clarity", "loaded");
+            }
+          }}
+        />
       )}
 
       <PageViewTracker />

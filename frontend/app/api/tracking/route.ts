@@ -15,16 +15,19 @@ export async function GET() {
   const tracking = resolveTrackingSettings(store.trackingSettings);
   const envPixelId = getMetaPixelId();
 
-  // EasyPanel META_PIXEL_ID is the production source of truth when Admin has no custom ID.
-  if (envPixelId) {
-    const adminFb = store.trackingSettings?.facebook;
-    if (!adminFb?.id) {
-      tracking.facebook = {
-        id: envPixelId,
-        // Allow admin to disable Pixel without clearing env id
-        enabled: adminFb?.enabled === false ? false : true,
-      };
-    }
+  // Always expose the production Meta Pixel ID (public dataset).
+  // Admin can disable via facebook.enabled = false; empty admin id uses env/default.
+  const adminFb = store.trackingSettings?.facebook;
+  if (!adminFb?.id) {
+    tracking.facebook = {
+      id: envPixelId,
+      enabled: adminFb?.enabled === false ? false : true,
+    };
+  } else if (!tracking.facebook.id) {
+    tracking.facebook = {
+      id: envPixelId,
+      enabled: tracking.facebook.enabled !== false,
+    };
   }
 
   return NextResponse.json(
