@@ -26,18 +26,24 @@ function formatMAD(n: number) {
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
+  contacted: "bg-orange-100 text-orange-800",
   confirmed: "bg-blue-100 text-blue-800",
+  preparing: "bg-sky-100 text-sky-800",
   shipped: "bg-indigo-100 text-indigo-800",
   delivered: "bg-emerald-100 text-emerald-800",
   cancelled: "bg-rose-100 text-rose-800",
+  returned: "bg-zinc-100 text-zinc-700",
 };
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pending",
+  pending: "New",
+  contacted: "Contacted",
   confirmed: "Confirmed",
+  preparing: "Preparing",
   shipped: "Shipped",
   delivered: "Delivered",
   cancelled: "Cancelled",
+  returned: "Returned",
 };
 
 export function OrdersTable({

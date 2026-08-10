@@ -25,6 +25,15 @@ export function loadShippingSettings(): ShippingSettings {
       freeShippingMinimumProducts:
         parsed.freeShippingMinimumProducts ??
         DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumProducts,
+      freeShippingByAmountEnabled:
+        parsed.freeShippingByAmountEnabled ??
+        DEFAULT_SHIPPING_SETTINGS.freeShippingByAmountEnabled,
+      freeShippingByQuantityEnabled:
+        parsed.freeShippingByQuantityEnabled ??
+        DEFAULT_SHIPPING_SETTINGS.freeShippingByQuantityEnabled,
+      bundleFreeShippingEnabled:
+        parsed.bundleFreeShippingEnabled ??
+        DEFAULT_SHIPPING_SETTINGS.bundleFreeShippingEnabled,
     };
   } catch {
     return DEFAULT_SHIPPING_SETTINGS;
