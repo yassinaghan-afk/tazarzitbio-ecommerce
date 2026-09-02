@@ -13,10 +13,10 @@ import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
   AMLOU_ROYAL_IMAGE,
+  AMLOU_ROYAL_INGREDIENTS_IMAGE,
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
-  AMLOU_ROYAL_TRUST_IMAGE,
   AMLOU_ROYAL_VERSIONS,
   getAmlouRoyalOffer,
   getAmlouRoyalVersion,
@@ -342,8 +342,15 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
                 </span>
               )}
               {item.bestValue && (
-                <span className="absolute end-3 top-0 -translate-y-1/2 rounded-md bg-[#1a2744] px-2 py-0.5 text-[10px] font-bold text-white">
-                  🏆 أفضل قيمة
+                <span className="absolute end-3 top-0 flex -translate-y-1/2 items-center gap-1.5">
+                  <span className="rounded-md bg-[#1a2744] px-2 py-0.5 text-[10px] font-bold text-white">
+                    🏆 أفضل قيمة
+                  </span>
+                  {item.giftAr && (
+                    <span className="royal-gift-badge rounded-md bg-gradient-to-l from-amber-400 via-yellow-300 to-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-[#5c3d0a] shadow-[0_0_12px_rgba(251,191,36,0.85)]">
+                      {item.giftAr}
+                    </span>
+                  )}
                 </span>
               )}
 
@@ -386,11 +393,6 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
                       ? "🎁 التوصيل مجاناً"
                       : `+ ${item.shippingFee} DH توصيل`}
                   </p>
-                  {item.giftAr && (
-                    <p className="mt-1 text-xs font-extrabold text-red-600">
-                      {item.giftAr}
-                    </p>
-                  )}
                 </div>
 
                 <div className="shrink-0 text-end leading-none">
@@ -485,9 +487,9 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
 
       <div className="mt-3 w-full">
         <Image
-          src={AMLOU_ROYAL_TRUST_IMAGE}
-          alt="الدفع عند الاستلام · التوصيل لجميع المدن · معلوماتكم محمية"
-          width={764}
+          src={AMLOU_ROYAL_INGREDIENTS_IMAGE}
+          alt="أملو ملكي — مكونات مختارة بعناية من المكسرات وزيت أركان"
+          width={571}
           height={1024}
           sizes="(max-width: 1024px) 100vw, 480px"
           className="h-auto w-full"

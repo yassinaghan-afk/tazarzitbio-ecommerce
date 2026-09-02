@@ -12,6 +12,8 @@ export const AMLOU_ROYAL_BOTTLE_WEIGHT_G = 500;
 
 export const AMLOU_ROYAL_IMAGE = "/images/products/amlou-royal-hero.jpg";
 export const AMLOU_ROYAL_TRUST_IMAGE = "/images/products/amlou-royal-trust.jpg";
+export const AMLOU_ROYAL_INGREDIENTS_IMAGE =
+  "/images/products/amlou-royal-ingredients.jpg";
 export const AMLOU_ROYAL_IMAGES = [
   "/images/products/amlou-royal-hero.jpg",
   "/images/products/mixed-nuts.png",
@@ -93,7 +95,7 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
     shippingFee: 0,
     freeShipping: true,
     bestValue: true,
-    giftAr: "🎁 ستُضاف لك هدية مع الطلب",
+    giftAr: "🎁 + هدية",
   },
 ];
 
