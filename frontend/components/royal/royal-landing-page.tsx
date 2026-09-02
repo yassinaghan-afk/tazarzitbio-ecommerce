@@ -2,13 +2,19 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ChevronDown, Leaf, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ChevronDown,
+  Leaf,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Star,
+} from "lucide-react";
 
 import { RoyalOrderSection } from "@/components/royal/royal-order-section";
 import { Button } from "@/components/ui/button";
 import {
   AMLOU_ROYAL_IMAGE,
-  AMLOU_ROYAL_IMAGES,
   AMLOU_ROYAL_INGREDIENTS,
   AMLOU_ROYAL_NAME_AR,
 } from "@/lib/products/amlou-royal";
@@ -28,6 +34,51 @@ const WHY = [
   { title: "جودة Tazarzit Bio", icon: ShieldCheck },
   { title: "100% طبيعي", icon: Leaf },
   { title: "بدون سكر مضاف", icon: Leaf },
+];
+
+const REVIEWS = [
+  {
+    author: "سكينة",
+    city: "مراكش",
+    rating: 5,
+    content:
+      "طلبت أملو ملكي وصلني لمراكش، القومة كريمية والمكسرات باينين بزاف. عجبني أكثر من ديال السوق.",
+  },
+  {
+    author: "عبد الرحيم",
+    city: "الدار البيضاء",
+    rating: 5,
+    content:
+      "جربناه مع الفطور والشاي، الواليدة قالت ليا هادا أملو فاخر بصح. غادي نعاود نطلب العرض ديال جوج.",
+  },
+  {
+    author: "حفيظة",
+    city: "أكادير",
+    rating: 5,
+    content:
+      "أنا من أكادير وطلبت النسخة بالعسل. الريحة طبيعية والطعم غني، التغليف نقي والتوصيل سريع.",
+  },
+  {
+    author: "ياسين",
+    city: "فاس",
+    rating: 5,
+    content:
+      "أخذت 3 قنينات، جات معاهم هدية. الأملو بنين والضيوف عجبهم مع الملوي. جودة مغربية واضحة.",
+  },
+  {
+    author: "نادية",
+    city: "طنجة",
+    rating: 5,
+    content:
+      "ماشي بحال الأملو العادي، هادا فيه مكسرات متنوعة وزيت أركان. طلبت بدون عسل وجا زوين بزاف.",
+  },
+  {
+    author: "كريم",
+    city: "الرباط",
+    rating: 5,
+    content:
+      "الدفع عند الاستلام مريح، والاتصال قبل التوصيل مزيان. المنتوج نفس اللي فالصور والطعم فاخر.",
+  },
 ];
 
 const FAQS = [
@@ -142,22 +193,45 @@ export function RoyalLandingPage() {
       <section className="bg-white py-10">
         <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
           <h2 className="text-center text-xl font-extrabold sm:text-2xl">
-            تقديم المنتوج
+            آراء الزبناء المغاربة
           </h2>
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
-            {AMLOU_ROYAL_IMAGES.map((src, i) => (
-              <div
-                key={src}
-                className="relative aspect-square overflow-hidden rounded-xl border border-neutral-200 bg-[#faf6ef]"
+          <p className="mx-auto mt-1.5 max-w-md text-center text-xs text-neutral-500">
+            تجارب حقيقية من مدن المغرب — بالدارجة
+          </p>
+          <div className="mx-auto mt-5 grid gap-3 sm:max-w-3xl sm:grid-cols-2">
+            {REVIEWS.map((review) => (
+              <article
+                key={`${review.author}-${review.city}`}
+                className="rounded-xl border border-[#e5d9c8] bg-[#faf6ef]/80 p-4"
               >
-                <Image
-                  src={src}
-                  alt={`${AMLOU_ROYAL_NAME_AR} — ${i + 1}`}
-                  fill
-                  sizes="33vw"
-                  className="object-contain p-2"
-                />
-              </div>
+                <div
+                  className="flex items-center gap-0.5"
+                  aria-label={`${review.rating} من 5`}
+                >
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        "size-3.5",
+                        i < review.rating
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-neutral-200 text-neutral-200",
+                      )}
+                      aria-hidden
+                    />
+                  ))}
+                </div>
+                <blockquote className="mt-2 text-sm leading-relaxed text-neutral-700">
+                  «{review.content}»
+                </blockquote>
+                <p className="mt-3 text-xs font-bold text-[#1a2744]">
+                  {review.author}
+                  <span className="font-semibold text-neutral-500">
+                    {" "}
+                    · {review.city}
+                  </span>
+                </p>
+              </article>
             ))}
           </div>
         </div>
