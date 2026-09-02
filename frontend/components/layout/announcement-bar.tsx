@@ -93,6 +93,7 @@ export function AnnouncementBar() {
 
   return (
     <div
+      id="announcement-bar"
       className="fixed inset-x-0 top-[var(--header-height,5.75rem)] z-40 border-b border-white/10 bg-[hsl(96_33%_18%)] shadow-sm"
       style={{ height: ANNOUNCEMENT_BAR_HEIGHT_PX }}
       onMouseEnter={() => setPaused(true)}

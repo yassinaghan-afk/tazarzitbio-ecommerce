@@ -1,6 +1,15 @@
 import type { PricingOverrides } from "./admin-storage";
 import { buildPricingEconomics, type PricingInput } from "./pricing";
 import {
+  AMLOU_ROYAL_ID,
+  AMLOU_ROYAL_IMAGE,
+  AMLOU_ROYAL_IMAGES,
+  AMLOU_ROYAL_INGREDIENTS,
+  AMLOU_ROYAL_NAME_AR,
+  AMLOU_ROYAL_OFFERS,
+  AMLOU_ROYAL_SLUG,
+} from "./amlou-royal";
+import {
   REVIEWS_ALMOND,
   REVIEWS_ARGAN,
   REVIEWS_DAGHMOUS,
@@ -101,6 +110,23 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
     offer("peanut-amlou-500", "AML-PNT-500", "500 غ", "500 غ", { costPrice: 37, salePrice: 129, ...ADMIN_ECONOMICS }, "الأكثر طلباً", overrides),
     offer("peanut-amlou-750", "AML-PNT-750", "750 غ", "750 غ", { costPrice: 44.5, salePrice: 199, ...ADMIN_ECONOMICS }, undefined, overrides),
   ];
+
+  const royalOffers = AMLOU_ROYAL_OFFERS.map((item) =>
+    offer(
+      item.id,
+      item.sku,
+      item.titleAr,
+      item.weightAr,
+      {
+        costPrice: item.bottles === 1 ? 145 : item.bottles === 2 ? 290 : 435,
+        salePrice: item.price,
+        estimatedDeliveryCost: item.freeShipping ? 0 : ADMIN_ECONOMICS.estimatedDeliveryCost,
+        estimatedAdsCost: ADMIN_ECONOMICS.estimatedAdsCost,
+      },
+      item.subtitleAr,
+      overrides,
+    ),
+  );
 
   const catalog: Product[] = [
     {
@@ -407,6 +433,51 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       rating: 4.9,
       reviewCount: 41,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "daghmous-honey"],
+    },
+    {
+      id: AMLOU_ROYAL_ID,
+      slug: AMLOU_ROYAL_SLUG,
+      nameAr: AMLOU_ROYAL_NAME_AR,
+      shortDescription:
+        "خليطة فاخرة من المكسرات المختارة بعناية، زيت أركان الغذائي والعسل الطبيعي، بمذاق غني وقوام كريمي مميز.",
+      description:
+        "أملو ملكي من تازارزيت بيو: أملو مغربي فاخر من مكسرات مختارة وزيت أركان غذائي. متوفر بنسخة بالعسل الطبيعي وبنسخة بدون عسل وبدون سكر مضاف.",
+      price: lowestPrice(royalOffers),
+      image: AMLOU_ROYAL_IMAGE,
+      images: [...AMLOU_ROYAL_IMAGES],
+      category: "amlou",
+      badges: ["new", "natural"],
+      weight: "500 غ — 1.5 كغ",
+      ingredients: [...AMLOU_ROYAL_INGREDIENTS],
+      benefits: [
+        "خليطة فاخرة من المكسرات المختارة",
+        "قوام كريمي ومذاق غني",
+        "100% طبيعي — بدون سكر مضاف",
+      ],
+      usageSuggestions: [
+        "على خبز البيت أو الملوي",
+        "مع الشاي المغربي والضيافة",
+        "فطور عائلي فاخر",
+      ],
+      offers: royalOffers,
+      faq: [
+        {
+          q: "مما يتكوّن أملو ملكي؟",
+          a: "خليطة مكسرات مختارة (لوز، فستق، بندق، كاجو، كركاع، جوز البرازيل، بذور يقطين)، غذاء ملكات النحل، وزيت أركان غذائي، مع عسل طبيعي في النسخة المحلّاة.",
+        },
+        {
+          q: "هل يوجد سكر مضاف؟",
+          a: "لا يوجد سكر مضاف. النسخة بالعسل تستمد حلاوتها من العسل الطبيعي، والنسخة بدون عسل بدون سكر مضاف.",
+        },
+        {
+          q: "كيف يتم الدفع والتوصيل؟",
+          a: "الدفع عند الاستلام لجميع المدن. التوصيل مجاناً لجميع العروض.",
+        },
+      ],
+      reviews: [],
+      rating: 0,
+      reviewCount: 0,
+      relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
     },
     {
       id: "premium-family-pack",

@@ -312,4 +312,14 @@
     outline: 2px solid hsl(var(--accent));
     outline-offset: 2px;
   }
+
+  /* /royal landing — no site chrome; hero flush to top */
+  body.royal-lp #site-header,
+  body.royal-lp #announcement-bar {
+    display: none !important;
+  }
+
+  body.royal-lp main {
+    padding-top: 0 !important;
+  }
 }

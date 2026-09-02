@@ -30,6 +30,11 @@ const nextConfig = {
         destination: "/products/cocoa-amlou-:size",
         permanent: true,
       },
+      {
+        source: "/products/amlou-royal",
+        destination: "/royal",
+        permanent: true,
+      },
     ];
   },
 };

@@ -38,7 +38,7 @@ function buildRow(params: {
     customerName: order.customerName,
     phone: order.phone,
     address: order.address,
-    city: "",
+    city: (order.city ?? "").trim(),
     productName: item.nameAr,
     sku: item.productId || item.slug || item.offerId,
     variant: item.offerLabel,

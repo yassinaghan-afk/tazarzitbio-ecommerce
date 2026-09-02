@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 
 import type { CreateOrderInput, CreateOrderResponse, OrderRecord } from "@/lib/orders/types";
+import { resolveAmlouRoyalShippingFromLines } from "@/lib/products/amlou-royal";
 import { sendOrderToGoogleSheet } from "@/lib/google-sheets";
 import { sendOrderTelegramNotification } from "@/lib/telegram";
 import { sendMetaCapiEvent } from "@/lib/meta/capi";
@@ -81,6 +82,13 @@ export async function POST(req: Request) {
   let discount = 0;
   let appliedCoupon = "";
   let shippingPrice = shipping.shippingFee;
+  const royalShipping = resolveAmlouRoyalShippingFromLines(
+    products,
+    store.shippingSettings?.defaultShippingPrice,
+  );
+  if (royalShipping !== null) {
+    shippingPrice = royalShipping;
+  }
   if (couponCode) {
     const coupon = await validateCoupon(couponCode, subtotal);
     if (coupon.valid) {

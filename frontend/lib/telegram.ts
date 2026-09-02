@@ -23,7 +23,7 @@ function formatLineItem(item: OrderLineItem): string {
 }
 
 export function formatOrderTelegramMessage(order: OrderRecord): string {
-  const city = extractCityFromAddress(order.address);
+  const city = order.city?.trim() || extractCityFromAddress(order.address);
   const products =
     order.products.length > 0
       ? order.products.map(formatLineItem).join("\n")

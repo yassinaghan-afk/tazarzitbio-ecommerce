@@ -58,6 +58,7 @@ export function SiteHeader({ cmsNav }: { cmsNav?: NavLinkRecord[] }) {
   return (
     <>
       <header
+        id="site-header"
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out",
           scrolled ? "glass-nav-solid" : "glass-nav",

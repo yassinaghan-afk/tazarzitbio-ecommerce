@@ -20,9 +20,10 @@ import {
   initSnapchatPixel,
 } from "@/lib/snapchat-pixel";
 import {
-  TIKTOK_PIXEL_BOOTSTRAP,
-  initTikTokPixel,
+  buildTikTokPixelBootstrap,
+  primeTikTokPixelBootstrap,
 } from "@/lib/tiktok-pixel";
+import { resolveTikTokPixelId } from "@/lib/tiktok/pixel-id";
 import {
   GTM_BOOTSTRAP,
   gtmScriptSrc,
@@ -50,10 +51,12 @@ interface TrackingScriptsProps {
 /**
  * Loads marketing pixels once for the storefront.
  * Meta Pixel: official bootstrap (fbevents.js + init + PageView) — single init.
+ * TikTok Pixel: official bootstrap (events.js + load + page) — single init.
  */
 export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
   const pathname = usePathname();
   const metaPrimed = useRef(false);
+  const tiktokPrimed = useRef(false);
   const [settings, setSettings] = useState<TrackingSettings>(() =>
     resolveTrackingSettings(initialSettings ?? undefined),
   );
@@ -80,6 +83,12 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
           resolved.facebook = {
             id: resolveMetaPixelId(),
             enabled: resolved.facebook.enabled !== false,
+          };
+        }
+        if (!resolved.tiktok.id) {
+          resolved.tiktok = {
+            id: resolveTikTokPixelId(),
+            enabled: resolved.tiktok.enabled !== false,
           };
         }
         setActiveTrackingSettings(resolved);
@@ -117,9 +126,15 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
     primeMetaPixelBootstrap();
   }
 
-  const tiktokId = isPlatformActive(settings, "tiktok")
-    ? settings.tiktok.id
-    : "";
+  const tiktokId = resolveTikTokPixelId(settings.tiktok.id);
+  const loadTikTok =
+    tiktokId.length > 0 && settings.tiktok.enabled !== false;
+
+  if (loadTikTok && !tiktokPrimed.current) {
+    tiktokPrimed.current = true;
+    primeTikTokPixelBootstrap();
+  }
+
   const snapchatId = isPlatformActive(settings, "snapchat")
     ? settings.snapchat.id
     : "";
@@ -207,15 +222,16 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
         </>
       )}
 
-      {tiktokId && (
+      {loadTikTok && (
         <Script
           id="tiktok-pixel"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: TIKTOK_PIXEL_BOOTSTRAP }}
+          dangerouslySetInnerHTML={{
+            __html: buildTikTokPixelBootstrap(tiktokId),
+          }}
           onReady={() => {
             if (!isScriptLoaded("tiktok")) {
               markScriptLoaded("tiktok");
-              initTikTokPixel(tiktokId);
               logTrackingScript("TikTok", "loaded");
             }
           }}
