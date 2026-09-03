@@ -32,8 +32,6 @@ export function validateCheckoutFormLocalized(
 
   if (!data.address.trim()) {
     errors.address = t("validation.addressRequired");
-  } else if (data.address.trim().length < 10) {
-    errors.address = t("validation.addressShort");
   }
 
   return errors;

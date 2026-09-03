@@ -43,8 +43,6 @@ export function validateCheckoutForm(
 
   if (!data.address.trim()) {
     errors.address = "العنوان الكامل مطلوب";
-  } else if (data.address.trim().length < 10) {
-    errors.address = "أدخل عنواناً كاملاً (المدينة، الحي، الشارع)";
   }
 
   return errors;
