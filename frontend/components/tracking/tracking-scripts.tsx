@@ -23,6 +23,8 @@ import {
   buildTikTokPixelBootstrap,
   primeTikTokPixelBootstrap,
 } from "@/lib/tiktok-pixel";
+import { buildOpenAIPixelBootstrap } from "@/lib/openai-pixel";
+import { resolveOpenAIPixelId } from "@/lib/openai/pixel-id";
 import { resolveTikTokPixelId } from "@/lib/tiktok/pixel-id";
 import {
   GTM_BOOTSTRAP,
@@ -52,6 +54,7 @@ interface TrackingScriptsProps {
  * Loads marketing pixels once for the storefront.
  * Meta Pixel: official bootstrap (fbevents.js + init + PageView) — single init.
  * TikTok Pixel: official bootstrap (events.js + load + page) — single init.
+ * OpenAI Pixel: official bootstrap (oaiq.min.js + init) — single init.
  */
 export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
   const pathname = usePathname();
@@ -129,6 +132,8 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
   const tiktokId = resolveTikTokPixelId(settings.tiktok.id);
   const loadTikTok =
     tiktokId.length > 0 && settings.tiktok.enabled !== false;
+  const openaiId = resolveOpenAIPixelId();
+  const loadOpenAI = openaiId.length > 0;
 
   if (loadTikTok && !tiktokPrimed.current) {
     tiktokPrimed.current = true;
@@ -233,6 +238,22 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
             if (!isScriptLoaded("tiktok")) {
               markScriptLoaded("tiktok");
               logTrackingScript("TikTok", "loaded");
+            }
+          }}
+        />
+      )}
+
+      {loadOpenAI && (
+        <Script
+          id="openai-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: buildOpenAIPixelBootstrap(openaiId),
+          }}
+          onReady={() => {
+            if (!isScriptLoaded("openai")) {
+              markScriptLoaded("openai");
+              logTrackingScript("OpenAI", "loaded");
             }
           }}
         />

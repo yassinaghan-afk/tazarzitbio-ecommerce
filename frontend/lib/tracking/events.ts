@@ -1,4 +1,5 @@
 import * as facebookPixel from "@/lib/facebook-pixel";
+import * as openaiPixel from "@/lib/openai-pixel";
 import * as tiktokPixel from "@/lib/tiktok-pixel";
 import * as snapchatPixel from "@/lib/snapchat-pixel";
 import * as googleAnalytics from "@/lib/google-analytics";
@@ -18,6 +19,8 @@ import {
 export function trackPageView(url?: string): void {
   if (typeof window === "undefined") return;
   logTracking("PageView", { url });
+  logTracking("PageView", { url }, "OpenAI");
+  openaiPixel.pageview(url);
   if (isTrackingPlatformActive("facebook")) {
     logTracking("PageView", { url }, "Meta");
     facebookPixel.pageview();
@@ -83,6 +86,8 @@ export function trackViewContent(payload: ViewContentPayload): void {
   const value = payload.price * quantity;
 
   logTracking("ViewContent", { ...payload, eventId });
+  logTracking("ViewContent", { ...payload, eventId }, "OpenAI");
+  openaiPixel.trackViewContent({ ...payload, eventId });
   if (isTrackingPlatformActive("facebook")) {
     logTracking("ViewContent", { ...payload, eventId }, "Meta");
     facebookPixel.trackViewContent({ ...payload, eventId });
@@ -118,6 +123,8 @@ export function trackAddToCart(payload: AddToCartTrackingPayload): void {
   const value = payload.price * payload.quantity;
 
   logTracking("AddToCart", { ...payload, eventId });
+  logTracking("AddToCart", { ...payload, eventId }, "OpenAI");
+  openaiPixel.trackAddToCart({ ...payload, eventId });
   if (isTrackingPlatformActive("facebook")) {
     logTracking("AddToCart", { ...payload, eventId }, "Meta");
     facebookPixel.trackAddToCart({ ...payload, eventId });
@@ -166,6 +173,12 @@ export function trackInitiateCheckout(payload: CheckoutTrackingPayload): void {
   }));
 
   logTracking("InitiateCheckout", { ...payload, eventId });
+  logTracking("InitiateCheckout", { ...payload, eventId }, "OpenAI");
+  openaiPixel.trackInitiateCheckout({
+    products: payload.products,
+    total: payload.total,
+    eventId,
+  });
   if (isTrackingPlatformActive("facebook")) {
     logTracking("InitiateCheckout", { ...payload, eventId }, "Meta");
     facebookPixel.trackInitiateCheckout({
@@ -201,9 +214,10 @@ export function trackInitiateCheckout(payload: CheckoutTrackingPayload): void {
 }
 
 /**
- * Browser-side Purchase (Meta Pixel + other platforms).
+ * Browser-side Purchase (Meta Pixel + other platforms + OpenAI `order_created`).
  * Must only be called after the backend has accepted the order.
  * Meta CAPI Purchase is sent from /api/orders with the same eventId.
+ * OpenAI Ads conversion: oaiq("measure", "order_created", { type: "contents", ... }).
  */
 export function trackPurchase(payload: PurchaseTrackingPayload): void {
   if (typeof window === "undefined") return;
@@ -218,6 +232,8 @@ export function trackPurchase(payload: PurchaseTrackingPayload): void {
   };
 
   logTracking("Purchase", normalized);
+  logTracking("Purchase", normalized, "OpenAI");
+  openaiPixel.trackPurchase(normalized);
 
   if (isTrackingPlatformActive("facebook")) {
     logTracking("Purchase", normalized, "Meta");
