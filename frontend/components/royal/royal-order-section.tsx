@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import type { CreateOrderResponse } from "@/lib/orders/types";
 import { getMetaBrowserIds } from "@/lib/meta/browser";
@@ -17,10 +16,7 @@ import {
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
-  AMLOU_ROYAL_VERSIONS,
   getAmlouRoyalOffer,
-  getAmlouRoyalVersion,
-  type AmlouRoyalVersionId,
 } from "@/lib/products/amlou-royal";
 import {
   hasCheckoutErrors,
@@ -105,9 +101,6 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
     address: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [modalOpen, setModalOpen] = useState(false);
-  const [versionId, setVersionId] = useState<AmlouRoyalVersionId | null>(null);
-  const [versionError, setVersionError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -118,15 +111,6 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
 
   const shippingFee = offer.shippingFee;
   const total = offer.price + shippingFee;
-
-  useEffect(() => {
-    if (!modalOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [modalOpen]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -145,7 +129,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
     return next;
   }
 
-  function onConfirmClick(e: React.FormEvent) {
+  async function onConfirmClick(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError("");
     const nextErrors = validate();
@@ -165,31 +149,15 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
       subtotal: offer.price,
       total,
     });
-    setVersionError(false);
-    setModalOpen(true);
-  }
-
-  async function submitOrder() {
-    if (!versionId) {
-      setVersionError(true);
-      return;
-    }
-    const version = getAmlouRoyalVersion(versionId);
-    if (!version) {
-      setVersionError(true);
-      return;
-    }
 
     setSubmitting(true);
-    setSubmitError("");
 
     const phone = normalizeMoroccanPhone(form.phone);
-    const offerLabel = `${offer.titleAr} · ${offer.weightAr} — ${version.orderLabelAr}`;
+    const offerLabel = `${offer.titleAr} · ${offer.weightAr}`;
     const customerNote = [
       `الكمية: ${offer.bottles}`,
       `الوزن: ${offer.weightAr}`,
       `العرض: ${offer.titleAr}`,
-      `النوع: ${version.orderLabelAr}`,
       offer.giftAr ? "هدية: نعم" : null,
     ]
       .filter(Boolean)
@@ -206,7 +174,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         {
           productId: AMLOU_ROYAL_ID,
           slug: AMLOU_ROYAL_SLUG,
-          nameAr: `${AMLOU_ROYAL_NAME_AR} — ${version.orderLabelAr}`,
+          nameAr: AMLOU_ROYAL_NAME_AR,
           image: AMLOU_ROYAL_IMAGE,
           offerId: offer.id,
           offerLabel,
@@ -257,7 +225,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           },
           items: [
             {
-              nameAr: `${AMLOU_ROYAL_NAME_AR} — ${version.orderLabelAr}`,
+              nameAr: AMLOU_ROYAL_NAME_AR,
               offerLabel,
               quantity: offer.bottles,
               unitPrice: offer.price,
@@ -284,7 +252,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           {
             productId: AMLOU_ROYAL_ID,
             slug: AMLOU_ROYAL_SLUG,
-            name: `${AMLOU_ROYAL_NAME_AR} — ${version.orderLabelAr}`,
+            name: AMLOU_ROYAL_NAME_AR,
             price: offer.price,
             quantity: offer.bottles,
           },
@@ -472,13 +440,19 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
 
         <button
           type="submit"
+          disabled={submitting}
           className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-red-600 px-4 text-base font-extrabold text-white shadow-sm transition-colors hover:bg-red-700"
         >
-          <span>تأكيد الطلب 👈</span>
+          <span>{submitting ? "جاري تأكيد الطلب..." : "تأكيد الطلب 👈"}</span>
           <span className="flex size-7 items-center justify-center rounded-full bg-white/20">
             <ArrowLeft className="size-4" aria-hidden />
           </span>
         </button>
+        {submitError && (
+          <p className="mt-2 text-center text-xs font-semibold text-red-600" role="alert">
+            {submitError}
+          </p>
+        )}
       </form>
 
       <p className="mt-2 text-center text-[11px] text-neutral-500">
@@ -498,97 +472,13 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
     </>
   );
 
-  const versionModal = modalOpen ? (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        aria-label="إغلاق"
-        onClick={() => !submitting && setModalOpen(false)}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="royal-version-title"
-        className="relative z-[81] w-full max-w-md rounded-t-2xl border border-neutral-200 bg-white p-4 shadow-xl sm:rounded-2xl"
-      >
-        <h3
-          id="royal-version-title"
-          className="text-center text-lg font-extrabold text-[#1a2744]"
-        >
-          اختر نوع أملو ملكي
-        </h3>
-        <p className="mt-0.5 text-center text-xs text-neutral-500">
-          يجب اختيار نوع واحد لإتمام الطلب
-        </p>
-        <p className="mt-2 text-center text-xs font-semibold text-[#8a6a3a]">
-          {offer.titleAr} · {offer.weightAr} · {formatDh(offer.price)}
-        </p>
-
-        <div className="mt-3 grid gap-2">
-          {AMLOU_ROYAL_VERSIONS.map((option) => {
-            const selected = versionId === option.id;
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => {
-                  setVersionId(option.id);
-                  setVersionError(false);
-                }}
-                className={cn(
-                  "rounded-xl border px-3 py-3 text-start",
-                  selected
-                    ? "border-[#1a2744] bg-neutral-50 ring-1 ring-[#1a2744]"
-                    : "border-neutral-200",
-                )}
-              >
-                <p className="text-sm font-extrabold">{option.labelAr}</p>
-                <p className="mt-0.5 text-xs text-neutral-500">
-                  {option.descriptionAr}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-
-        {versionError && (
-          <p className="mt-2 text-center text-xs font-semibold text-red-600" role="alert">
-            الرجاء اختيار نوع أملو ملكي
-          </p>
-        )}
-        {submitError && (
-          <p className="mt-2 text-center text-xs font-semibold text-red-600" role="alert">
-            {submitError}
-          </p>
-        )}
-
-        <Button
-          type="button"
-          size="lg"
-          disabled={submitting}
-          onClick={() => void submitOrder()}
-          className="mt-3 min-h-12 w-full rounded-full bg-red-600 font-extrabold text-white hover:bg-red-700"
-        >
-          {submitting ? "جاري تأكيد الطلب..." : "تأكيد الاختيار"}
-        </Button>
-      </div>
-    </div>
-  ) : null;
-
   if (embedded) {
-    return (
-      <>
-        <div className="mt-0">{content}</div>
-        {versionModal}
-      </>
-    );
+    return <div className="mt-0">{content}</div>;
   }
 
   return (
     <section id="order" className="scroll-mt-24 bg-[#faf6ef] pb-6 pt-1">
       <div className="mx-auto w-full max-w-md px-3">{content}</div>
-      {versionModal}
     </section>
   );
 }
