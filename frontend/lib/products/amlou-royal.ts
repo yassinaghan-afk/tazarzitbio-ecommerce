@@ -14,6 +14,8 @@ export const AMLOU_ROYAL_IMAGE = "/images/products/amlou-royal-hero.jpg";
 export const AMLOU_ROYAL_TRUST_IMAGE = "/images/products/amlou-royal-trust.jpg";
 export const AMLOU_ROYAL_INGREDIENTS_IMAGE =
   "/images/products/amlou-royal-ingredients.jpg";
+export const AMLOU_ROYAL_BENEFITS_IMAGE =
+  "/images/products/amlou-royal-benefits.jpg";
 export const AMLOU_ROYAL_IMAGES = [
   "/images/products/amlou-royal-hero.jpg",
   "/images/products/mixed-nuts.png",

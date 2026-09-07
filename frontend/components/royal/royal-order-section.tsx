@@ -12,7 +12,7 @@ import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
   AMLOU_ROYAL_IMAGE,
-  AMLOU_ROYAL_INGREDIENTS_IMAGE,
+  AMLOU_ROYAL_BENEFITS_IMAGE,
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
@@ -23,6 +23,10 @@ import {
   normalizeMoroccanPhone,
   validateCheckoutForm,
 } from "@/lib/checkout/validation";
+import {
+  formatRoyalDh,
+  withCurrentSearch,
+} from "@/lib/royal/order-helpers";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/tracking/events";
 import { cn } from "@/lib/utils";
 
@@ -38,10 +42,6 @@ type FormErrors = {
   address?: string;
 };
 
-function formatDh(n: number): string {
-  return `${n} درهم`;
-}
-
 function CompactField({
   id,
   name,
@@ -53,6 +53,7 @@ function CompactField({
   value,
   onChange,
   error,
+  label,
 }: {
   id: string;
   name: string;
@@ -64,9 +65,15 @@ function CompactField({
   value: string;
   onChange: (v: string) => void;
   error?: string;
+  label?: string;
 }) {
   return (
     <div>
+      {label && (
+        <label htmlFor={id} className="mb-1 block text-xs font-bold text-[#1a2744]">
+          {label}
+        </label>
+      )}
       <input
         id={id}
         name={name}
@@ -114,7 +121,9 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+    if (errors[key]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
   }
 
   function validate(): FormErrors {
@@ -123,18 +132,36 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
       phone: form.phone,
       address: form.address,
     });
-    if (next.address) {
-      next.address = "العنوان الكامل مطلوب";
+    const royalErrors: FormErrors = {};
+    if (next.fullName) {
+      royalErrors.fullName = next.fullName.includes("3")
+        ? "كتب الاسم الكامل (3 حروف على الأقل)"
+        : "الاسم الكامل ضروري";
     }
-    return next;
+    if (next.phone) {
+      royalErrors.phone = next.phone.includes("صحيح")
+        ? "دخل رقم مغربي صحيح (06 أو 07)"
+        : "رقم الهاتف ضروري";
+    }
+    if (next.address) {
+      royalErrors.address = "كتب العنوان (المدينة، الحي، أو العنوان الكامل)";
+    }
+    return royalErrors;
   }
 
   async function onConfirmClick(e: React.FormEvent) {
     e.preventDefault();
+    if (submitting) return;
+
     setSubmitError("");
     const nextErrors = validate();
     setErrors(nextErrors);
     if (hasCheckoutErrors(nextErrors)) return;
+
+    if (!getAmlouRoyalOffer(offerId)) {
+      setSubmitError("هاد العرض ما بقاش متاح. اختار عرض آخر.");
+      return;
+    }
 
     trackInitiateCheckout({
       products: [
@@ -155,7 +182,6 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
     const phone = normalizeMoroccanPhone(form.phone);
     const offerLabel = `${offer.titleAr} · ${offer.weightAr}`;
     const customerNote = [
-      `الكمية: ${offer.bottles}`,
       `الوزن: ${offer.weightAr}`,
       `العرض: ${offer.titleAr}`,
       offer.giftAr ? "هدية: نعم" : null,
@@ -201,23 +227,22 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
       });
       if (!res.ok) {
         setSubmitting(false);
-        setSubmitError("تعذر إرسال الطلب. حاول مرة أخرى.");
+        setSubmitError("ما قدرناش نسجّلو الطلب. حاول مرة أخرى.");
         return;
       }
       const data = (await res.json()) as CreateOrderResponse;
       const orderId = data.order?.orderId;
       if (!orderId) {
         setSubmitting(false);
-        setSubmitError("تعذر إرسال الطلب. حاول مرة أخرى.");
+        setSubmitError("ما قدرناش نسجّلو الطلب. حاول مرة أخرى.");
         return;
       }
 
-      const placedAt = data.order.createdAt;
       sessionStorage.setItem(
         LAST_ORDER_STORAGE_KEY,
         JSON.stringify({
           id: orderId,
-          placedAt,
+          placedAt: data.order.createdAt,
           customer: {
             fullName: form.fullName.trim(),
             phone,
@@ -242,7 +267,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           shippingLabelAr:
             data.order.shippingPrice === 0
               ? "التوصيل مجاناً"
-              : `+ ${data.order.shippingPrice} DH توصيل`,
+              : `+ ${data.order.shippingPrice} درهم توصيل`,
         }),
       );
 
@@ -263,10 +288,10 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         eventId: data.meta?.purchaseEventId,
       });
 
-      router.push("/thank-you");
+      router.push(withCurrentSearch("/royal/thank-you"));
     } catch {
       setSubmitting(false);
-      setSubmitError("تعذر إرسال الطلب. حاول مرة أخرى.");
+      setSubmitError("مشكلة فالشبكة. تأكد من الاتصال وحاول مرة أخرى.");
     }
   }
 
@@ -365,11 +390,11 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
 
                 <div className="shrink-0 text-end leading-none">
                   <p className="whitespace-nowrap text-lg font-extrabold tabular-nums text-[#1a2744]">
-                    {formatDh(item.price)}
+                    {formatRoyalDh(item.price)}
                   </p>
                   {item.originalPrice != null && (
                     <p className="mt-0.5 whitespace-nowrap text-xs tabular-nums text-neutral-400 line-through">
-                      {formatDh(item.originalPrice)}
+                      {formatRoyalDh(item.originalPrice)}
                     </p>
                   )}
                 </div>
@@ -380,7 +405,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
       </div>
 
       <p className="mt-2 text-center text-[11px] font-semibold text-neutral-500">
-        العرض المحدد: {offer.titleAr} · {offer.weightAr} · {formatDh(offer.price)}
+        العرض المحدد: {offer.titleAr} · {offer.weightAr} · {formatRoyalDh(offer.price)}
       </p>
 
       <form
@@ -392,10 +417,26 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           المرجو إدخال معلوماتك أسفله لإتمام الطلب
         </p>
 
+        <div className="mb-3 rounded-xl border border-[#f0e6d8] bg-[#faf6ef] px-3 py-2 text-xs">
+          <div className="flex justify-between gap-2">
+            <span className="text-neutral-500">العرض</span>
+            <span className="font-bold">
+              {offer.titleAr} · {offer.weightAr}
+            </span>
+          </div>
+          <div className="mt-1 flex justify-between gap-2">
+            <span className="text-neutral-500">التوصيل</span>
+            <span className="font-bold text-emerald-600">
+              {shippingFee === 0 ? "مجاناً" : formatRoyalDh(shippingFee)}
+            </span>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <CompactField
             id="royal-name"
             name="fullName"
+            label="الاسم الكامل"
             autoComplete="name"
             placeholder="الاسم الكامل"
             value={form.fullName}
@@ -405,6 +446,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           <CompactField
             id="royal-phone"
             name="phone"
+            label="رقم الهاتف"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -415,13 +457,19 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
             error={errors.phone}
           />
           <div>
+            <label
+              htmlFor="royal-address"
+              className="mb-1 block text-xs font-bold text-[#1a2744]"
+            >
+              العنوان
+            </label>
             <textarea
               id="royal-address"
               name="address"
               rows={3}
               autoComplete="street-address"
-              placeholder="أدخل عنوانك الكامل: المدينة، الحي، الشارع، رقم المنزل..."
-              aria-label="العنوان الكامل"
+              placeholder="المدينة، الحي، أو العنوان الكامل…"
+              aria-label="العنوان"
               value={form.address}
               onChange={(e) => updateField("address", e.target.value)}
               className={cn(
@@ -441,9 +489,11 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         <button
           type="submit"
           disabled={submitting}
-          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-red-600 px-4 text-base font-extrabold text-white shadow-sm transition-colors hover:bg-red-700"
+          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-red-600 px-4 text-base font-extrabold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          <span>{submitting ? "جاري تأكيد الطلب..." : "تأكيد الطلب 👈"}</span>
+          <span>
+            {submitting ? "كنسجّلو الطلب..." : "تأكيد الطلب"}
+          </span>
           <span className="flex size-7 items-center justify-center rounded-full bg-white/20">
             <ArrowLeft className="size-4" aria-hidden />
           </span>
@@ -453,20 +503,19 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
             {submitError}
           </p>
         )}
+        <p className="mt-2 text-center text-[11px] font-semibold text-neutral-500">
+          الدفع عند الاستلام · غادي نتصلو بيك باش نأكدو الطلب
+        </p>
       </form>
-
-      <p className="mt-2 text-center text-[11px] text-neutral-500">
-        الدفع عند الاستلام · المجموع {formatDh(total)}
-      </p>
 
       <div className="mt-3 w-full">
         <Image
-          src={AMLOU_ROYAL_INGREDIENTS_IMAGE}
-          alt="أملو ملكي — مكونات مختارة بعناية من المكسرات وزيت أركان"
-          width={571}
-          height={1024}
+          src={AMLOU_ROYAL_BENEFITS_IMAGE}
+          alt="أملو ملكي — مكونات مختارة بعناية من قلب المغرب"
+          width={1080}
+          height={1920}
           sizes="(max-width: 1024px) 100vw, 480px"
-          className="h-auto w-full"
+          className="h-auto w-full rounded-xl"
         />
       </div>
     </>

@@ -11,9 +11,11 @@ import {
   Star,
 } from "lucide-react";
 
+import { RoyalOrderModal } from "@/components/royal/royal-order-modal";
 import { RoyalOrderSection } from "@/components/royal/royal-order-section";
 import { Button } from "@/components/ui/button";
 import {
+  AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_IMAGE,
   AMLOU_ROYAL_INGREDIENTS,
   AMLOU_ROYAL_NAME_AR,
@@ -96,7 +98,7 @@ const FAQS = [
   },
   {
     q: "كيف يتم الطلب والدفع؟",
-    a: "تختار العرض، تملأ معلوماتك، ثم تؤكد نوع الأملو. الدفع عند الاستلام.",
+    a: "تضغط اطلب الآن، تختار العرض، تملأ معلوماتك، وتأكد الطلب. الدفع عند الاستلام.",
   },
   {
     q: "كم رسوم التوصيل؟",
@@ -104,12 +106,9 @@ const FAQS = [
   },
 ];
 
-function scrollToOrder() {
-  document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 export function RoyalLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [orderOpen, setOrderOpen] = useState(false);
 
   useEffect(() => {
     document.body.classList.add("royal-lp");
@@ -125,8 +124,17 @@ export function RoyalLandingPage() {
     });
   }, []);
 
+  function openOrderFlow() {
+    setOrderOpen(true);
+  }
+
   return (
     <div className="bg-[#faf6ef] text-foreground">
+      <RoyalOrderModal
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        initialOfferId={AMLOU_ROYAL_DEFAULT_OFFER_ID}
+      />
       {/* Hero + order — one coherent full-bleed conversion block */}
       <section id="order" className="scroll-mt-0 pb-6 pt-0">
         <h1 className="sr-only">أملو ملكي — مذاق فاخر من مكونات طبيعية</h1>
@@ -324,7 +332,7 @@ export function RoyalLandingPage() {
       <section className="bg-[#faf6ef] px-3 py-8 text-center">
         <Button
           size="lg"
-          onClick={scrollToOrder}
+          onClick={openOrderFlow}
           className="min-h-12 w-full max-w-md rounded-full bg-red-600 font-extrabold text-white hover:bg-red-700"
         >
           اطلب الآن
@@ -335,7 +343,7 @@ export function RoyalLandingPage() {
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
         <Button
           size="lg"
-          onClick={scrollToOrder}
+          onClick={openOrderFlow}
           className="min-h-11 w-full rounded-full bg-red-600 font-extrabold text-white hover:bg-red-700"
         >
           اطلب الآن
