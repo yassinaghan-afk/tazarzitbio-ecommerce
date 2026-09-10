@@ -16,6 +16,65 @@ export const AMLOU_ROYAL_INGREDIENTS_IMAGE =
   "/images/products/amlou-royal-ingredients.jpg";
 export const AMLOU_ROYAL_BENEFITS_IMAGE =
   "/images/products/amlou-royal-benefits.jpg";
+
+/** Ordered creative panels for /royal landing (1 = hero). */
+export const AMLOU_ROYAL_LP_IMAGES = [
+  {
+    src: "/images/royal/01-hero.jpg",
+    alt: "استمتع بالطاقة الحقيقية مع أملو ملكي اللذيذ والصحي",
+    width: 633,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/02-problem.jpg",
+    alt: "هل تعاني دائماً من التعب والإرهاق؟",
+    width: 482,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/03-solution.jpg",
+    alt: "أملو ملكي هو الحل الطبيعي والأمثل — مكونات طبيعية فاخرة",
+    width: 407,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/04-benefits.jpg",
+    alt: "فوائد ومميزات أملو ملكي: طاقة، تركيز، بدون سكر، تغذية متكاملة",
+    width: 473,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/05-family.jpg",
+    alt: "استثمر في صحتك مع أملو ملكي",
+    width: 688,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/06-compare.jpg",
+    alt: "لماذا أملو ملكي أفضل من المنتجات المنافسة",
+    width: 622,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/07-testimonials.jpg",
+    alt: "شهادات زبناء أملو ملكي عبر واتساب",
+    width: 519,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/08-cta-lifestyle.jpg",
+    alt: "لا تفوت فرصة تحسين صحتك — توصيل مجاني والدفع عند الاستلام",
+    width: 490,
+    height: 1024,
+  },
+  {
+    src: "/images/royal/09-guarantees.jpg",
+    alt: "ضمانات شركتنا: خدمة بعد البيع، توصيل سريع، الدفع عند الاستلام",
+    width: 659,
+    height: 1024,
+  },
+] as const;
+
 export const AMLOU_ROYAL_IMAGES = [
   "/images/products/amlou-royal-hero.jpg",
   "/images/products/mixed-nuts.png",

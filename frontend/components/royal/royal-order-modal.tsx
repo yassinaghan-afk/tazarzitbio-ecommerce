@@ -27,7 +27,6 @@ import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
   AMLOU_ROYAL_IMAGE,
-  AMLOU_ROYAL_BENEFITS_IMAGE,
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
@@ -605,17 +604,6 @@ export function RoyalOrderModal({
                   <p className="mt-2 text-center text-[11px] font-semibold text-neutral-500">
                     الدفع عند الاستلام · غادي نتصلو بيك باش نأكدو الطلب
                   </p>
-
-                  <div className="mt-3 w-full overflow-hidden rounded-xl">
-                    <Image
-                      src={AMLOU_ROYAL_BENEFITS_IMAGE}
-                      alt="أملو ملكي — مكونات مختارة بعناية من قلب المغرب"
-                      width={1080}
-                      height={1920}
-                      sizes="(max-width: 640px) 100vw, 512px"
-                      className="h-auto w-full"
-                    />
-                  </div>
                 </form>
               )}
             </div>

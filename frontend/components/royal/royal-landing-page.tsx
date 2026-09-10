@@ -2,112 +2,48 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  ChevronDown,
-  Leaf,
-  MapPin,
-  ShieldCheck,
-  Sparkles,
-  Star,
-} from "lucide-react";
 
 import { RoyalOrderModal } from "@/components/royal/royal-order-modal";
 import { RoyalOrderSection } from "@/components/royal/royal-order-section";
 import { Button } from "@/components/ui/button";
 import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
-  AMLOU_ROYAL_IMAGE,
-  AMLOU_ROYAL_INGREDIENTS,
+  AMLOU_ROYAL_LP_IMAGES,
   AMLOU_ROYAL_NAME_AR,
 } from "@/lib/products/amlou-royal";
 import { trackViewContent } from "@/lib/tracking/events";
-import { cn } from "@/lib/utils";
 
-const BENEFITS = [
-  { title: "مذاق فاخر", text: "خليطة مكسرات مختارة بعناية لقوام كريمي غني." },
-  { title: "مكونات طبيعية", text: "100% طبيعي، بدون سكر مضاف." },
-  { title: "هوية مغربية", text: "أملو من تازارزيت بيو بطابع سوس الأصيل." },
-  { title: "زيت أركان غذائي", text: "لمسة أركان ناعمة تُبرز نكهة المكسرات." },
-];
+const [HERO_IMAGE, ...STORY_IMAGES] = AMLOU_ROYAL_LP_IMAGES;
 
-const WHY = [
-  { title: "مكونات مختارة بعناية", icon: Sparkles },
-  { title: "صناعة مغربية", icon: MapPin },
-  { title: "جودة Tazarzit Bio", icon: ShieldCheck },
-  { title: "100% طبيعي", icon: Leaf },
-  { title: "بدون سكر مضاف", icon: Leaf },
-];
-
-const REVIEWS = [
-  {
-    author: "سكينة",
-    city: "مراكش",
-    rating: 5,
-    content:
-      "طلبت أملو ملكي وصلني لمراكش، القومة كريمية والمكسرات باينين بزاف. عجبني أكثر من ديال السوق.",
-  },
-  {
-    author: "عبد الرحيم",
-    city: "الدار البيضاء",
-    rating: 5,
-    content:
-      "جربناه مع الفطور والشاي، الواليدة قالت ليا هادا أملو فاخر بصح. غادي نعاود نطلب العرض ديال جوج.",
-  },
-  {
-    author: "حفيظة",
-    city: "أكادير",
-    rating: 5,
-    content:
-      "أنا من أكادير وطلبت النسخة بالعسل. الريحة طبيعية والطعم غني، التغليف نقي والتوصيل سريع.",
-  },
-  {
-    author: "ياسين",
-    city: "فاس",
-    rating: 5,
-    content:
-      "أخذت 3 قنينات، جات معاهم هدية. الأملو بنين والضيوف عجبهم مع الملوي. جودة مغربية واضحة.",
-  },
-  {
-    author: "نادية",
-    city: "طنجة",
-    rating: 5,
-    content:
-      "ماشي بحال الأملو العادي، هادا فيه مكسرات متنوعة وزيت أركان. طلبت بدون عسل وجا زوين بزاف.",
-  },
-  {
-    author: "كريم",
-    city: "الرباط",
-    rating: 5,
-    content:
-      "الدفع عند الاستلام مريح، والاتصال قبل التوصيل مزيان. المنتوج نفس اللي فالصور والطعم فاخر.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "مما يتكوّن أملو ملكي؟",
-    a: "خليطة من اللوز المحمص، الفستق، البندق المحمص، الكاجو، الكركاع، جوز البرازيل، بذور اليقطين المحمصة، غذاء ملكات النحل، وزيت أركان غذائي. النسخة بالعسل تُحلّى بعسل طبيعي.",
-  },
-  {
-    q: "ما الفرق بين نسخة العسل والنسخة بدون عسل؟",
-    a: "أملو بالعسل محلى بالعسل الطبيعي. أملو بدون عسل بدون عسل وبدون سكر مضاف.",
-  },
-  {
-    q: "هل يوجد سكر مضاف؟",
-    a: "لا. المنتوج بدون سكر مضاف.",
-  },
-  {
-    q: "كيف يتم الطلب والدفع؟",
-    a: "تضغط اطلب الآن، تختار العرض، تملأ معلوماتك، وتأكد الطلب. الدفع عند الاستلام.",
-  },
-  {
-    q: "كم رسوم التوصيل؟",
-    a: "التوصيل مجاناً لجميع العروض في جميع مدن المغرب.",
-  },
-];
+function LpPanel({
+  src,
+  alt,
+  width,
+  height,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-lg">
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        sizes="(max-width: 512px) 100vw, 512px"
+        className="h-auto w-full"
+      />
+    </div>
+  );
+}
 
 export function RoyalLandingPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [orderOpen, setOrderOpen] = useState(false);
 
   useEffect(() => {
@@ -135,199 +71,37 @@ export function RoyalLandingPage() {
         onClose={() => setOrderOpen(false)}
         initialOfferId={AMLOU_ROYAL_DEFAULT_OFFER_ID}
       />
-      {/* Hero + order — one coherent full-bleed conversion block */}
-      <section id="order" className="scroll-mt-0 pb-6 pt-0">
+
+      {/* 1 — Hero */}
+      <section className="w-full bg-[#c9921a]" aria-label="أملو ملكي">
         <h1 className="sr-only">أملو ملكي — مذاق فاخر من مكونات طبيعية</h1>
+        <LpPanel
+          src={HERO_IMAGE.src}
+          alt={HERO_IMAGE.alt}
+          width={HERO_IMAGE.width}
+          height={HERO_IMAGE.height}
+          priority
+        />
+      </section>
 
-        <div className="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-center">
-          {/* Full-area hero — edge-to-edge plane, no card chrome */}
-          <div className="relative isolate aspect-square w-full overflow-hidden bg-[#f3ebe0]">
-            <Image
-              src={AMLOU_ROYAL_IMAGE}
-              alt={`${AMLOU_ROYAL_NAME_AR} تازارزيت بيو — 500 غ`}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-center"
-            />
-          </div>
-
-          <div className="flex flex-col justify-center bg-[#faf6ef] px-3 py-4 sm:px-4 lg:px-8 lg:py-6">
-            <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
-              <RoyalOrderSection embedded />
-            </div>
-          </div>
+      {/* Order form right after hero */}
+      <section id="order" className="scroll-mt-0 bg-[#faf6ef] px-3 py-5 sm:px-4">
+        <div className="mx-auto w-full max-w-md">
+          <RoyalOrderSection embedded />
         </div>
       </section>
 
-      {/* Content below the fold */}
-      <section className="border-t border-[#eadfce] bg-white py-10">
-        <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
-          <h2 className="text-center text-xl font-extrabold sm:text-2xl">
-            لماذا أملو ملكي؟
-          </h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {BENEFITS.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-xl border border-neutral-200 bg-neutral-50/50 p-4"
-              >
-                <h3 className="text-sm font-extrabold">{item.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
-                  {item.text}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-neutral-50 py-10">
-        <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
-          <h2 className="text-center text-xl font-extrabold sm:text-2xl">المكونات</h2>
-          <ul className="mx-auto mt-5 grid grid-cols-2 gap-1.5 sm:max-w-3xl">
-            {AMLOU_ROYAL_INGREDIENTS.map((name) => (
-              <li
-                key={name}
-                className="rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-xs font-semibold"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-white py-10">
-        <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
-          <h2 className="text-center text-xl font-extrabold sm:text-2xl">
-            آراء الزبناء المغاربة
-          </h2>
-          <p className="mx-auto mt-1.5 max-w-md text-center text-xs text-neutral-500">
-            تجارب حقيقية من مدن المغرب — بالدارجة
-          </p>
-          <div className="mx-auto mt-5 grid gap-3 sm:max-w-3xl sm:grid-cols-2">
-            {REVIEWS.map((review) => (
-              <article
-                key={`${review.author}-${review.city}`}
-                className="rounded-xl border border-[#e5d9c8] bg-[#faf6ef]/80 p-4"
-              >
-                <div
-                  className="flex items-center gap-0.5"
-                  aria-label={`${review.rating} من 5`}
-                >
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "size-3.5",
-                        i < review.rating
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-neutral-200 text-neutral-200",
-                      )}
-                      aria-hidden
-                    />
-                  ))}
-                </div>
-                <blockquote className="mt-2 text-sm leading-relaxed text-neutral-700">
-                  «{review.content}»
-                </blockquote>
-                <p className="mt-3 text-xs font-bold text-[#1a2744]">
-                  {review.author}
-                  <span className="font-semibold text-neutral-500">
-                    {" "}
-                    · {review.city}
-                  </span>
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#1a2744] py-10 text-white">
-        <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
-          <h2 className="text-center text-xl font-extrabold sm:text-2xl">
-            لماذا تختار أملو ملكي
-          </h2>
-          <ul className="mx-auto mt-5 grid gap-2 sm:max-w-3xl sm:grid-cols-2">
-            {WHY.map((item) => (
-              <li
-                key={item.title}
-                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-bold"
-              >
-                <item.icon className="size-4 shrink-0 text-accent" aria-hidden />
-                {item.title}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-white py-10">
-        <div className="mx-auto max-w-md px-3 sm:max-w-6xl sm:px-4">
-          <h2 className="text-center text-xl font-extrabold sm:text-2xl">
-            الجودة والثقة
-          </h2>
-          <div className="mx-auto mt-5 grid grid-cols-2 gap-2 sm:max-w-3xl">
-            {[
-              "مكونات مختارة بعناية",
-              "صناعة مغربية",
-              "جودة Tazarzit Bio",
-              "100% طبيعي",
-              "بدون سكر مضاف",
-              "الدفع عند الاستلام",
-            ].map((label) => (
-              <p
-                key={label}
-                className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-center text-xs font-bold"
-              >
-                {label}
-              </p>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-neutral-50 py-10">
-        <div className="mx-auto max-w-md px-3">
-          <h2 className="text-center text-xl font-extrabold">أسئلة شائعة</h2>
-          <div className="mt-4 space-y-2">
-            {FAQS.map((faq, i) => {
-              const open = openFaq === i;
-              return (
-                <div
-                  key={faq.q}
-                  className={cn(
-                    "overflow-hidden rounded-lg border",
-                    open ? "border-accent/30 bg-white" : "border-neutral-200 bg-white/80",
-                  )}
-                >
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    onClick={() => setOpenFaq(open ? null : i)}
-                    className="flex min-h-10 w-full items-center justify-between gap-2 px-3 py-2.5 text-start"
-                  >
-                    <span className="text-xs font-bold sm:text-sm">{faq.q}</span>
-                    <ChevronDown
-                      className={cn(
-                        "size-4 shrink-0 text-neutral-400 transition-transform",
-                        open && "rotate-180 text-accent",
-                      )}
-                    />
-                  </button>
-                  {open && (
-                    <p className="border-t border-neutral-100 px-3 py-2.5 text-xs leading-relaxed text-neutral-600">
-                      {faq.a}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* 2 → 9 — story panels in order */}
+      {STORY_IMAGES.map((panel) => (
+        <section key={panel.src} className="w-full">
+          <LpPanel
+            src={panel.src}
+            alt={panel.alt}
+            width={panel.width}
+            height={panel.height}
+          />
+        </section>
+      ))}
 
       <section className="bg-[#faf6ef] px-3 py-8 text-center">
         <Button

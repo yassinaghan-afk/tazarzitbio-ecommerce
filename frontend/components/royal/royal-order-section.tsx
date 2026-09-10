@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
@@ -12,7 +11,6 @@ import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
   AMLOU_ROYAL_IMAGE,
-  AMLOU_ROYAL_BENEFITS_IMAGE,
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
@@ -507,17 +505,6 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           الدفع عند الاستلام · غادي نتصلو بيك باش نأكدو الطلب
         </p>
       </form>
-
-      <div className="mt-3 w-full">
-        <Image
-          src={AMLOU_ROYAL_BENEFITS_IMAGE}
-          alt="أملو ملكي — مكونات مختارة بعناية من قلب المغرب"
-          width={1080}
-          height={1920}
-          sizes="(max-width: 1024px) 100vw, 480px"
-          className="h-auto w-full rounded-xl"
-        />
-      </div>
     </>
   );
 
