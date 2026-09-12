@@ -5,6 +5,7 @@ import { Download, Eye, RefreshCw, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/lib/admin/money";
 import type { ConfirmationStatus } from "@/lib/admin/ops-types";
 import { CONFIRMATION_STATUSES } from "@/lib/admin/ops-types";
 import type { OrderRecord, OrderStatus } from "@/lib/orders/types";
@@ -23,7 +24,7 @@ function formatDate(iso: string) {
 }
 
 function formatMAD(n: number) {
-  return `${Math.round(n)} MAD`;
+  return formatMoney(n);
 }
 
 const STATUS_COLORS: Record<OrderStatus, string> = {

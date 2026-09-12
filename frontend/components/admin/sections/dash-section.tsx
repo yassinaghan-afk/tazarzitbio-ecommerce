@@ -6,14 +6,22 @@ import {
   ArrowUpRight,
   CheckCircle2,
   Package,
-  RefreshCw,
   RotateCcw,
   ShoppingBag,
   Timer,
   Truck,
+  Wallet,
   XCircle,
 } from "lucide-react";
 
+import { resolveDatePreset } from "@/lib/admin/finance-calc";
+import type { FinanceKpis } from "@/lib/admin/finance-calc";
+import {
+  formatMoney,
+  formatPercent,
+  safeNumber,
+  safePercent,
+} from "@/lib/admin/money";
 import type { OrderRecord } from "@/lib/orders/types";
 import { cn } from "@/lib/utils";
 
@@ -28,139 +36,59 @@ const DATE_PRESETS = [
 
 type DatePreset = (typeof DATE_PRESETS)[number]["id"];
 
-function formatMAD(n: number) {
-  return `${Math.round(n).toLocaleString("fr-MA")} DH`;
-}
+const STATUS_LABEL: Record<string, { en: string; ar: string }> = {
+  pending: { en: "New", ar: "جديد" },
+  contacted: { en: "Contacted", ar: "تم الاتصال" },
+  confirmed: { en: "Confirmed", ar: "مؤكد" },
+  preparing: { en: "Preparing", ar: "قيد التحضير" },
+  shipped: { en: "Shipped", ar: "تم الشحن" },
+  in_transit: { en: "In Transit", ar: "في الطريق" },
+  delivered: { en: "Delivered", ar: "تم التسليم" },
+  returned: { en: "Returned", ar: "مرتجع" },
+  cancelled: { en: "Cancelled", ar: "ملغى" },
+};
 
 interface KpiCardProps {
   label: string;
   value: string | number;
   sub?: string;
   icon: React.ElementType;
-  color?: "default" | "green" | "amber" | "red" | "blue" | "indigo" | "violet";
+  tone?: "default" | "green" | "amber" | "red" | "blue" | "indigo";
   onClick?: () => void;
-  badge?: string;
 }
 
-function KpiCard({ label, value, sub, icon: Icon, color = "default", onClick, badge }: KpiCardProps) {
-  const colorMap = {
-    default: { bg: "bg-muted/40", icon: "text-muted-foreground", val: "text-foreground" },
-    green:   { bg: "bg-emerald-50", icon: "text-emerald-600", val: "text-emerald-700" },
-    amber:   { bg: "bg-amber-50",   icon: "text-amber-600",   val: "text-amber-700" },
-    red:     { bg: "bg-rose-50",    icon: "text-rose-600",    val: "text-rose-700" },
-    blue:    { bg: "bg-blue-50",    icon: "text-blue-600",    val: "text-blue-700" },
-    indigo:  { bg: "bg-indigo-50",  icon: "text-indigo-600",  val: "text-indigo-700" },
-    violet:  { bg: "bg-violet-50",  icon: "text-violet-600",  val: "text-violet-700" },
-  }[color];
+function KpiCard({ label, value, sub, icon: Icon, tone = "default", onClick }: KpiCardProps) {
+  const tones = {
+    default: { bg: "bg-muted/50", icon: "text-muted-foreground", val: "text-foreground" },
+    green: { bg: "bg-emerald-50", icon: "text-emerald-600", val: "text-emerald-700" },
+    amber: { bg: "bg-amber-50", icon: "text-amber-600", val: "text-amber-700" },
+    red: { bg: "bg-rose-50", icon: "text-rose-600", val: "text-rose-700" },
+    blue: { bg: "bg-blue-50", icon: "text-blue-600", val: "text-blue-700" },
+    indigo: { bg: "bg-indigo-50", icon: "text-indigo-600", val: "text-indigo-700" },
+  }[tone];
+
+  const Comp = onClick ? "button" : "div";
 
   return (
-    <button
-      type="button"
+    <Comp
+      type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "group w-full rounded-2xl border border-border/50 bg-card p-5 text-start shadow-sm transition-all duration-200",
-        onClick && "hover:shadow-md hover:border-border cursor-pointer",
-        !onClick && "cursor-default",
+        "w-full rounded-xl border border-border/50 bg-card p-3.5 text-start shadow-sm",
+        onClick && "cursor-pointer transition-colors hover:border-accent/30 hover:bg-accent/5",
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className={cn("rounded-xl p-2.5", colorMap.bg)}>
-          <Icon className={cn("size-5", colorMap.icon)} />
+      <div className="flex items-center gap-2">
+        <div className={cn("rounded-lg p-1.5", tones.bg)}>
+          <Icon className={cn("size-3.5", tones.icon)} />
         </div>
-        {badge && (
-          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
-            {badge}
-          </span>
-        )}
-        {onClick && (
-          <ArrowUpRight className="size-4 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
-        )}
+        <p className="truncate text-[11px] font-semibold text-muted-foreground">{label}</p>
       </div>
-      <p className={cn("mt-3 text-2xl font-extrabold tabular-nums tracking-tight", colorMap.val)}>
+      <p className={cn("mt-2 text-xl font-extrabold tabular-nums tracking-tight", tones.val)}>
         {value}
       </p>
-      <p className="mt-0.5 text-sm font-medium text-muted-foreground">{label}</p>
-      {sub && <p className="mt-1 text-xs text-muted-foreground/70">{sub}</p>}
-    </button>
-  );
-}
-
-interface AttentionItem {
-  label: string;
-  count: number;
-  color: "red" | "amber" | "blue";
-  onClick: () => void;
-}
-
-function AttentionCard({ items }: { items: AttentionItem[] }) {
-  const active = items.filter((i) => i.count > 0);
-  if (active.length === 0) return null;
-  return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <AlertCircle className="size-4 text-amber-600" />
-        <p className="text-sm font-bold text-amber-800">يحتاج اهتماماً / Needs Attention</p>
-      </div>
-      <div className="space-y-2">
-        {active.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            onClick={item.onClick}
-            className={cn(
-              "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              item.color === "red"   && "bg-rose-100 text-rose-800 hover:bg-rose-200",
-              item.color === "amber" && "bg-amber-100 text-amber-800 hover:bg-amber-200",
-              item.color === "blue"  && "bg-blue-100 text-blue-800 hover:bg-blue-200",
-            )}
-          >
-            <span>{item.label}</span>
-            <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold">
-              {item.count}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RecentOrderRow({ order, locale }: { order: OrderRecord; locale: "en" | "ar" }) {
-  const statusColors: Record<string, string> = {
-    pending:    "bg-amber-100 text-amber-800",
-    confirmed:  "bg-blue-100 text-blue-800",
-    preparing:  "bg-indigo-100 text-indigo-800",
-    shipped:    "bg-violet-100 text-violet-800",
-    in_transit: "bg-cyan-100 text-cyan-800",
-    delivered:  "bg-emerald-100 text-emerald-800",
-    returned:   "bg-rose-100 text-rose-800",
-    cancelled:  "bg-gray-100 text-gray-600",
-  };
-  const deliveryStatusBadge = {
-    delivered:  "🟢",
-    in_transit: "🟡",
-    confirmed:  "🔵",
-    returned:   "🔴",
-    failed_delivery: "🔴",
-  } as Record<string, string>;
-
-  return (
-    <div className="flex items-center gap-3 py-2.5 text-sm border-b border-border/30 last:border-0">
-      <span className="font-mono text-xs text-muted-foreground min-w-[80px] shrink-0">
-        #{order.orderId.slice(-6)}
-      </span>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-foreground truncate">{order.customerName}</p>
-        <p className="text-xs text-muted-foreground">{order.phone}</p>
-      </div>
-      <span className="font-bold tabular-nums text-accent shrink-0">{formatMAD(order.total)}</span>
-      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0", statusColors[order.orderStatus] ?? "bg-gray-100 text-gray-600")}>
-        {order.orderStatus}
-      </span>
-      {order.deliveryStatus && deliveryStatusBadge[order.deliveryStatus] && (
-        <span className="text-base shrink-0">{deliveryStatusBadge[order.deliveryStatus]}</span>
-      )}
-    </div>
+      {sub ? <p className="mt-0.5 text-[10px] text-muted-foreground">{sub}</p> : null}
+    </Comp>
   );
 }
 
@@ -172,110 +100,200 @@ interface DashSectionProps {
   onGoToOrders: (filter?: string) => void;
 }
 
-export function DashSection({ orders, loading, locale, canFinance, onGoToOrders }: DashSectionProps) {
+export function DashSection({
+  orders,
+  loading,
+  locale,
+  canFinance,
+  onGoToOrders,
+}: DashSectionProps) {
   const [preset, setPreset] = useState<DatePreset>("this_month");
-  const [financeKpis, setFinanceKpis] = useState<{
-    totalRevenue: number;
-    netProfit: number;
-    totalExpenses: number;
-    cashBalance: number;
-  } | null>(null);
+  const [finance, setFinance] = useState<FinanceKpis | null>(null);
+  const [financeLoading, setFinanceLoading] = useState(false);
+  const [financeError, setFinanceError] = useState(false);
+
+  const t = (en: string, ar: string) => (locale === "ar" ? ar : en);
+  const money = (v: unknown) => formatMoney(v, { locale });
 
   useEffect(() => {
-    if (!canFinance) return;
+    if (!canFinance) {
+      setFinance(null);
+      return;
+    }
+    let cancelled = false;
+    setFinanceLoading(true);
+    setFinanceError(false);
     fetch(`/api/admin/finance?preset=${preset}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d: { kpis?: typeof financeKpis }) => {
-        if (d?.kpis) setFinanceKpis(d.kpis);
+      .then(async (r) => {
+        if (!r.ok) throw new Error("finance forbidden");
+        return r.json() as Promise<{ kpis?: FinanceKpis }>;
       })
-      .catch(() => null);
+      .then((d) => {
+        if (cancelled) return;
+        setFinance(d.kpis ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFinance(null);
+          setFinanceError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setFinanceLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [preset, canFinance]);
 
-  // Filter orders by date preset
+  const range = useMemo(() => resolveDatePreset(preset), [preset]);
+
   const filtered = useMemo(() => {
-    const now = new Date();
-    const startOf = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
-    const endOf   = (d: Date) => { const x = new Date(d); x.setHours(23,59,59,999); return x; };
-
-    let from: Date, to: Date;
-    switch (preset) {
-      case "today":
-        from = startOf(now); to = endOf(now); break;
-      case "yesterday": {
-        const y = new Date(now); y.setDate(y.getDate() - 1);
-        from = startOf(y); to = endOf(y); break;
-      }
-      case "this_week": {
-        const d = new Date(now);
-        d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-        from = startOf(d); to = endOf(now); break;
-      }
-      case "this_month":
-        from = new Date(now.getFullYear(), now.getMonth(), 1); to = endOf(now); break;
-      case "last_month":
-        from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        to = endOf(new Date(now.getFullYear(), now.getMonth(), 0)); break;
-      case "this_year":
-        from = new Date(now.getFullYear(), 0, 1); to = endOf(now); break;
-      default:
-        from = new Date(0); to = endOf(now);
-    }
-
+    const from = range.from.getTime();
+    const to = range.to.getTime();
     return orders.filter((o) => {
-      const d = new Date(o.createdAt ?? "");
-      return d >= from && d <= to;
+      const t0 = new Date(o.createdAt ?? "").getTime();
+      return Number.isFinite(t0) && t0 >= from && t0 <= to;
     });
-  }, [orders, preset]);
+  }, [orders, range]);
 
   const stats = useMemo(() => {
     const total = filtered.length;
-    const newOrders     = filtered.filter((o) => o.orderStatus === "pending").length;
-    const confirmed     = filtered.filter((o) => ["confirmed", "preparing"].includes(o.orderStatus)).length;
-    const inTransit     = filtered.filter((o) => ["shipped", "in_transit"].includes(o.orderStatus)).length;
-    const delivered     = filtered.filter((o) => o.orderStatus === "delivered").length;
-    const returned      = filtered.filter((o) => o.orderStatus === "returned").length;
-    const cancelled     = filtered.filter((o) => o.orderStatus === "cancelled").length;
-    const revenue       = filtered.reduce((s, o) => s + (o.total ?? 0), 0);
-    const deliveryRate  = total ? Math.round((delivered / total) * 100) : 0;
-    const returnRate    = total ? Math.round((returned / total) * 100) : 0;
-    const confirmRate   = total ? Math.round(((confirmed + inTransit + delivered + returned) / total) * 100) : 0;
-    // Attention
-    const pendingConfirm   = orders.filter((o) => o.confirmationStatus === "pending_confirmation").length;
-    const failedDelivery   = orders.filter((o) => o.deliveryStatus === "failed_delivery").length;
-    const returnedOrders   = orders.filter((o) => o.orderStatus === "returned").length;
-    const codPending       = orders.filter((o) => o.shipment?.payoutStatus === "pending").length;
+    const newOrders = filtered.filter((o) => o.orderStatus === "pending").length;
+    const confirmed = filtered.filter((o) =>
+      ["confirmed", "preparing"].includes(o.orderStatus),
+    ).length;
+    const inTransit = filtered.filter(
+      (o) =>
+        o.orderStatus === "shipped" ||
+        o.deliveryStatus === "shipped" ||
+        o.deliveryStatus === "in_transit",
+    ).length;
+    const delivered = filtered.filter(
+      (o) => o.orderStatus === "delivered" || o.deliveryStatus === "delivered",
+    ).length;
+    const returned = filtered.filter(
+      (o) => o.orderStatus === "returned" || o.deliveryStatus === "returned",
+    ).length;
+
+    // Rates use period orders only; never divide by zero.
+    const confirmRate = safePercent(confirmed + inTransit + delivered + returned, total);
+    const deliveryRate = safePercent(delivered, total);
+    const returnRate = safePercent(returned, total);
+
+    const pendingConfirm = orders.filter(
+      (o) => o.confirmationStatus === "pending_confirmation" || o.orderStatus === "pending",
+    ).length;
+    const failedDelivery = orders.filter(
+      (o) => o.deliveryStatus === "failed_delivery",
+    ).length;
+    const returnedOpen = orders.filter((o) => o.orderStatus === "returned").length;
+    const codPending = orders.filter(
+      (o) =>
+        o.shipment?.payoutStatus === "pending" &&
+        (o.orderStatus === "delivered" || o.deliveryStatus === "delivered"),
+    ).length;
+
     return {
-      total, newOrders, confirmed, inTransit, delivered, returned, cancelled, revenue,
-      deliveryRate, returnRate, confirmRate,
-      pendingConfirm, failedDelivery, returnedOrders, codPending,
+      total,
+      newOrders,
+      confirmed,
+      inTransit,
+      delivered,
+      returned,
+      confirmRate,
+      deliveryRate,
+      returnRate,
+      pendingConfirm,
+      failedDelivery,
+      returnedOpen,
+      codPending,
     };
   }, [filtered, orders]);
 
-  const t = (en: string, ar: string) => locale === "ar" ? ar : en;
+  const sales = finance ? safeNumber(finance.totalSales ?? finance.totalRevenue) : null;
+  const expenses = finance
+    ? safeNumber(
+        finance.totalExpenses ??
+          safeNumber(finance.advertisingSpend) + safeNumber(finance.otherExpenses),
+      )
+    : null;
+  const profit = finance ? safeNumber(finance.netProfit) : null;
+  const cash = finance ? safeNumber(finance.cashOnHand ?? finance.cashBalance) : null;
+  const margin =
+    sales != null && profit != null ? safePercent(profit, sales) : 0;
+
+  const financeValue = (v: number | null) => {
+    if (financeLoading) return "…";
+    if (financeError) return t("Not available", "غير متاح");
+    if (v === null) return t("Not available", "غير متاح");
+    return money(v);
+  };
+
+  const attention = [
+    {
+      label: t(
+        `${stats.pendingConfirm} waiting for confirmation`,
+        `${stats.pendingConfirm} بانتظار التأكيد`,
+      ),
+      count: stats.pendingConfirm,
+      color: "amber" as const,
+      onClick: () => onGoToOrders("pending"),
+    },
+    {
+      label: t(
+        `${stats.failedDelivery} failed deliveries`,
+        `${stats.failedDelivery} توصيل فاشل`,
+      ),
+      count: stats.failedDelivery,
+      color: "red" as const,
+      onClick: () => onGoToOrders("failed_delivery"),
+    },
+    {
+      label: t(`${stats.returnedOpen} returned`, `${stats.returnedOpen} مرتجع`),
+      count: stats.returnedOpen,
+      color: "red" as const,
+      onClick: () => onGoToOrders("returned"),
+    },
+    {
+      label: t(
+        `${stats.codPending} COD payouts pending`,
+        `${stats.codPending} COD معلّق`,
+      ),
+      count: stats.codPending,
+      color: "amber" as const,
+      onClick: () => onGoToOrders("cod_pending"),
+    },
+  ].filter((i) => i.count > 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header + date range */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">
             {t("Dashboard", "لوحة القيادة")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {loading ? t("Loading…", "جاري التحميل…") : t(`${stats.total} orders in period`, `${stats.total} طلب في الفترة`)}
+            {loading
+              ? t("Loading…", "جاري التحميل…")
+              : t(
+                  `${stats.total} orders in selected period`,
+                  `${stats.total} طلب في الفترة المحددة`,
+                )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {DATE_PRESETS.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => setPreset(p.id)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                "rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors",
                 preset === p.id
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary",
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-secondary/70 text-muted-foreground hover:bg-secondary",
               )}
             >
               {locale === "ar" ? p.labelAr : p.labelEn}
@@ -284,118 +302,245 @@ export function DashSection({ orders, loading, locale, canFinance, onGoToOrders 
         </div>
       </div>
 
-      {/* Order KPIs */}
-      <div>
-        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+      {/* Orders */}
+      <section>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
           {t("Orders", "الطلبات")}
         </p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <KpiCard label={t("New Orders", "طلبات جديدة")} value={stats.newOrders} icon={ShoppingBag} color="amber"
-            onClick={() => onGoToOrders("pending")} />
-          <KpiCard label={t("Confirmed", "مؤكدة")} value={stats.confirmed} icon={CheckCircle2} color="blue"
-            onClick={() => onGoToOrders("confirmed")} />
-          <KpiCard label={t("In Transit", "في الطريق")} value={stats.inTransit} icon={Truck} color="indigo"
-            onClick={() => onGoToOrders("shipped")} />
-          <KpiCard label={t("Delivered", "تم التسليم")} value={stats.delivered} icon={Package} color="green"
-            badge={stats.total > 0 ? `${stats.deliveryRate}%` : undefined}
-            onClick={() => onGoToOrders("delivered")} />
-          <KpiCard label={t("Returned", "مرتجعة")} value={stats.returned} icon={RotateCcw} color="red"
-            badge={stats.total > 0 && stats.returned > 0 ? `${stats.returnRate}%` : undefined}
-            onClick={() => onGoToOrders("returned")} />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <KpiCard
+            label={t("New", "جديدة")}
+            value={stats.newOrders}
+            icon={ShoppingBag}
+            tone="amber"
+            onClick={() => onGoToOrders("pending")}
+          />
+          <KpiCard
+            label={t("Confirmed", "مؤكدة")}
+            value={stats.confirmed}
+            icon={CheckCircle2}
+            tone="blue"
+            onClick={() => onGoToOrders("confirmed")}
+          />
+          <KpiCard
+            label={t("In Transit", "في الطريق")}
+            value={stats.inTransit}
+            icon={Truck}
+            tone="indigo"
+            onClick={() => onGoToOrders("shipped")}
+          />
+          <KpiCard
+            label={t("Delivered", "مسلّمة")}
+            value={stats.delivered}
+            sub={stats.total > 0 ? formatPercent(stats.delivered, stats.total) : undefined}
+            icon={Package}
+            tone="green"
+            onClick={() => onGoToOrders("delivered")}
+          />
+          <KpiCard
+            label={t("Returned", "مرتجعة")}
+            value={stats.returned}
+            sub={
+              stats.total > 0 && stats.returned > 0
+                ? formatPercent(stats.returned, stats.total)
+                : undefined
+            }
+            icon={RotateCcw}
+            tone="red"
+            onClick={() => onGoToOrders("returned")}
+          />
         </div>
-      </div>
+      </section>
 
-      {/* Finance KPIs */}
+      {/* Finance — permission gated */}
       {canFinance && (
-        <div>
-          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+        <section>
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {t("Finance", "المالية")}
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            <KpiCard label={t("Sales (COD)", "المبيعات")} value={formatMAD(stats.revenue)} icon={ShoppingBag} color="amber" />
-            <KpiCard label={t("Net Profit", "صافي الربح")} value={financeKpis ? formatMAD(financeKpis.netProfit) : "—"} icon={ArrowUpRight} color="green" />
-            <KpiCard label={t("Total Expenses", "المصاريف")} value={financeKpis ? formatMAD(financeKpis.totalExpenses) : "—"} icon={XCircle} color="red" />
-            <KpiCard label={t("Cash on Hand", "الصندوق")} value={financeKpis ? formatMAD(financeKpis.cashBalance) : "—"} icon={Timer} color="blue" />
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            <KpiCard
+              label={t("Sales", "المبيعات")}
+              value={financeValue(sales)}
+              sub={t("Period order totals", "إجمالي طلبات الفترة")}
+              icon={ShoppingBag}
+              tone="amber"
+            />
+            <KpiCard
+              label={t("Expenses", "المصاريف")}
+              value={financeValue(expenses)}
+              sub={t("Ads + other expenses", "إعلانات ومصاريف أخرى")}
+              icon={XCircle}
+              tone="red"
+            />
+            <KpiCard
+              label={t("Net Profit", "صافي الربح")}
+              value={financeValue(profit)}
+              sub={
+                sales != null && sales > 0
+                  ? t(`Margin ${margin}%`, `هامش ${margin}%`)
+                  : t("On delivered orders", "على الطلبات المسلّمة")
+              }
+              icon={ArrowUpRight}
+              tone={profit != null && profit < 0 ? "red" : "green"}
+            />
+            <KpiCard
+              label={t("Cash on Hand", "الصندوق")}
+              value={financeValue(cash)}
+              sub={t("Opening + cash in − out", "افتتاح + دخول − خروج")}
+              icon={Wallet}
+              tone="blue"
+            />
           </div>
-        </div>
+
+          {/* Compact summary strip */}
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 rounded-xl border border-border/40 bg-muted/20 p-3 text-center">
+            <div>
+              <p className="text-[10px] text-muted-foreground">{t("Revenue", "الإيراد")}</p>
+              <p className="text-sm font-bold tabular-nums">{financeValue(sales)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">{t("Expenses", "المصاريف")}</p>
+              <p className="text-sm font-bold tabular-nums">{financeValue(expenses)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">{t("Net Profit", "صافي الربح")}</p>
+              <p className="text-sm font-bold tabular-nums">{financeValue(profit)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">{t("Profit Margin", "هامش الربح")}</p>
+              <p className="text-sm font-bold tabular-nums">
+                {financeLoading || financeError || sales === null
+                  ? t("Not available", "غير متاح")
+                  : `${margin}%`}
+              </p>
+            </div>
+          </div>
+          <p className="mt-1.5 text-[10px] text-muted-foreground">
+            {t(
+              "Net profit = delivered revenue − product cost − shipping − commissions − ads − other expenses.",
+              "صافي الربح = إيراد المسلّم − تكلفة المنتجات − الشحن − العمولات − الإعلانات − مصاريف أخرى.",
+            )}
+          </p>
+        </section>
       )}
 
-      {/* Ops KPIs */}
-      <div>
-        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+      {/* Operations rates */}
+      <section>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
           {t("Operations", "العمليات")}
         </p>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-border/50 bg-card p-4 text-center">
-            <p className="text-2xl font-extrabold text-foreground">{stats.confirmRate}%</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("Confirmation Rate", "معدل التأكيد")}</p>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
+            <p className="text-lg font-extrabold tabular-nums">{stats.confirmRate}%</p>
+            <p className="text-[10px] text-muted-foreground">
+              {t("Confirmation", "التأكيد")}
+            </p>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-card p-4 text-center">
-            <p className="text-2xl font-extrabold text-emerald-700">{stats.deliveryRate}%</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("Delivery Rate", "معدل التوصيل")}</p>
+          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
+            <p className="text-lg font-extrabold tabular-nums text-emerald-700">
+              {stats.deliveryRate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {t("Delivery", "التوصيل")}
+            </p>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-card p-4 text-center">
-            <p className="text-2xl font-extrabold text-rose-700">{stats.returnRate}%</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("Return Rate", "معدل الإرجاع")}</p>
+          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
+            <p className="text-lg font-extrabold tabular-nums text-rose-700">
+              {stats.returnRate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {t("Returns", "المرتجعات")}
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Attention center */}
-      <AttentionCard
-        items={[
-          {
-            label: t(`${stats.pendingConfirm} orders waiting for confirmation`, `${stats.pendingConfirm} طلب ينتظر التأكيد`),
-            count: stats.pendingConfirm, color: "amber",
-            onClick: () => onGoToOrders("pending_confirmation"),
-          },
-          {
-            label: t(`${stats.failedDelivery} failed delivery attempts`, `${stats.failedDelivery} محاولة توصيل فاشلة`),
-            count: stats.failedDelivery, color: "red",
-            onClick: () => onGoToOrders("failed_delivery"),
-          },
-          {
-            label: t(`${stats.returnedOrders} orders returned`, `${stats.returnedOrders} طلب مرتجع`),
-            count: stats.returnedOrders, color: "red",
-            onClick: () => onGoToOrders("returned"),
-          },
-          {
-            label: t(`${stats.codPending} COD payouts pending`, `${stats.codPending} دفعة COD معلقة`),
-            count: stats.codPending, color: "amber",
-            onClick: () => onGoToOrders("cod_pending"),
-          },
-        ]}
-      />
+      {/* Attention */}
+      {attention.length > 0 && (
+        <section className="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5">
+          <div className="mb-2 flex items-center gap-2">
+            <AlertCircle className="size-3.5 text-amber-600" />
+            <p className="text-xs font-bold text-amber-900">
+              {t("Needs Attention", "يحتاج اهتماماً")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {attention.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                className={cn(
+                  "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                  item.color === "red" && "bg-rose-100 text-rose-800 hover:bg-rose-200",
+                  item.color === "amber" && "bg-amber-100 text-amber-900 hover:bg-amber-200",
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Recent orders */}
-      {filtered.length > 0 && (
-        <div className="rounded-2xl border border-border/50 bg-card p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <p className="font-bold text-foreground text-sm">{t("Recent Orders", "آخر الطلبات")}</p>
+      {filtered.length > 0 ? (
+        <section className="rounded-xl border border-border/50 bg-card p-3.5 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-bold">{t("Recent Orders", "آخر الطلبات")}</p>
             <button
               type="button"
               onClick={() => onGoToOrders()}
-              className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+              className="flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
             >
               {t("View all", "عرض الكل")}
               <ArrowUpRight className="size-3" />
             </button>
           </div>
-          <div>
-            {filtered.slice(0, 8).map((o) => (
-              <RecentOrderRow key={o.orderId} order={o} locale={locale} />
-            ))}
+          <div className="divide-y divide-border/30">
+            {filtered.slice(0, 8).map((o) => {
+              const st = STATUS_LABEL[o.orderStatus] ?? {
+                en: o.orderStatus,
+                ar: o.orderStatus,
+              };
+              return (
+                <div
+                  key={o.orderId}
+                  className="flex items-center gap-2 py-2 text-sm"
+                >
+                  <span className="w-16 shrink-0 font-mono text-[10px] text-muted-foreground">
+                    #{o.orderId.slice(-6)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold">{o.customerName}</p>
+                  </div>
+                  <span className="shrink-0 text-xs font-bold tabular-nums text-accent">
+                    {money(o.total)}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">
+                    {locale === "ar" ? st.ar : st.en}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {filtered.length === 0 && !loading && (
-        <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center">
-          <ShoppingBag className="mx-auto size-10 text-muted-foreground/30" />
-          <p className="mt-3 font-semibold text-foreground">
-            {t("No orders in this period", "لا توجد طلبات في هذه الفترة")}
-          </p>
-        </div>
+        </section>
+      ) : (
+        !loading && (
+          <div className="rounded-xl border border-dashed border-border/60 px-4 py-8 text-center">
+            <Timer className="mx-auto size-8 text-muted-foreground/30" />
+            <p className="mt-2 text-sm font-semibold">
+              {t("No orders in this period", "لا توجد طلبات في هذه الفترة")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t(
+                "Try another date range. Finance figures still use recorded expenses for this period.",
+                "جرّب فترة أخرى. أرقام المالية ما زالت تعتمد المصاريف المسجلة لهذه الفترة.",
+              )}
+            </p>
+          </div>
+        )
       )}
     </div>
   );

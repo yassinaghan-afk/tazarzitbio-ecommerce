@@ -7,6 +7,7 @@ import {
   computePartnerPositions,
   resolveDatePreset,
 } from "@/lib/admin/finance-calc";
+import { safeNumber } from "@/lib/admin/money";
 import { roleHasPermission } from "@/lib/admin/permissions";
 import { requireAdminSession } from "@/lib/admin/session";
 import { readStore } from "@/lib/server/store";
@@ -46,14 +47,16 @@ export async function GET(req: NextRequest) {
 
   const cashIn = store.ops.cashTransactions
     .filter((t) => t.direction === "in")
-    .reduce((s, t) => s + t.amount, 0);
+    .reduce((s, t) => s + safeNumber(t.amount), 0);
   const cashOut = store.ops.cashTransactions
     .filter((t) => t.direction === "out")
-    .reduce((s, t) => s + t.amount, 0);
-  const expectedCash = store.ops.settings.openingCash + cashIn - cashOut;
+    .reduce((s, t) => s + safeNumber(t.amount), 0);
+  const expectedCash = safeNumber(store.ops.settings.openingCash) + cashIn - cashOut;
   const actual = store.ops.settings.actualCashCounted;
   const cashDiff =
-    typeof actual === "number" ? actual - expectedCash : null;
+    typeof actual === "number" && Number.isFinite(actual)
+      ? actual - expectedCash
+      : null;
 
   return NextResponse.json({
     range: { from: range.from.toISOString(), to: range.to.toISOString(), preset },

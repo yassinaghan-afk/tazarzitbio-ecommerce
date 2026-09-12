@@ -7,6 +7,7 @@ import type {
   PartnerRecord,
   PartnerTransaction,
 } from "@/lib/admin/ops-types";
+import { safeNumber } from "@/lib/admin/money";
 
 export interface DateRange {
   from: Date;
@@ -89,13 +90,13 @@ export function computeOrderContribution(
   commissionMad: number,
   commissionApplies: boolean,
 ): OrderCostSnapshot {
-  const revenue = order.total;
+  const revenue = safeNumber(order.total);
   const productCost = order.products.reduce((sum, line) => {
-    const unit = unitCostByProductId.get(line.productId) ?? 0;
-    return sum + unit * line.quantity;
+    const unit = safeNumber(unitCostByProductId.get(line.productId));
+    return sum + unit * safeNumber(line.quantity);
   }, 0);
-  const shippingCost = order.shippingPrice ?? 0;
-  const confirmationCommission = commissionApplies ? commissionMad : 0;
+  const shippingCost = safeNumber(order.shippingPrice);
+  const confirmationCommission = commissionApplies ? safeNumber(commissionMad) : 0;
   const otherCosts = 0;
   const contribution =
     revenue - productCost - shippingCost - confirmationCommission - otherCosts;
@@ -105,7 +106,7 @@ export function computeOrderContribution(
     shippingCost,
     confirmationCommission,
     otherCosts,
-    contribution,
+    contribution: safeNumber(contribution),
   };
 }
 
@@ -118,12 +119,17 @@ export interface FinanceKpis {
   confirmationCommissions: number;
   advertisingSpend: number;
   otherExpenses: number;
+  /** advertisingSpend + otherExpenses (period) — no product COGS */
+  totalExpenses: number;
   netProfit: number;
   cashOnHand: number;
   amountReceivable: number;
   amountPayable: number;
   orderCount: number;
   deliveredCount: number;
+  /** Alias fields for older clients — same as totalSales / cashOnHand */
+  totalRevenue: number;
+  cashBalance: number;
 }
 
 export function computeFinanceKpis(input: {
@@ -157,7 +163,8 @@ export function computeFinanceKpis(input: {
 
   for (const order of inPeriod) {
     if (order.orderStatus === "cancelled") continue;
-    totalSales += order.total;
+    const orderTotal = safeNumber(order.total);
+    totalSales += orderTotal;
     const confirmed =
       order.confirmationStatus === "confirmed" ||
       order.orderStatus === "confirmed" ||
@@ -169,41 +176,45 @@ export function computeFinanceKpis(input: {
         ? order.orderStatus === "delivered" || order.deliveryStatus === "delivered"
         : confirmed && order.confirmationStatus !== "cancelled" && order.confirmationStatus !== "refused";
 
+    const commissionMad = safeNumber(
+      order.confirmationCommission ?? settings.defaultCommissionPerConfirmed,
+    );
+
     const snap = computeOrderContribution(
       order,
       unitCostByProductId,
-      order.assignedAgentId
-        ? (order.confirmationCommission ?? settings.defaultCommissionPerConfirmed)
-        : 0,
+      commissionMad,
       Boolean(order.assignedAgentId) && commissionApplies,
     );
 
     if (order.orderStatus === "delivered" || order.deliveryStatus === "delivered") {
-      deliveredRevenue += order.total;
+      deliveredRevenue += orderTotal;
       deliveredCount += 1;
-      productCosts += snap.productCost;
-      shippingCosts += snap.shippingCost;
-      confirmationCommissions += snap.confirmationCommission;
+      productCosts += safeNumber(snap.productCost);
+      shippingCosts += safeNumber(snap.shippingCost);
+      confirmationCommissions += safeNumber(snap.confirmationCommission);
       if (
         order.paymentCollectionStatus !== "paid_to_company" &&
         order.orderStatus !== "returned"
       ) {
-        amountReceivable += order.total;
+        amountReceivable += orderTotal;
       }
     } else if (order.orderStatus !== "returned") {
-      pendingRevenue += order.total;
+      pendingRevenue += orderTotal;
     }
   }
 
   const advertisingSpend = adExpenses
     .filter((e) => inRange(e.date, range))
-    .reduce((s, e) => s + e.amount, 0);
+    .reduce((s, e) => s + safeNumber(e.amount), 0);
 
   const otherExpenses = expenses
     .filter((e) => inRange(e.date, range) && e.category !== "advertising")
-    .reduce((s, e) => s + e.amount, 0);
+    .reduce((s, e) => s + safeNumber(e.amount), 0);
 
-  // Ads also counted in expenses if duplicated — prefer adExpenses as source of truth for ads.
+  const totalExpenses = advertisingSpend + otherExpenses;
+
+  // Ads counted only via adExpenses (not duplicated from expenses category advertising).
   const netProfit =
     deliveredRevenue -
     productCosts -
@@ -214,30 +225,32 @@ export function computeFinanceKpis(input: {
 
   const cashIn = cashTransactions
     .filter((t) => t.direction === "in")
-    .reduce((s, t) => s + t.amount, 0);
+    .reduce((s, t) => s + safeNumber(t.amount), 0);
   const cashOut = cashTransactions
     .filter((t) => t.direction === "out")
-    .reduce((s, t) => s + t.amount, 0);
-  const cashOnHand = settings.openingCash + cashIn - cashOut;
+    .reduce((s, t) => s + safeNumber(t.amount), 0);
+  const cashOnHand = safeNumber(settings.openingCash) + cashIn - cashOut;
 
-  // Payable: commissions owed not yet paid out (simplified: unpaid commissions in period)
   const amountPayable = confirmationCommissions;
 
   return {
-    totalSales,
-    deliveredRevenue,
-    pendingRevenue,
-    productCosts,
-    shippingCosts,
-    confirmationCommissions,
-    advertisingSpend,
-    otherExpenses,
-    netProfit,
-    cashOnHand,
-    amountReceivable,
-    amountPayable,
+    totalSales: safeNumber(totalSales),
+    deliveredRevenue: safeNumber(deliveredRevenue),
+    pendingRevenue: safeNumber(pendingRevenue),
+    productCosts: safeNumber(productCosts),
+    shippingCosts: safeNumber(shippingCosts),
+    confirmationCommissions: safeNumber(confirmationCommissions),
+    advertisingSpend: safeNumber(advertisingSpend),
+    otherExpenses: safeNumber(otherExpenses),
+    totalExpenses: safeNumber(totalExpenses),
+    netProfit: safeNumber(netProfit),
+    cashOnHand: safeNumber(cashOnHand),
+    amountReceivable: safeNumber(amountReceivable),
+    amountPayable: safeNumber(amountPayable),
     orderCount: inPeriod.length,
     deliveredCount,
+    totalRevenue: safeNumber(totalSales),
+    cashBalance: safeNumber(cashOnHand),
   };
 }
 

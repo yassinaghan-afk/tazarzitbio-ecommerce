@@ -130,7 +130,9 @@ function Sidebar({
   onClose?: () => void;
 }) {
   const t = (en: string, ar: string) => locale === "ar" ? ar : en;
-  const canFinance = session?.role !== "confirmation_agent";
+  const canFinance =
+    session?.role !== "confirmation_agent" &&
+    session?.permissions?.finance !== false;
   const isAdmin    = session?.role === "admin";
 
   const logout = async () => {
@@ -530,7 +532,9 @@ export function AdminDashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const canFinance = session?.role !== "confirmation_agent";
+  const canFinance =
+    session?.role !== "confirmation_agent" &&
+    session?.permissions?.finance !== false;
 
   /* Persist locale in localStorage */
   useEffect(() => {

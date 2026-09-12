@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, Users } from "lucide-react";
 
 import type { OrderRecord } from "@/lib/orders/types";
+import { formatMoney } from "@/lib/admin/money";
 import { cn } from "@/lib/utils";
 
 interface Customer {
@@ -65,7 +66,7 @@ const TYPE_BADGE: Record<Customer["type"], { label: string; labelAr: string; cls
 };
 
 function formatMAD(n: number) {
-  return `${Math.round(n).toLocaleString("fr-MA")} DH`;
+  return formatMoney(n);
 }
 
 function fmtDate(iso: string) {
