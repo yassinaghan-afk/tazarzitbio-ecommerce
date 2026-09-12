@@ -9,10 +9,7 @@ import { Button } from "@/components/ui/button";
 import type { PlacedOrder } from "@/lib/checkout/types";
 import { getMetaBrowserIds } from "@/lib/meta/browser";
 import type { UpsellOrderResponse } from "@/lib/orders/types";
-import {
-  applyUpsellDiscount,
-  UPSELL_DISCOUNT_PERCENT,
-} from "@/lib/orders/upsell-pricing";
+import { UPSELL_DISCOUNT_PERCENT } from "@/lib/orders/upsell-pricing";
 import type { PublicProduct } from "@/lib/products/types";
 import { getListingProducts } from "@/lib/products/listing";
 import {
@@ -38,11 +35,14 @@ function formatDh(n: number): string {
   return `${n} درهم`;
 }
 
+function cheapestOffer(product: PublicProduct) {
+  return [...product.offers].sort((a, b) => a.price - b.price)[0] ?? null;
+}
+
 function productSize(product: PublicProduct, offerId?: string): string {
   const offer =
     (offerId ? product.offers.find((o) => o.id === offerId) : null) ??
-    [...product.offers].sort((a, b) => a.price - b.price)[0] ??
-    null;
+    cheapestOffer(product);
   return (offer?.weight || product.weight || "").trim();
 }
 
@@ -51,6 +51,8 @@ export function RoyalUpsellPage() {
   const [order, setOrder] = useState<PlacedOrder | null>(null);
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [selection, setSelection] = useState<UpsellSelection[]>([]);
+  /** Draft qty for cards not yet added (and seed when adding). */
+  const [draftQty, setDraftQty] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -80,6 +82,36 @@ export function RoyalUpsellPage() {
       .catch(() => setError("تعذر تحميل المنتجات. يمكنك التخطي وإتمام الطلب."))
       .finally(() => setLoading(false));
   }, [router]);
+
+  // Keep selection unit prices aligned with catalog (never apply a fake discount).
+  useEffect(() => {
+    if (!order?.id || products.length === 0 || selection.length === 0) return;
+    const byId = new Map(products.map((p) => [p.id, p]));
+    let changed = false;
+    const next = selection.map((line) => {
+      const product = byId.get(line.productId);
+      if (!product) return line;
+      const offer =
+        product.offers.find((o) => o.id === line.offerId) ?? cheapestOffer(product);
+      if (!offer) return line;
+      const unitPrice = offer.price;
+      const weight = productSize(product, offer.id);
+      if (line.unitPrice === unitPrice && line.weight === weight) return line;
+      changed = true;
+      return {
+        ...line,
+        unitPrice,
+        listUnitPrice: unitPrice,
+        offerId: offer.id,
+        offerLabel: offer.label,
+        ...(weight ? { weight } : { weight: undefined }),
+      };
+    });
+    if (changed) {
+      setSelection(next);
+      writeUpsellSelection(order.id, next);
+    }
+  }, [products, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- sync once catalog arrives
 
   const originalProductIds = useMemo(() => {
     const ids = new Set<string>();
@@ -119,11 +151,32 @@ export function RoyalUpsellPage() {
     return selection.some((s) => s.productId === productId);
   }
 
+  function getQty(productId: string): number {
+    const selected = selection.find((s) => s.productId === productId);
+    if (selected) return selected.quantity;
+    return draftQty[productId] ?? 1;
+  }
+
+  function changeQty(productId: string, delta: number) {
+    if (busy) return;
+    const selected = selection.find((s) => s.productId === productId);
+    if (selected) {
+      const qty = Math.min(20, Math.max(1, selected.quantity + delta));
+      persistSelection(
+        selection.map((s) => (s.productId === productId ? { ...s, quantity: qty } : s)),
+      );
+      return;
+    }
+    setDraftQty((prev) => ({
+      ...prev,
+      [productId]: Math.min(20, Math.max(1, (prev[productId] ?? 1) + delta)),
+    }));
+  }
+
   function toggleProduct(product: PublicProduct) {
     if (!order || busy) return;
     setError("");
-    const offer =
-      [...product.offers].sort((a, b) => a.price - b.price)[0] ?? null;
+    const offer = cheapestOffer(product);
     if (!offer) return;
 
     if (isSelected(product.id)) {
@@ -131,17 +184,17 @@ export function RoyalUpsellPage() {
       return;
     }
 
-    const listPrice = offer.price;
-    const unitPrice = applyUpsellDiscount(listPrice);
+    const unitPrice = offer.price;
     const weight = productSize(product, offer.id);
+    const quantity = getQty(product.id);
     const next: UpsellSelection = {
       productId: product.id,
       offerId: offer.id,
-      quantity: 1,
+      quantity,
       nameAr: product.nameAr,
       image: product.image,
       unitPrice,
-      listUnitPrice: listPrice,
+      listUnitPrice: unitPrice,
       offerLabel: offer.label,
       slug: product.slug,
       ...(weight ? { weight } : {}),
@@ -150,22 +203,9 @@ export function RoyalUpsellPage() {
     trackUpsellAdd({
       orderId: order.id,
       productId: product.id,
-      quantity: 1,
-      value: unitPrice,
+      quantity,
+      value: unitPrice * quantity,
     });
-  }
-
-  function updateQty(productId: string, delta: number) {
-    if (busy) return;
-    persistSelection(
-      selection
-        .map((s) =>
-          s.productId === productId
-            ? { ...s, quantity: Math.min(20, Math.max(1, s.quantity + delta)) }
-            : s,
-        )
-        .filter((s) => s.quantity > 0),
-    );
   }
 
   async function callUpsell(
@@ -313,19 +353,17 @@ export function RoyalUpsellPage() {
           {!loading &&
             offerProducts.map((product) => {
               const selected = isSelected(product.id);
-              const offer =
-                [...product.offers].sort((a, b) => a.price - b.price)[0] ?? null;
-              const listPrice = offer?.price ?? product.price;
-              const salePrice = applyUpsellDiscount(listPrice);
+              const offer = cheapestOffer(product);
+              const price = offer?.price ?? product.price;
               const size = productSize(product, offer?.id);
-              const selectedLine = selection.find((s) => s.productId === product.id);
+              const qty = getQty(product.id);
               return (
                 <article
                   key={product.id}
                   className={cn(
                     "overflow-hidden rounded-2xl border bg-white transition-shadow",
                     selected
-                      ? "border-emerald-500 shadow-[0_8px_24px_-16px_rgba(16,185,129,0.55)]"
+                      ? "border-amber-500/70 shadow-[0_8px_24px_-16px_rgba(180,130,40,0.45)]"
                       : "border-[#eadfce]",
                   )}
                 >
@@ -338,7 +376,10 @@ export function RoyalUpsellPage() {
                         sizes="96px"
                         className="object-cover"
                       />
-                      <span className="absolute start-1.5 top-1.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(220,38,38,0.55)] ring-1 ring-white/40">
+                      <span
+                        className="absolute start-1.5 top-1.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(220,38,38,0.55)] ring-1 ring-white/40"
+                        aria-hidden
+                      >
                         -{UPSELL_DISCOUNT_PERCENT}%
                       </span>
                     </div>
@@ -347,58 +388,47 @@ export function RoyalUpsellPage() {
                         {product.nameAr}
                       </h2>
                       {size ? (
-                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
-                          {size}
-                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">{size}</p>
                       ) : null}
-                      <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
-                        <span className="text-xs font-semibold text-neutral-400 line-through tabular-nums">
-                          {formatDh(listPrice)}
-                        </span>
-                        <span className="rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_8px_rgba(220,38,38,0.45)]">
-                          -{UPSELL_DISCOUNT_PERCENT}%
-                        </span>
-                        <span className="text-base font-black tabular-nums text-emerald-700">
-                          {formatDh(salePrice)}
-                        </span>
-                      </div>
+                      <p className="mt-1.5 text-lg font-black tabular-nums text-[#1a2744]">
+                        {formatDh(price)}
+                      </p>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2 border-t border-[#f0e6d8] px-3 py-2.5">
-                    {selected && selectedLine && (
-                      <div className="flex items-center gap-1 rounded-full border border-[#eadfce] bg-[#faf6ef] px-1">
-                        <button
-                          type="button"
-                          aria-label="إنقاص"
-                          disabled={busy}
-                          className="flex size-8 items-center justify-center"
-                          onClick={() => updateQty(product.id, -1)}
-                        >
-                          <Minus className="size-3.5" />
-                        </button>
-                        <span className="min-w-6 text-center text-sm font-bold tabular-nums">
-                          {selectedLine.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label="زيادة"
-                          disabled={busy}
-                          className="flex size-8 items-center justify-center"
-                          onClick={() => updateQty(product.id, 1)}
-                        >
-                          <Plus className="size-3.5" />
-                        </button>
-                      </div>
-                    )}
-                    <button
+                    <div className="flex items-center gap-1 rounded-full border border-[#eadfce] bg-[#faf6ef] px-1 shadow-sm">
+                      <button
+                        type="button"
+                        aria-label="إنقاص الكمية"
+                        disabled={busy || qty <= 1}
+                        className="flex size-9 items-center justify-center disabled:opacity-40"
+                        onClick={() => changeQty(product.id, -1)}
+                      >
+                        <Minus className="size-3.5" />
+                      </button>
+                      <span className="min-w-7 text-center text-sm font-bold tabular-nums">
+                        {qty}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="زيادة الكمية"
+                        disabled={busy || qty >= 20}
+                        className="flex size-9 items-center justify-center disabled:opacity-40"
+                        onClick={() => changeQty(product.id, 1)}
+                      >
+                        <Plus className="size-3.5" />
+                      </button>
+                    </div>
+
+                    <Button
                       type="button"
+                      variant="gold"
                       disabled={busy}
                       onClick={() => toggleProduct(product)}
                       className={cn(
-                        "ms-auto flex min-h-11 min-w-[7.5rem] items-center justify-center gap-1.5 rounded-full px-4 text-sm font-extrabold text-white shadow-md",
-                        selected
-                          ? "bg-emerald-700 hover:bg-emerald-800"
-                          : "bg-emerald-600 hover:bg-emerald-700",
+                        "ms-auto min-h-11 min-w-[7.5rem] rounded-full px-4 text-sm font-extrabold shadow-gold",
+                        selected && "bg-[#c9a227] hover:bg-[#b8921f]",
                       )}
                     >
                       {selected ? (
@@ -409,7 +439,7 @@ export function RoyalUpsellPage() {
                       ) : (
                         "إضافة"
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </article>
               );
