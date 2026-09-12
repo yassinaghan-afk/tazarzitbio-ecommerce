@@ -17,61 +17,61 @@ export const AMLOU_ROYAL_INGREDIENTS_IMAGE =
 export const AMLOU_ROYAL_BENEFITS_IMAGE =
   "/images/products/amlou-royal-benefits.jpg";
 
-/** Ordered creative panels for /royal landing (1 = hero). */
+/** Ordered creative panels for /royal landing (1 = hero). Artboard 10 excluded. */
 export const AMLOU_ROYAL_LP_IMAGES = [
   {
-    src: "/images/royal/01-hero.jpg",
+    src: "/images/royal/01-hero.webp",
     alt: "استمتع بالطاقة الحقيقية مع أملو ملكي اللذيذ والصحي",
-    width: 633,
-    height: 1024,
+    width: 800,
+    height: 1442,
   },
   {
-    src: "/images/royal/02-problem.jpg",
+    src: "/images/royal/02-problem.webp",
     alt: "هل تعاني دائماً من التعب والإرهاق؟",
-    width: 482,
-    height: 1024,
+    width: 800,
+    height: 1698,
   },
   {
-    src: "/images/royal/03-solution.jpg",
+    src: "/images/royal/03-solution.webp",
     alt: "أملو ملكي هو الحل الطبيعي والأمثل — مكونات طبيعية فاخرة",
-    width: 407,
-    height: 1024,
+    width: 800,
+    height: 2009,
   },
   {
-    src: "/images/royal/04-benefits.jpg",
+    src: "/images/royal/04-benefits.webp",
     alt: "فوائد ومميزات أملو ملكي: طاقة، تركيز، بدون سكر، تغذية متكاملة",
-    width: 473,
-    height: 1024,
+    width: 800,
+    height: 1732,
   },
   {
-    src: "/images/royal/05-family.jpg",
+    src: "/images/royal/05-family.webp",
     alt: "استثمر في صحتك مع أملو ملكي",
-    width: 688,
-    height: 1024,
+    width: 800,
+    height: 1191,
   },
   {
-    src: "/images/royal/06-compare.jpg",
+    src: "/images/royal/06-compare.webp",
     alt: "لماذا أملو ملكي أفضل من المنتجات المنافسة",
-    width: 622,
-    height: 1024,
+    width: 800,
+    height: 1318,
   },
   {
-    src: "/images/royal/07-testimonials.jpg",
+    src: "/images/royal/07-testimonials.webp",
     alt: "شهادات زبناء أملو ملكي عبر واتساب",
-    width: 519,
-    height: 1024,
+    width: 800,
+    height: 1577,
   },
   {
-    src: "/images/royal/08-cta-lifestyle.jpg",
+    src: "/images/royal/08-cta-lifestyle.webp",
     alt: "لا تفوت فرصة تحسين صحتك — توصيل مجاني والدفع عند الاستلام",
-    width: 490,
-    height: 1024,
+    width: 800,
+    height: 1670,
   },
   {
-    src: "/images/royal/09-guarantees.jpg",
+    src: "/images/royal/09-guarantees.webp",
     alt: "ضمانات شركتنا: خدمة بعد البيع، توصيل سريع، الدفع عند الاستلام",
-    width: 659,
-    height: 1024,
+    width: 800,
+    height: 1242,
   },
 ] as const;
 
