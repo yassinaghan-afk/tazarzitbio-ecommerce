@@ -566,7 +566,7 @@ export function OrdersTable({
                     disabled={busyId === selected.orderId}
                     onClick={() => void deliveryAction(selected.orderId, "send")}
                   >
-                    إرسال لشركة التوصيل
+                    إرسال إلى Elite Delivery
                   </Button>
                   <Button
                     size="sm"

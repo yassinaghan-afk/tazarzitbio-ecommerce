@@ -35,7 +35,43 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       elite: toPublicDeliveryConfig(delivery.providers.elite),
       internalStatuses: DELIVERY_STATUSES,
-      note: "API endpoints and auth scheme will be wired only after official Elite Delivery documentation is provided.",
+      webhookPathHint:
+        "/api/webhooks/elite-delivery/<ELITE_DELIVERY_WEBHOOK_SECRET>",
+      envHints: [
+        "ELITE_DELIVERY_API_TOKEN",
+        "ELITE_DELIVERY_STORE_ID",
+        "ELITE_DELIVERY_WEBHOOK_SECRET",
+        "ELITE_DELIVERY_BASE_URL",
+      ],
+    });
+  }
+
+  if (view === "verify") {
+    if (!roleHasPermission(session.role, "settings:write") && session.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const { eliteDeliveryProvider } = await import(
+      "@/lib/delivery/elite/provider"
+    );
+    const result = await eliteDeliveryProvider.verifyCredentials();
+    return NextResponse.json(result);
+  }
+
+  if (view === "cities") {
+    if (!roleHasPermission(session.role, "orders:read")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const { getEliteCitiesCached } = await import(
+      "@/lib/delivery/elite/provider"
+    );
+    const { resolveEliteSecrets } = await import("@/lib/delivery/secrets");
+    const resolved = resolveEliteSecrets(delivery.providers.elite);
+    const cities = await getEliteCitiesCached(
+      resolved.baseUrl || "https://elitedelivery.ma",
+    );
+    return NextResponse.json({
+      count: cities?.length ?? 0,
+      cities: (cities ?? []).slice(0, 50),
     });
   }
 
@@ -181,13 +217,13 @@ export async function POST(req: NextRequest) {
       userId: session.userId,
       userName: session.userName,
     });
-    const status = result.ok ? 200 : result.errorCode === "API_DOCS_REQUIRED" ? 503 : 400;
+    const status = result.ok ? 200 : 400;
     return NextResponse.json(result, { status });
   }
 
   if (body.action === "refresh") {
     const result = await refreshOrderDelivery(orderId, body.providerId || "elite");
-    const status = result.ok ? 200 : result.errorCode === "API_DOCS_REQUIRED" ? 503 : 400;
+    const status = result.ok ? 200 : 400;
     return NextResponse.json(result, { status });
   }
 

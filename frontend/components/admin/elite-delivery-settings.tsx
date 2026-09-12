@@ -25,11 +25,15 @@ export function EliteDeliverySettingsForm() {
   const [elite, setElite] = useState<ElitePublic | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [webhookHint, setWebhookHint] = useState(
+    "/api/webhooks/elite-delivery/<ELITE_DELIVERY_WEBHOOK_SECRET>",
+  );
   const [form, setForm] = useState({
     enabled: false,
-    baseUrl: "",
+    baseUrl: "https://elitedelivery.ma",
     accountId: "",
     apiKey: "",
     webhookSecret: "",
@@ -42,11 +46,15 @@ export function EliteDeliverySettingsForm() {
     try {
       const res = await fetch("/api/admin/delivery?view=settings", { cache: "no-store" });
       if (!res.ok) throw new Error("fail");
-      const data = (await res.json()) as { elite: ElitePublic };
+      const data = (await res.json()) as {
+        elite: ElitePublic;
+        webhookPathHint?: string;
+      };
       setElite(data.elite);
+      if (data.webhookPathHint) setWebhookHint(data.webhookPathHint);
       setForm({
         enabled: data.elite.enabled,
-        baseUrl: data.elite.baseUrl || "",
+        baseUrl: data.elite.baseUrl || "https://elitedelivery.ma",
         accountId: data.elite.accountId || "",
         apiKey: "",
         webhookSecret: "",
@@ -95,11 +103,37 @@ export function EliteDeliverySettingsForm() {
       const data = (await res.json()) as { elite: ElitePublic };
       setElite(data.elite);
       setForm((f) => ({ ...f, apiKey: "", webhookSecret: "" }));
-      setMsg("Saved. Secrets are stored server-side only.");
+      setMsg("Saved. Secrets stay server-side only.");
     } catch {
       setError("Save failed");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function verifyConnection() {
+    setVerifying(true);
+    setMsg("");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/delivery?view=verify", { cache: "no-store" });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        storeId?: string;
+        brandName?: string;
+        errorMessage?: string;
+      };
+      if (data.ok) {
+        setMsg(
+          `Connected ✓ Store ${data.storeId ?? "?"} — ${data.brandName ?? "Elite"}`,
+        );
+      } else {
+        setError(data.errorMessage || "Verification failed");
+      }
+    } catch {
+      setError("Verification request failed");
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -112,9 +146,7 @@ export function EliteDeliverySettingsForm() {
       <div>
         <h3 className="text-lg font-extrabold">Elite Delivery</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Configure credentials securely. API calls are not invented — wire HTTP only after
-          official documentation is provided. Webhook path:{" "}
-          <code className="text-xs">/api/webhooks/elite-delivery</code>
+          Official API: stores / statuses / cities / batch. Credentials never reach the browser.
         </p>
       </div>
 
@@ -144,23 +176,24 @@ export function EliteDeliverySettingsForm() {
           <Input
             value={form.baseUrl}
             onChange={(e) => setForm({ ...form, baseUrl: e.target.value })}
-            placeholder="https://… (from official docs)"
+            placeholder="https://elitedelivery.ma"
             dir="ltr"
           />
         </div>
 
         <div>
-          <Label>Store / Account ID (if required)</Label>
+          <Label>Store ID</Label>
           <Input
             value={form.accountId}
             onChange={(e) => setForm({ ...form, accountId: e.target.value })}
+            placeholder="e.g. 14757"
             dir="ltr"
           />
         </div>
 
         <div>
           <Label>
-            API Key / Token{" "}
+            API Token{" "}
             {elite?.apiKeyConfigured ? (
               <span className="text-emerald-700">(configured {elite.apiKeyHint})</span>
             ) : (
@@ -171,7 +204,7 @@ export function EliteDeliverySettingsForm() {
             type="password"
             value={form.apiKey}
             onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
-            placeholder="Leave blank to keep existing"
+            placeholder="Leave blank to keep existing / env"
             autoComplete="new-password"
             dir="ltr"
           />
@@ -190,16 +223,20 @@ export function EliteDeliverySettingsForm() {
             type="password"
             value={form.webhookSecret}
             onChange={(e) => setForm({ ...form, webhookSecret: e.target.value })}
-            placeholder="Leave blank to keep existing"
+            placeholder="Random secret for webhook URL path"
             autoComplete="new-password"
             dir="ltr"
           />
+          <p className="mt-1 text-[11px] text-muted-foreground break-all" dir="ltr">
+            Elite webhook URL: {webhookHint}
+          </p>
         </div>
 
         <div>
-          <Label>Status map (Elite status → internal)</Label>
+          <Label>Status map overrides (optional JSON)</Label>
           <p className="mb-1 text-[11px] text-muted-foreground">
-            Fill keys from Elite docs. Internal values: {DELIVERY_STATUSES.join(", ")}
+            Built-in map covers Elite status IDs. Override keys if needed. Values:{" "}
+            {DELIVERY_STATUSES.join(", ")}
           </p>
           <textarea
             className="min-h-28 w-full rounded-xl border border-border bg-card px-3 py-2 font-mono text-xs"
@@ -209,15 +246,26 @@ export function EliteDeliverySettingsForm() {
           />
         </div>
 
-        <Button type="submit" variant="gold" className="rounded-full" disabled={saving}>
-          {saving ? "Saving…" : "Save Elite settings"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" variant="gold" className="rounded-full" disabled={saving}>
+            {saving ? "Saving…" : "Save Elite settings"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full"
+            disabled={verifying}
+            onClick={() => void verifyConnection()}
+          >
+            {verifying ? "Verifying…" : "Verify connection"}
+          </Button>
+        </div>
       </form>
 
       <p className="text-xs text-muted-foreground">
-        Optional env overrides (preferred in production):{" "}
-        <code>ELITE_DELIVERY_API_KEY</code>, <code>ELITE_DELIVERY_WEBHOOK_SECRET</code>,{" "}
-        <code>ELITE_DELIVERY_BASE_URL</code>, <code>ELITE_DELIVERY_ACCOUNT_ID</code>
+        Production env (EasyPanel): <code>ELITE_DELIVERY_API_TOKEN</code>,{" "}
+        <code>ELITE_DELIVERY_STORE_ID</code>, <code>ELITE_DELIVERY_WEBHOOK_SECRET</code>,{" "}
+        <code>ELITE_DELIVERY_BASE_URL</code>
       </p>
     </div>
   );

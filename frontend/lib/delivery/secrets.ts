@@ -27,11 +27,11 @@ function maskSecret(value: string | undefined): string | undefined {
 
 /**
  * Resolve Elite credentials: environment overrides store secrets.
- * Env names (optional until docs/credentials provided):
- *   ELITE_DELIVERY_API_KEY
+ * Env names (official integration):
+ *   ELITE_DELIVERY_API_TOKEN   (preferred) or ELITE_DELIVERY_API_KEY
+ *   ELITE_DELIVERY_STORE_ID    (preferred) or ELITE_DELIVERY_ACCOUNT_ID
  *   ELITE_DELIVERY_WEBHOOK_SECRET
- *   ELITE_DELIVERY_BASE_URL
- *   ELITE_DELIVERY_ACCOUNT_ID
+ *   ELITE_DELIVERY_BASE_URL    (default https://elitedelivery.ma)
  */
 export function resolveEliteSecrets(
   record: DeliveryProviderRecord | undefined,
@@ -42,10 +42,12 @@ export function resolveEliteSecrets(
   fromEnv: { apiKey: boolean; webhookSecret: boolean; baseUrl: boolean };
 } {
   const storeSecrets = record?.secrets ?? {};
-  const envKey = readEnv("ELITE_DELIVERY_API_KEY");
+  const envKey =
+    readEnv("ELITE_DELIVERY_API_TOKEN") || readEnv("ELITE_DELIVERY_API_KEY");
   const envWebhook = readEnv("ELITE_DELIVERY_WEBHOOK_SECRET");
   const envBase = readEnv("ELITE_DELIVERY_BASE_URL");
-  const envAccount = readEnv("ELITE_DELIVERY_ACCOUNT_ID");
+  const envAccount =
+    readEnv("ELITE_DELIVERY_STORE_ID") || readEnv("ELITE_DELIVERY_ACCOUNT_ID");
 
   return {
     secrets: {
@@ -53,7 +55,7 @@ export function resolveEliteSecrets(
       webhookSecret: envWebhook || storeSecrets.webhookSecret,
       extra: storeSecrets.extra,
     },
-    baseUrl: envBase || record?.config.baseUrl,
+    baseUrl: envBase || record?.config.baseUrl || "https://elitedelivery.ma",
     accountId: envAccount || record?.config.accountId,
     fromEnv: {
       apiKey: Boolean(envKey),
