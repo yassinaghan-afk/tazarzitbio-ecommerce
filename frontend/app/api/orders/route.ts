@@ -2,15 +2,11 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 
 import type { CreateOrderInput, CreateOrderResponse, OrderRecord } from "@/lib/orders/types";
+import { purchaseEventId } from "@/lib/orders/finalize-export";
 import { resolveAmlouRoyalShippingFromLines } from "@/lib/products/amlou-royal";
-import { sendOrderToGoogleSheet } from "@/lib/google-sheets";
-import { sendOrderTelegramNotification } from "@/lib/telegram";
-import { sendMetaCapiEvent } from "@/lib/meta/capi";
-import { isMetaCapiConfigured } from "@/lib/meta/env";
 import { readStore, updateStore } from "@/lib/server/store";
 import { recordCouponUsage, validateCoupon } from "@/lib/server/promotions";
 import { calculateShipping } from "@/lib/shipping/calculate";
-import { TRACKING_CURRENCY } from "@/lib/tracking/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +20,7 @@ function isFiniteNumber(v: unknown): v is number {
 }
 
 interface OrderBody extends CreateOrderInput {
-  /** Browser Meta cookies for CAPI matching */
+  /** Browser Meta cookies for CAPI matching (used later at finalize) */
   meta?: {
     fbp?: string;
     fbc?: string;
@@ -32,12 +28,10 @@ interface OrderBody extends CreateOrderInput {
   };
 }
 
-function purchaseEventId(orderId: string): string {
-  // Stable event_id so retries/double-posts of the same order dedupe at Meta.
-  const safe = orderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40);
-  return `purchase_${safe || crypto.randomUUID().slice(0, 12)}`;
-}
-
+/**
+ * Creates a draft order in store only.
+ * Google Sheets / Telegram / Meta Purchase happen on upsell finalize (skip|complete).
+ */
 export async function POST(req: Request) {
   let input: OrderBody | null = null;
   try {
@@ -126,6 +120,7 @@ export async function POST(req: Request) {
     createdAt,
     upsellToken,
     upsellCompleted: false,
+    sheetsExported: false,
   };
 
   await updateStore((prev) => ({
@@ -141,75 +136,8 @@ export async function POST(req: Request) {
     }
   }
 
-  // Await export so the serverless handler does not exit before fetch completes.
-  // Errors are caught inside sendOrderToGoogleSheet — checkout still succeeds.
-  const sourcePage = req.headers.get("referer") ?? "";
-  try {
-    await sendOrderToGoogleSheet(order, { sourcePage });
-  } catch (err) {
-    console.error("Google Sheets error", {
-      orderId: order.orderId,
-      message: err instanceof Error ? err.message : String(err),
-    });
-  }
-
-  try {
-    await sendOrderTelegramNotification(order);
-  } catch (err) {
-    console.error("Telegram notification error", {
-      orderId: order.orderId,
-      message: err instanceof Error ? err.message : String(err),
-    });
-  }
-
-  // Meta CAPI Purchase — only after order is persisted. Never block the order.
+  // Stable event id for later finalize (Pixel + CAPI). Not fired here.
   const eventId = purchaseEventId(order.orderId);
-  if (isMetaCapiConfigured()) {
-    try {
-      const fwd = req.headers.get("x-forwarded-for");
-      const clientIp =
-        fwd?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "";
-      const clientUserAgent = req.headers.get("user-agent") || "";
-      const eventSourceUrl =
-        safeText(input?.meta?.eventSourceUrl) || sourcePage || undefined;
-
-      await sendMetaCapiEvent({
-        eventName: "Purchase",
-        eventId,
-        eventSourceUrl,
-        customData: {
-          value: order.total,
-          currency: TRACKING_CURRENCY,
-          content_ids: order.products.map((p) => p.productId),
-          content_name: order.products.map((p) => p.nameAr).join(", "),
-          content_type: "product",
-          contents: order.products.map((p) => ({
-            id: p.productId,
-            quantity: p.quantity,
-            item_price: p.unitPrice,
-          })),
-          num_items: order.products.reduce((s, p) => s + p.quantity, 0),
-          order_id: order.orderId,
-        },
-        userData: {
-          phone: order.phone,
-          fullName: order.customerName,
-          city: order.city,
-          country: "ma",
-          clientIp,
-          clientUserAgent,
-          fbp: safeText(input?.meta?.fbp) || undefined,
-          fbc: safeText(input?.meta?.fbc) || undefined,
-          externalId: order.phone,
-        },
-      });
-    } catch (err) {
-      console.error("Meta CAPI purchase error", {
-        orderId: order.orderId,
-        message: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
 
   const res: CreateOrderResponse & {
     meta?: { purchaseEventId: string; upsellToken?: string };

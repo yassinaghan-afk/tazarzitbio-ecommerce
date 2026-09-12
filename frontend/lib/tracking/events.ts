@@ -215,8 +215,8 @@ export function trackInitiateCheckout(payload: CheckoutTrackingPayload): void {
 
 /**
  * Browser-side Purchase (Meta Pixel + other platforms + OpenAI `order_created`).
- * Must only be called after the backend has accepted the order.
- * Meta CAPI Purchase is sent from /api/orders with the same eventId.
+ * Must only be called after the order is FINALIZED (upsell skip/complete + Sheets export).
+ * Meta CAPI Purchase is sent from the upsell finalize endpoint with the same eventId.
  * OpenAI Ads conversion: oaiq("measure", "order_created", { type: "contents", ... }).
  */
 export function trackPurchase(payload: PurchaseTrackingPayload): void {
@@ -284,12 +284,12 @@ export function trackUpsellAdd(payload: {
   value: number;
 }): void {
   if (typeof window === "undefined") return;
-  logTracking("UpsellAdd", payload);
+  logTracking("UpsellProductAdded", payload);
 }
 
 export function trackUpsellSkip(payload: { orderId: string }): void {
   if (typeof window === "undefined") return;
-  logTracking("UpsellSkip", payload);
+  logTracking("UpsellSkipped", payload);
 }
 
 export function trackUpsellComplete(payload: {
@@ -298,5 +298,5 @@ export function trackUpsellComplete(payload: {
   upsellTotal: number;
 }): void {
   if (typeof window === "undefined") return;
-  logTracking("UpsellComplete", payload);
+  logTracking("UpsellCompleted", payload);
 }

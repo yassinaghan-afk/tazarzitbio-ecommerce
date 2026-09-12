@@ -3,11 +3,16 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Minus, Plus, Sparkles } from "lucide-react";
+import { Check, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { PlacedOrder } from "@/lib/checkout/types";
+import { getMetaBrowserIds } from "@/lib/meta/browser";
 import type { UpsellOrderResponse } from "@/lib/orders/types";
+import {
+  applyUpsellDiscount,
+  UPSELL_DISCOUNT_PERCENT,
+} from "@/lib/orders/upsell-pricing";
 import type { PublicProduct } from "@/lib/products/types";
 import { getListingProducts } from "@/lib/products/listing";
 import {
@@ -21,6 +26,7 @@ import {
   type UpsellSelection,
 } from "@/lib/upsell/session";
 import {
+  trackPurchase,
   trackUpsellAdd,
   trackUpsellComplete,
   trackUpsellSkip,
@@ -32,6 +38,14 @@ function formatDh(n: number): string {
   return `${n} درهم`;
 }
 
+function productSize(product: PublicProduct, offerId?: string): string {
+  const offer =
+    (offerId ? product.offers.find((o) => o.id === offerId) : null) ??
+    [...product.offers].sort((a, b) => a.price - b.price)[0] ??
+    null;
+  return (offer?.weight || product.weight || "").trim();
+}
+
 export function RoyalUpsellPage() {
   const router = useRouter();
   const [order, setOrder] = useState<PlacedOrder | null>(null);
@@ -40,7 +54,6 @@ export function RoyalUpsellPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [addedFlash, setAddedFlash] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -95,6 +108,7 @@ export function RoyalUpsellPage() {
 
   const shippingFee = order?.shippingFee ?? 0;
   const finalTotal = originalSubtotal + upsellSubtotal + shippingFee;
+  const hasUpsells = selection.length > 0;
 
   function persistSelection(next: UpsellSelection[]) {
     setSelection(next);
@@ -106,7 +120,7 @@ export function RoyalUpsellPage() {
   }
 
   function toggleProduct(product: PublicProduct) {
-    if (!order) return;
+    if (!order || busy) return;
     setError("");
     const offer =
       [...product.offers].sort((a, b) => a.price - b.price)[0] ?? null;
@@ -117,26 +131,32 @@ export function RoyalUpsellPage() {
       return;
     }
 
+    const listPrice = offer.price;
+    const unitPrice = applyUpsellDiscount(listPrice);
+    const weight = productSize(product, offer.id);
     const next: UpsellSelection = {
       productId: product.id,
       offerId: offer.id,
       quantity: 1,
       nameAr: product.nameAr,
       image: product.image,
-      unitPrice: offer.price,
+      unitPrice,
+      listUnitPrice: listPrice,
       offerLabel: offer.label,
       slug: product.slug,
+      ...(weight ? { weight } : {}),
     };
     persistSelection([...selection, next]);
     trackUpsellAdd({
       orderId: order.id,
       productId: product.id,
       quantity: 1,
-      value: offer.price,
+      value: unitPrice,
     });
   }
 
   function updateQty(productId: string, delta: number) {
+    if (busy) return;
     persistSelection(
       selection
         .map((s) =>
@@ -149,85 +169,106 @@ export function RoyalUpsellPage() {
   }
 
   async function callUpsell(
-    action: "sync" | "complete" | "skip",
-  ): Promise<UpsellOrderResponse | null> {
-    if (!order?.upsellToken) return null;
+    action: "complete" | "skip",
+  ): Promise<UpsellOrderResponse> {
+    if (!order?.upsellToken) throw new Error("missing");
+    const metaIds = getMetaBrowserIds();
     const res = await fetch(`/api/orders/${encodeURIComponent(order.id)}/upsell`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         token: order.upsellToken,
         action,
-        items: selection.map((s) => ({
-          productId: s.productId,
-          offerId: s.offerId,
-          quantity: s.quantity,
-        })),
+        items:
+          action === "complete"
+            ? selection.map((s) => ({
+                productId: s.productId,
+                offerId: s.offerId,
+                quantity: s.quantity,
+              }))
+            : undefined,
+        meta: {
+          ...(metaIds.fbp ? { fbp: metaIds.fbp } : {}),
+          ...(metaIds.fbc ? { fbc: metaIds.fbc } : {}),
+          eventSourceUrl:
+            typeof window !== "undefined" ? window.location.href : undefined,
+        },
       }),
     });
-    if (!res.ok) {
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(data?.error || "failed");
+    const data = (await res.json().catch(() => null)) as
+      | (UpsellOrderResponse & { error?: string })
+      | null;
+    if (!res.ok || !data?.order || data.exportOk === false) {
+      throw new Error(data?.error || "export_failed");
     }
-    return (await res.json()) as UpsellOrderResponse;
+    return data;
   }
 
-  function goThankYou(updated?: PlacedOrder) {
-    const path = updated?.thankYouPath ?? order?.thankYouPath ?? "/thank-you";
+  function firePurchase(next: PlacedOrder, eventId?: string) {
+    trackPurchase({
+      orderId: next.id,
+      products: next.items.map((i) => ({
+        productId: i.productId || i.slug || i.nameAr,
+        slug: i.slug || "",
+        name: i.nameAr,
+        price: i.unitPrice,
+        quantity: i.quantity,
+      })),
+      subtotal: next.subtotal,
+      shipping: next.shippingFee,
+      total: next.total,
+      eventId,
+    });
+  }
+
+  function goThankYou(updated: PlacedOrder) {
+    const path = updated.thankYouPath ?? order?.thankYouPath ?? "/thank-you";
     if (order?.id) clearUpsellSelection(order.id);
     router.replace(withSearch(path));
   }
 
-  async function onSkip() {
+  async function finalize(action: "skip" | "complete") {
     if (!order || busy) return;
     setBusy(true);
     setError("");
-    trackUpsellSkip({ orderId: order.id });
     try {
-      const data = await callUpsell("skip");
-      if (data?.order) {
-        const next = placedOrderFromApiOrder(data.order, {
-          ...order,
-          upsellCompleted: true,
-        });
-        writePlacedOrder(next);
-        goThankYou(next);
-        return;
+      if (action === "skip") {
+        trackUpsellSkip({ orderId: order.id });
       }
-    } catch {
-      // Original order must never be blocked by upsell failure.
-    }
-    writePlacedOrder({ ...order, upsellCompleted: true });
-    goThankYou({ ...order, upsellCompleted: true });
-  }
-
-  async function onContinue() {
-    if (!order || busy) return;
-    if (selection.length === 0) {
-      await onSkip();
-      return;
-    }
-    setBusy(true);
-    setError("");
-    try {
-      const data = await callUpsell("complete");
-      if (!data?.order) throw new Error("failed");
+      const data = await callUpsell(action);
       const next = placedOrderFromApiOrder(data.order, {
         ...order,
         upsellCompleted: true,
       });
       writePlacedOrder(next);
-      trackUpsellComplete({
-        orderId: order.id,
-        itemCount: selection.length,
-        upsellTotal: upsellSubtotal,
-      });
-      setAddedFlash(true);
-      window.setTimeout(() => goThankYou(next), 700);
+      if (action === "complete" && selection.length > 0) {
+        trackUpsellComplete({
+          orderId: order.id,
+          itemCount: selection.length,
+          upsellTotal: upsellSubtotal,
+        });
+      }
+      firePurchase(next, data.meta?.purchaseEventId);
+      goThankYou(next);
     } catch {
       setBusy(false);
-      setError("ما قدرناش نزيدو المنتجات دابا. حاول مرة أخرى أو اضغط تخطي.");
+      setError(
+        "ما قدرناش نأكدو الطلب دابا. حاول مرة أخرى — طلبك محفوظ وما غاديش يتسجل مرتين.",
+      );
     }
+  }
+
+  async function onSkip() {
+    await finalize("skip");
+  }
+
+  async function onContinue() {
+    if (!order || busy) return;
+    if (selection.length === 0) {
+      await finalize("skip");
+      return;
+    }
+    await finalize("complete");
   }
 
   if (!hydrated) {
@@ -239,38 +280,28 @@ export function RoyalUpsellPage() {
   }
 
   return (
-    <div className="min-h-[70vh] bg-[#faf6ef] pb-28 text-[#1a2744]" dir="rtl">
+    <div className="min-h-[70vh] bg-[#faf6ef] pb-36 text-[#1a2744]" dir="rtl">
       <div className="mx-auto w-full max-w-lg px-3 pt-6 sm:px-4">
         <div className="rounded-3xl border border-[#eadfce] bg-gradient-to-b from-[#fff8eb] to-white p-5 text-center shadow-[0_16px_40px_-28px_rgba(26,39,68,0.4)]">
           <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#1a2744] text-amber-300">
             <Sparkles className="size-6" aria-hidden />
           </div>
           <h1 className="mt-3 text-xl font-extrabold leading-snug sm:text-2xl">
-            لحظة واحدة قبل ما نكمل طلبك 👑
+            عرض خاص قبل إتمام طلبك 👑
           </h1>
           <p className="mt-2 text-sm font-bold text-[#8a6a3a]">
-            عندك فرصة تزيد منتجات أخرى لطلبك بثمنها فقط
+            أضف منتجات أخرى إلى طلبك واستفد من -{UPSELL_DISCOUNT_PERCENT}%
           </p>
           <p className="mt-1 text-sm font-extrabold text-emerald-700">
             بدون مصاريف توصيل إضافية
           </p>
-          <p className="mt-3 text-xs leading-relaxed text-neutral-600">
-            المنتجات التالية يمكن إضافتها مباشرة إلى نفس طلبك، ولن تدفع أي توصيل
-            إضافي.
-          </p>
         </div>
 
-        {addedFlash && (
-          <p
-            className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-center text-sm font-bold text-emerald-700"
-            role="status"
-          >
-            تمت إضافة المنتجات إلى طلبك ✓
-          </p>
-        )}
-
         {error && (
-          <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-center text-sm font-semibold text-red-700" role="alert">
+          <p
+            className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-center text-sm font-semibold text-red-700"
+            role="alert"
+          >
             {error}
           </p>
         )}
@@ -284,6 +315,9 @@ export function RoyalUpsellPage() {
               const selected = isSelected(product.id);
               const offer =
                 [...product.offers].sort((a, b) => a.price - b.price)[0] ?? null;
+              const listPrice = offer?.price ?? product.price;
+              const salePrice = applyUpsellDiscount(listPrice);
+              const size = productSize(product, offer?.id);
               const selectedLine = selection.find((s) => s.productId === product.id);
               return (
                 <article
@@ -296,27 +330,38 @@ export function RoyalUpsellPage() {
                   )}
                 >
                   <div className="flex gap-3 p-3">
-                    <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-[#f3ebe0]">
+                    <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-[#f3ebe0]">
                       <Image
                         src={product.image}
                         alt={product.nameAr}
                         fill
-                        sizes="80px"
+                        sizes="96px"
                         className="object-cover"
                       />
+                      <span className="absolute start-1.5 top-1.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(220,38,38,0.55)] ring-1 ring-white/40">
+                        -{UPSELL_DISCOUNT_PERCENT}%
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <h2 className="text-sm font-extrabold leading-snug">
                         {product.nameAr}
                       </h2>
-                      {product.shortDescription && (
-                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-neutral-500">
-                          {product.shortDescription}
+                      {size ? (
+                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
+                          {size}
                         </p>
-                      )}
-                      <p className="mt-1.5 text-base font-extrabold tabular-nums text-[#1a2744]">
-                        {offer ? formatDh(offer.price) : formatDh(product.price)}
-                      </p>
+                      ) : null}
+                      <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
+                        <span className="text-xs font-semibold text-neutral-400 line-through tabular-nums">
+                          {formatDh(listPrice)}
+                        </span>
+                        <span className="rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_8px_rgba(220,38,38,0.45)]">
+                          -{UPSELL_DISCOUNT_PERCENT}%
+                        </span>
+                        <span className="text-base font-black tabular-nums text-emerald-700">
+                          {formatDh(salePrice)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 border-t border-[#f0e6d8] px-3 py-2.5">
@@ -325,6 +370,7 @@ export function RoyalUpsellPage() {
                         <button
                           type="button"
                           aria-label="إنقاص"
+                          disabled={busy}
                           className="flex size-8 items-center justify-center"
                           onClick={() => updateQty(product.id, -1)}
                         >
@@ -336,6 +382,7 @@ export function RoyalUpsellPage() {
                         <button
                           type="button"
                           aria-label="زيادة"
+                          disabled={busy}
                           className="flex size-8 items-center justify-center"
                           onClick={() => updateQty(product.id, 1)}
                         >
@@ -345,11 +392,12 @@ export function RoyalUpsellPage() {
                     )}
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => toggleProduct(product)}
                       className={cn(
-                        "ms-auto flex min-h-11 min-w-[7.5rem] items-center justify-center gap-1.5 rounded-full px-4 text-sm font-extrabold text-white",
+                        "ms-auto flex min-h-11 min-w-[7.5rem] items-center justify-center gap-1.5 rounded-full px-4 text-sm font-extrabold text-white shadow-md",
                         selected
-                          ? "bg-emerald-600 hover:bg-emerald-700"
+                          ? "bg-emerald-700 hover:bg-emerald-800"
                           : "bg-emerald-600 hover:bg-emerald-700",
                       )}
                     >
@@ -376,7 +424,7 @@ export function RoyalUpsellPage() {
               <span className="font-bold tabular-nums">{formatDh(originalSubtotal)}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-neutral-500">المنتجات المضافة</span>
+              <span className="text-neutral-500">إضافاتك</span>
               <span className="font-bold tabular-nums">{formatDh(upsellSubtotal)}</span>
             </div>
             <div className="flex justify-between gap-3">
@@ -403,23 +451,34 @@ export function RoyalUpsellPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#eadfce] bg-white/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-lg flex-col gap-2">
-          {selection.length > 0 && (
-            <Button
-              size="lg"
-              disabled={busy}
-              onClick={() => void onContinue()}
-              className="min-h-12 w-full rounded-full bg-[#1a2744] font-extrabold text-white hover:bg-[#243556]"
-            >
-              {busy ? "كنكمّلو الطلب..." : `متابعة وإتمام الطلب · ${formatDh(finalTotal)}`}
-            </Button>
-          )}
+          <Button
+            size="lg"
+            disabled={busy}
+            onClick={() => void onContinue()}
+            className={cn(
+              "min-h-12 w-full rounded-full font-extrabold text-white transition-shadow",
+              hasUpsells
+                ? "bg-emerald-500 shadow-[0_0_28px_rgba(16,185,129,0.55)] hover:bg-emerald-400"
+                : "bg-emerald-600 shadow-[0_8px_20px_-10px_rgba(16,185,129,0.65)] hover:bg-emerald-500",
+            )}
+          >
+            {busy ? (
+              "جاري تأكيد الطلب..."
+            ) : (
+              <span className="inline-flex items-center gap-2">
+                <ShoppingCart className="size-5" aria-hidden />
+                متابعة وإتمام الطلب
+                <span className="tabular-nums opacity-90">· {formatDh(finalTotal)}</span>
+              </span>
+            )}
+          </Button>
           <button
             type="button"
             disabled={busy}
             onClick={() => void onSkip()}
-            className="flex min-h-12 w-full items-center justify-center rounded-full bg-red-600 px-4 text-sm font-extrabold text-white hover:bg-red-700 disabled:opacity-70"
+            className="flex min-h-12 w-full items-center justify-center rounded-full bg-red-600 px-4 text-sm font-extrabold text-white shadow-md hover:bg-red-700 disabled:opacity-70"
           >
-            تخطي والانتقال لإتمام الطلب
+            تخطي وإتمام الطلب
           </button>
         </div>
       </div>

@@ -12,8 +12,10 @@ export type UpsellSelection = {
   nameAr: string;
   image: string;
   unitPrice: number;
+  listUnitPrice?: number;
   offerLabel: string;
   slug: string;
+  weight?: string;
 };
 
 export function readPlacedOrder(): PlacedOrder | null {

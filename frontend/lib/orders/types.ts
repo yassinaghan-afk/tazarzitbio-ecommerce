@@ -22,6 +22,10 @@ export interface OrderLineItem {
   isBundle?: boolean;
   /** Post-purchase upsell line — excluded from "original" product set */
   isUpsell?: boolean;
+  /** Catalog list price before upsell discount (upsell lines only) */
+  listUnitPrice?: number;
+  /** Display size/weight from catalog offer (e.g. 250g, 500ml) */
+  weight?: string;
 }
 
 export interface OrderRecord {
@@ -48,8 +52,11 @@ export interface OrderRecord {
   createdAt: string; // ISO
   /** Secret token required to attach post-purchase upsell items */
   upsellToken?: string;
-  /** Once true, upsell mutations are rejected */
+  /** Once true, upsell product mutations are locked (finalize may still retry export) */
   upsellCompleted?: boolean;
+  /** Idempotency: order already written to Google Sheets */
+  sheetsExported?: boolean;
+  sheetsExportedAt?: string;
 }
 
 export interface CreateOrderInput {
@@ -84,6 +91,9 @@ export interface UpsellItemInput {
 export interface UpsellOrderResponse {
   order: OrderRecord;
   upsellCompleted: boolean;
+  /** False when Sheets export failed — client must retry, not redirect to thank-you */
+  exportOk?: boolean;
+  meta?: { purchaseEventId: string };
 }
 
 export const ORDER_STATUSES: { id: OrderStatus; labelAr: string; label: string }[] = [

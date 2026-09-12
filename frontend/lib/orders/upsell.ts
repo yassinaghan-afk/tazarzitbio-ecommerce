@@ -1,7 +1,10 @@
 import type { OrderLineItem, OrderRecord } from "@/lib/orders/types";
+import { applyUpsellDiscount } from "@/lib/orders/upsell-pricing";
 import { getMergedCatalog } from "@/lib/products/cms-catalog";
 import { isExpandedVariantRow, isLandingOnlyProduct } from "@/lib/products/listing";
 import type { Product } from "@/lib/products/types";
+
+export { applyUpsellDiscount, UPSELL_DISCOUNT_PERCENT } from "@/lib/orders/upsell-pricing";
 
 export function sumLineItems(products: OrderLineItem[]): number {
   return products.reduce((sum, p) => sum + p.unitPrice * p.quantity, 0);
@@ -61,10 +64,16 @@ export async function buildUpsellLine(input: {
     return { error: "Offer unavailable" };
   }
 
-  const unitPrice = offer.economics.salePrice;
+  const listUnitPrice = offer.economics.salePrice;
+  if (!Number.isFinite(listUnitPrice) || listUnitPrice <= 0) {
+    return { error: "Invalid price" };
+  }
+  const unitPrice = applyUpsellDiscount(listUnitPrice);
   if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
     return { error: "Invalid price" };
   }
+
+  const weight = (offer.weight || product.weight || "").trim();
 
   return {
     productId: product.id,
@@ -74,6 +83,8 @@ export async function buildUpsellLine(input: {
     offerId: offer.id,
     offerLabel: offer.label,
     unitPrice,
+    listUnitPrice,
+    ...(weight ? { weight } : {}),
     quantity: qty,
     isBundle: product.category === "bundles",
     isUpsell: true,

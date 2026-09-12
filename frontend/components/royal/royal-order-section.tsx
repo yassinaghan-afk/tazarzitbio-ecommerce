@@ -25,7 +25,7 @@ import {
   formatRoyalDh,
   withCurrentSearch,
 } from "@/lib/royal/order-helpers";
-import { trackInitiateCheckout, trackPurchase } from "@/lib/tracking/events";
+import { trackInitiateCheckout } from "@/lib/tracking/events";
 import { cn } from "@/lib/utils";
 
 type FormState = {
@@ -273,22 +273,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         }),
       );
 
-      trackPurchase({
-        orderId,
-        products: [
-          {
-            productId: AMLOU_ROYAL_ID,
-            slug: AMLOU_ROYAL_SLUG,
-            name: AMLOU_ROYAL_NAME_AR,
-            price: offer.price,
-            quantity: offer.bottles,
-          },
-        ],
-        subtotal: data.order.subtotal,
-        shipping: data.order.shippingPrice,
-        total: data.order.total,
-        eventId: data.meta?.purchaseEventId,
-      });
+      // Purchase / Sheets fire only after upsell finalize (skip or continue).
 
       router.push(withCurrentSearch("/upsell"));
     } catch {

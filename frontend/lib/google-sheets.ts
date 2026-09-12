@@ -18,6 +18,10 @@ export type GoogleSheetsOrderRow = {
   paymentMethod: string;
   status: string;
   sourcePage: string;
+  /** Optional extras — safe for Apps Script if columns ignore unknown keys */
+  weight?: string;
+  isUpsell?: boolean;
+  listUnitPrice?: number;
 };
 
 function envWebhookUrl(): string {
@@ -31,6 +35,12 @@ function buildRow(params: {
 }): GoogleSheetsOrderRow {
   const { order, item } = params;
   const sourcePage = (params.sourcePage ?? "").trim();
+  const weight = (item.weight ?? "").trim();
+  const variant = weight
+    ? item.offerLabel.includes(weight)
+      ? item.offerLabel
+      : `${item.offerLabel} — ${weight}`.trim()
+    : item.offerLabel;
 
   return {
     orderId: order.orderId,
@@ -41,7 +51,7 @@ function buildRow(params: {
     city: (order.city ?? "").trim(),
     productName: item.nameAr,
     sku: item.productId || item.slug || item.offerId,
-    variant: item.offerLabel,
+    variant,
     quantity: item.quantity,
     unitPrice: item.unitPrice,
     subtotal: order.subtotal,
@@ -50,6 +60,11 @@ function buildRow(params: {
     paymentMethod: order.paymentMethod,
     status: order.orderStatus,
     sourcePage,
+    ...(weight ? { weight } : {}),
+    ...(item.isUpsell ? { isUpsell: true } : {}),
+    ...(typeof item.listUnitPrice === "number"
+      ? { listUnitPrice: item.listUnitPrice }
+      : {}),
   };
 }
 
@@ -87,21 +102,23 @@ async function postRowToWebhook(
 }
 
 /**
- * Sends an order to Google Sheets via Apps Script webhook.
- * One HTTP POST per product line (matches typical Apps Script doPost handlers).
- * Never throws — checkout must not fail.
+ * Sends a FINALIZED order to Google Sheets via Apps Script webhook.
+ * One HTTP POST per product line.
+ * Returns true when all rows succeed (or webhook is not configured).
+ * Returns false on network/HTTP failure so callers can retry safely.
  */
 export async function sendOrderToGoogleSheet(
   order: OrderRecord,
   opts?: { sourcePage?: string },
-): Promise<void> {
+): Promise<boolean> {
   const url = envWebhookUrl();
   const urlExists = url.length > 0;
 
   console.log(`Google Sheets webhook URL exists: ${urlExists}`);
 
   if (!urlExists) {
-    return;
+    // Dev / misconfig: treat as success so local checkout can complete.
+    return true;
   }
 
   const rows = order.products.map((item) =>
@@ -113,7 +130,7 @@ export async function sendOrderToGoogleSheet(
       orderId: order.orderId,
       message: "Order has no line items to export",
     });
-    return;
+    return false;
   }
 
   console.log("Sending order to Google Sheets", {
@@ -123,12 +140,15 @@ export async function sendOrderToGoogleSheet(
 
   try {
     for (let i = 0; i < rows.length; i++) {
-      await postRowToWebhook(url, rows[i], order.orderId, i);
+      const ok = await postRowToWebhook(url, rows[i], order.orderId, i);
+      if (!ok) return false;
     }
+    return true;
   } catch (err) {
     console.error("Google Sheets error", {
       orderId: order.orderId,
       message: err instanceof Error ? err.message : String(err),
     });
+    return false;
   }
 }

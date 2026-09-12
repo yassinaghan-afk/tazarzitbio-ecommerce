@@ -7,6 +7,11 @@ import type {
   UpsellOrderResponse,
 } from "@/lib/orders/types";
 import {
+  exportFinalizedOrder,
+  purchaseEventId,
+  requestExportMeta,
+} from "@/lib/orders/finalize-export";
+import {
   buildUpsellLine,
   recomputeOrderTotals,
   splitOrderProducts,
@@ -30,8 +35,31 @@ function safeTokenEqual(a: string, b: string): boolean {
 }
 
 function sanitizeOrderForClient(order: OrderRecord): OrderRecord {
-  // Token stays in response only when caller already proved possession via request body.
   return order;
+}
+
+async function respondFinalize(
+  order: OrderRecord,
+  req: Request,
+  bodyMeta?: { fbp?: string; fbc?: string; eventSourceUrl?: string },
+) {
+  const exported = await exportFinalizedOrder(
+    order,
+    requestExportMeta(req, bodyMeta),
+  );
+  const payload: UpsellOrderResponse = {
+    order: sanitizeOrderForClient(exported.order),
+    upsellCompleted: true,
+    exportOk: exported.ok,
+    meta: { purchaseEventId: exported.purchaseEventId },
+  };
+  if (!exported.ok) {
+    return NextResponse.json(
+      { ...payload, error: "export_failed" },
+      { status: 502 },
+    );
+  }
+  return NextResponse.json(payload);
 }
 
 export async function POST(req: Request, context: RouteContext) {
@@ -44,13 +72,10 @@ export async function POST(req: Request, context: RouteContext) {
     token?: string;
     action?: "sync" | "complete" | "skip";
     items?: UpsellItemInput[];
+    meta?: { fbp?: string; fbc?: string; eventSourceUrl?: string };
   };
   try {
-    body = (await req.json()) as {
-      token?: string;
-      action?: "sync" | "complete" | "skip";
-      items?: UpsellItemInput[];
-    };
+    body = (await req.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -69,29 +94,30 @@ export async function POST(req: Request, context: RouteContext) {
   if (!existing.upsellToken || !safeTokenEqual(token, existing.upsellToken)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
+
+  // Idempotent finalize / Sheets retry
   if (existing.upsellCompleted) {
-    const res: UpsellOrderResponse = {
-      order: sanitizeOrderForClient(existing),
-      upsellCompleted: true,
-    };
-    return NextResponse.json(res);
+    if (existing.sheetsExported) {
+      return NextResponse.json({
+        order: sanitizeOrderForClient(existing),
+        upsellCompleted: true,
+        exportOk: true,
+        meta: { purchaseEventId: purchaseEventId(existing.orderId) },
+      } satisfies UpsellOrderResponse);
+    }
+    return respondFinalize(existing, req, body.meta);
   }
 
-  // Skip / complete without changing lines
-  if (action === "skip" || (action === "complete" && !Array.isArray(body.items))) {
+  // Skip: keep original lines, finalize + export
+  if (action === "skip") {
     const updated = await updateStore((prev) => {
       const orders = prev.orders.map((o) =>
-        o.orderId === orderId
-          ? { ...o, upsellCompleted: true }
-          : o,
+        o.orderId === orderId ? { ...o, upsellCompleted: true } : o,
       );
       return { ...prev, orders };
     });
     const order = updated.orders.find((o) => o.orderId === orderId)!;
-    return NextResponse.json({
-      order: sanitizeOrderForClient(order),
-      upsellCompleted: true,
-    } satisfies UpsellOrderResponse);
+    return respondFinalize(order, req, body.meta);
   }
 
   // sync or complete-with-items: replace upsell lines idempotently
@@ -143,8 +169,12 @@ export async function POST(req: Request, context: RouteContext) {
   }));
   const order = updated.orders.find((o) => o.orderId === orderId)!;
 
-  return NextResponse.json({
-    order: sanitizeOrderForClient(order),
-    upsellCompleted: Boolean(order.upsellCompleted),
-  } satisfies UpsellOrderResponse);
+  if (action === "sync") {
+    return NextResponse.json({
+      order: sanitizeOrderForClient(order),
+      upsellCompleted: false,
+    } satisfies UpsellOrderResponse);
+  }
+
+  return respondFinalize(order, req, body.meta);
 }

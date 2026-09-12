@@ -40,7 +40,7 @@ export default function ThankYouPage() {
     setHydrated(true);
   }, []);
 
-  // Purchase is tracked only after POST /api/orders succeeds (Pixel + CAPI).
+  // Purchase is tracked only after upsell finalize (skip/complete + Sheets).
   // Do not fire Purchase on thank-you open/refresh.
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {

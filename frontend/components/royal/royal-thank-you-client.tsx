@@ -24,7 +24,7 @@ export function RoyalThankYouClient() {
     setHydrated(true);
   }, []);
 
-  // Purchase/order_created is tracked only after POST /api/orders succeeds.
+  // Purchase/order_created is tracked only after upsell finalize succeeds.
   // Do not fire conversion events on thank-you open/refresh.
 
   return (

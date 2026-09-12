@@ -35,7 +35,7 @@ import {
 } from "@/lib/shipping";
 import type { CreateOrderInput, CreateOrderResponse } from "@/lib/orders/types";
 import { getMetaBrowserIds } from "@/lib/meta/browser";
-import { trackAddToCart, trackPurchase } from "@/lib/tracking/events";
+import { trackAddToCart } from "@/lib/tracking/events";
 
 export interface AppliedCoupon {
   code: string;
@@ -332,13 +332,6 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         slug: i.slug,
         productId: i.productId,
       }));
-      const purchaseProducts = items.map((i) => ({
-        productId: i.productId,
-        slug: i.slug,
-        name: i.nameAr,
-        price: i.unitPrice,
-        quantity: i.quantity,
-      }));
 
       try {
         const res = await fetch("/api/orders", {
@@ -351,10 +344,6 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         const data = (await res.json()) as CreateOrderResponse;
         const realOrderId = data.order?.orderId;
         if (!realOrderId) return { success: false };
-
-        const eventId =
-          data.meta?.purchaseEventId ??
-          `purchase_${realOrderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40)}`;
 
         const placed: PlacedOrder = {
           id: realOrderId,
@@ -377,14 +366,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           /* ignore */
         }
 
-        trackPurchase({
-          orderId: realOrderId,
-          products: purchaseProducts,
-          subtotal: placed.subtotal,
-          shipping: placed.shippingFee,
-          total: placed.total,
-          eventId,
-        });
+        // Purchase / Sheets fire only after upsell finalize (skip or continue).
 
         clearCart();
         setCoupon(null);

@@ -10,7 +10,8 @@ const ALLOWED_EVENTS = new Set<MetaCapiEventName>([
   "ViewContent",
   "AddToCart",
   "InitiateCheckout",
-  // Purchase is intentionally NOT accepted from the browser — only /api/orders.
+  // Purchase is intentionally NOT accepted from the browser — only the
+  // upsell finalize path (server CAPI) after Google Sheets export.
 ]);
 
 /**
