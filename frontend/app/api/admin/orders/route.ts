@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
   const confirmationStatus = sp.get("confirmationStatus") || "";
   const deliveryStatus = sp.get("deliveryStatus") || "";
   const agentId = sp.get("agentId") || "";
+  const deliveryCompany = sp.get("deliveryCompany") || "";
+  const trackingNumber = (sp.get("trackingNumber") || "").trim().toLowerCase();
+  const shipmentId = (sp.get("shipmentId") || "").trim().toLowerCase();
 
   let filtered = orders;
   if (q) {
@@ -44,14 +47,33 @@ export async function GET(req: NextRequest) {
         o.customerName.toLowerCase().includes(q) ||
         o.phone.includes(q) ||
         (o.address || "").toLowerCase().includes(q) ||
-        (o.city || "").toLowerCase().includes(q),
+        (o.city || "").toLowerCase().includes(q) ||
+        (o.shipment?.trackingNumber || "").toLowerCase().includes(q) ||
+        (o.shipment?.externalShipmentId || "").toLowerCase().includes(q),
     );
   }
   if (status) filtered = filtered.filter((o) => o.orderStatus === status);
   if (confirmationStatus)
     filtered = filtered.filter((o) => o.confirmationStatus === confirmationStatus);
   if (deliveryStatus)
-    filtered = filtered.filter((o) => o.deliveryStatus === deliveryStatus);
+    filtered = filtered.filter(
+      (o) =>
+        o.deliveryStatus === deliveryStatus ||
+        o.shipment?.internalStatus === deliveryStatus,
+    );
+  if (deliveryCompany) {
+    filtered = filtered.filter((o) => o.shipment?.providerId === deliveryCompany);
+  }
+  if (trackingNumber) {
+    filtered = filtered.filter((o) =>
+      (o.shipment?.trackingNumber || "").toLowerCase().includes(trackingNumber),
+    );
+  }
+  if (shipmentId) {
+    filtered = filtered.filter((o) =>
+      (o.shipment?.externalShipmentId || "").toLowerCase().includes(shipmentId),
+    );
+  }
   if (agentId && roleHasPermission(session.role, "orders:all")) {
     filtered = filtered.filter((o) => o.assignedAgentId === agentId);
   }

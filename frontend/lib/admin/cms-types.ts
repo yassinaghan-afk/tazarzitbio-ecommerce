@@ -151,6 +151,15 @@ export interface AuditLogEntry {
   action: string;
   objectType: string;
   objectId?: string;
+  /** Who performed the action */
+  userId?: string;
+  userName?: string;
+  /** Previous value (safe fields only — never passwords/secrets) */
+  before?: unknown;
+  /** New value (safe fields only) */
+  after?: unknown;
+  /** Short human-readable note */
+  note?: string;
   at: string; // ISO
 }
 

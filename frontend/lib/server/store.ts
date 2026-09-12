@@ -39,6 +39,11 @@ import {
 } from "@/lib/tracking/settings";
 import type { TrackingSettings } from "@/lib/tracking/types";
 import { DEFAULT_OPS_STATE, type OpsState } from "@/lib/admin/ops-types";
+import {
+  DEFAULT_DELIVERY_STATE,
+  normalizeDeliveryState,
+  type DeliveryState,
+} from "@/lib/delivery/types";
 
 function normalizeShippingSettings(
   raw?: ShippingSettings | null,
@@ -104,6 +109,7 @@ export interface PersistedStore {
   customerNotes: Record<string, string>;
   mediaMeta: MediaAssetMeta[];
   ops: OpsState;
+  delivery: DeliveryState;
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -134,6 +140,7 @@ const DEFAULT_STORE: PersistedStore = {
   customerNotes: {},
   mediaMeta: [],
   ops: structuredClone(DEFAULT_OPS_STATE),
+  delivery: structuredClone(DEFAULT_DELIVERY_STATE),
 };
 
 function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
@@ -230,6 +237,7 @@ export async function readStore(): Promise<PersistedStore> {
         ? (parsed.mediaMeta as MediaAssetMeta[])
         : [],
       ops: normalizeOps(parsed.ops),
+      delivery: normalizeDeliveryState(parsed.delivery),
     };
   } catch {
     return structuredClone(DEFAULT_STORE);

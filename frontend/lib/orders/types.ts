@@ -72,6 +72,9 @@ export interface OrderRecord {
   productCostSnapshot?: number;
   statusHistory?: import("@/lib/admin/ops-types").OrderStatusHistoryEntry[];
   timeline?: import("@/lib/admin/ops-types").OrderTimelineEvent[];
+  /** Courier shipment (Elite Delivery first; multi-courier ready) */
+  shipment?: import("@/lib/delivery/types").OrderShipment;
+  deliveryHistory?: import("@/lib/delivery/types").DeliveryStatusHistoryEntry[];
 }
 
 export interface CreateOrderInput {

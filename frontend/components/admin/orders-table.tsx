@@ -65,6 +65,9 @@ export function OrdersTable({
   const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
   const [confirmNote, setConfirmNote] = useState("");
 
+  const [deliveryMsg, setDeliveryMsg] = useState("");
+  const [deliveryFilter, setDeliveryFilter] = useState<string>("all");
+
   useEffect(() => {
     void fetch("/api/admin/orders?pageSize=1", { cache: "no-store" })
       .then((r) => r.json())
@@ -79,6 +82,13 @@ export function OrdersTable({
     if (statusFilter !== "all") {
       list = list.filter((o) => o.orderStatus === statusFilter);
     }
+    if (deliveryFilter !== "all") {
+      list = list.filter(
+        (o) =>
+          o.deliveryStatus === deliveryFilter ||
+          o.shipment?.internalStatus === deliveryFilter,
+      );
+    }
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       list = list.filter(
@@ -86,11 +96,13 @@ export function OrdersTable({
           o.customerName.toLowerCase().includes(q) ||
           o.phone.includes(q) ||
           o.orderId.toLowerCase().includes(q) ||
-          o.address.toLowerCase().includes(q),
+          o.address.toLowerCase().includes(q) ||
+          (o.shipment?.trackingNumber || "").toLowerCase().includes(q) ||
+          (o.shipment?.externalShipmentId || "").toLowerCase().includes(q),
       );
     }
     return list;
-  }, [orders, query, statusFilter]);
+  }, [orders, query, statusFilter, deliveryFilter]);
 
   const updateStatus = async (orderId: string, orderStatus: OrderStatus) => {
     setBusyId(orderId);
@@ -119,6 +131,42 @@ export function OrdersTable({
         setSelected(data.order);
         await onRefresh();
       }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const deliveryAction = async (orderId: string, action: "send" | "refresh") => {
+    setBusyId(orderId);
+    setDeliveryMsg("");
+    try {
+      const res = await fetch("/api/admin/delivery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, orderId, providerId: "elite" }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        errorMessage?: string;
+        alreadyExists?: boolean;
+      };
+      if (!res.ok || !data.ok) {
+        setDeliveryMsg(data.errorMessage || "تعذر الاتصال بشركة التوصيل");
+      } else {
+        setDeliveryMsg(
+          data.alreadyExists
+            ? "الشحنة موجودة مسبقاً — لم يتم إنشاء شحنة مكررة"
+            : "تم بنجاح",
+        );
+        await onRefresh();
+        const detail = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}`);
+        if (detail.ok) {
+          const d = (await detail.json()) as { order: OrderRecord };
+          setSelected(d.order);
+        }
+      }
+    } catch {
+      setDeliveryMsg("تعذر الاتصال بشركة التوصيل");
     } finally {
       setBusyId(null);
     }
@@ -200,7 +248,7 @@ export function OrdersTable({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, phone, or order ID…"
+            placeholder="Search name, phone, order ID, tracking…"
             className="pl-9 rounded-full"
           />
         </div>
@@ -221,20 +269,46 @@ export function OrdersTable({
             </button>
           ))}
         </div>
+        <select
+          className="h-9 rounded-full border border-border bg-card px-3 text-xs font-semibold"
+          value={deliveryFilter}
+          onChange={(e) => setDeliveryFilter(e.target.value)}
+        >
+          <option value="all">All delivery</option>
+          {CONFIRMATION_STATUSES.length >= 0 &&
+            [
+              "new",
+              "confirmed",
+              "preparing",
+              "shipped",
+              "in_transit",
+              "delivered",
+              "returned",
+              "failed_delivery",
+              "refused",
+              "cancelled",
+            ].map((s) => (
+              <option key={s} value={s}>
+                Delivery: {s}
+              </option>
+            ))}
+        </select>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-3xl border border-border/60 bg-card/60 shadow-warm-md">
         <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full text-sm">
+          <table className="min-w-[1100px] w-full text-sm">
             <thead className="bg-secondary/50 text-xs font-bold text-muted-foreground uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-start">Customer</th>
                 <th className="px-4 py-3 text-start">Phone</th>
-                <th className="px-4 py-3 text-start">Address</th>
-                <th className="px-4 py-3 text-start">Products</th>
                 <th className="px-4 py-3 text-start">Total</th>
                 <th className="px-4 py-3 text-start">Status</th>
+                <th className="px-4 py-3 text-start">Delivery</th>
+                <th className="px-4 py-3 text-start">Courier</th>
+                <th className="px-4 py-3 text-start">Tracking</th>
+                <th className="px-4 py-3 text-start">Agent</th>
                 <th className="px-4 py-3 text-start">Date</th>
                 <th className="px-4 py-3 text-start">Actions</th>
               </tr>
@@ -242,12 +316,24 @@ export function OrdersTable({
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-                    {loading ? "Loading orders…" : query || statusFilter !== "all" ? "No orders match your filters." : "No orders yet."}
+                  <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">
+                    {loading ? "Loading orders…" : query || statusFilter !== "all" || deliveryFilter !== "all" ? "No orders match your filters." : "No orders yet."}
                   </td>
                 </tr>
               )}
-              {filtered.map((o) => (
+              {filtered.map((o) => {
+                const dStatus = o.shipment?.internalStatus || o.deliveryStatus || "—";
+                const dBadge =
+                  dStatus === "delivered"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : dStatus === "in_transit" || dStatus === "shipped"
+                      ? "bg-amber-100 text-amber-800"
+                      : dStatus === "returned" || dStatus === "failed_delivery" || dStatus === "refused"
+                        ? "bg-rose-100 text-rose-800"
+                        : dStatus === "confirmed" || dStatus === "preparing"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-zinc-100 text-zinc-700";
+                return (
                 <tr key={o.orderId} className="border-t border-border/50 hover:bg-secondary/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-foreground">
                     {o.customerName}
@@ -255,15 +341,6 @@ export function OrdersTable({
                   </td>
                   <td className="px-4 py-3 font-mono tabular-nums text-muted-foreground">
                     {o.phone}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    <span className="line-clamp-2 max-w-[200px]">{o.address}</span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    <span className="line-clamp-2 max-w-[240px]">
-                      {o.products.slice(0, 2).map((p) => `${p.nameAr}×${p.quantity}`).join(", ")}
-                      {o.products.length > 2 ? "…" : ""}
-                    </span>
                   </td>
                   <td className="px-4 py-3 font-bold tabular-nums text-accent">
                     {formatMAD(o.total)}
@@ -285,6 +362,20 @@ export function OrdersTable({
                         </option>
                       ))}
                     </select>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-bold", dBadge)}>
+                      {dStatus}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    {o.shipment?.providerId === "elite" ? "Elite" : o.shipment?.providerId || "—"}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs" dir="ltr">
+                    {o.shipment?.trackingNumber || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    {o.assignedAgentName || "—"}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                     {formatDate(o.createdAt)}
@@ -312,7 +403,8 @@ export function OrdersTable({
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
@@ -409,6 +501,97 @@ export function OrdersTable({
                   </ul>
                 </div>
               )}
+
+              <div className="rounded-2xl border border-border/60 bg-secondary/30 p-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-accent">Delivery</p>
+                <dl className="mt-2 space-y-1 text-sm">
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Company</dt>
+                    <dd className="font-semibold">
+                      {selected.shipment?.providerId === "elite"
+                        ? "Elite Delivery"
+                        : selected.shipment?.providerId || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Shipment ID</dt>
+                    <dd className="font-mono text-xs" dir="ltr">
+                      {selected.shipment?.externalShipmentId || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Tracking</dt>
+                    <dd className="font-mono text-xs" dir="ltr">
+                      {selected.shipment?.trackingNumber || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Status</dt>
+                    <dd className="font-semibold">
+                      {selected.shipment?.internalStatus ||
+                        selected.deliveryStatus ||
+                        "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Last sync</dt>
+                    <dd className="text-xs">
+                      {selected.shipment?.lastSyncAt
+                        ? formatDate(selected.shipment.lastSyncAt)
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Customer shipping</dt>
+                    <dd>{formatMAD(selected.shippingPrice)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Courier cost</dt>
+                    <dd>
+                      {typeof selected.shipment?.courierShippingCost === "number"
+                        ? formatMAD(selected.shipment.courierShippingCost)
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">COD payout</dt>
+                    <dd>{selected.shipment?.payoutStatus || "—"}</dd>
+                  </div>
+                </dl>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="gold"
+                    className="rounded-full"
+                    disabled={busyId === selected.orderId}
+                    onClick={() => void deliveryAction(selected.orderId, "send")}
+                  >
+                    إرسال لشركة التوصيل
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={busyId === selected.orderId || !selected.shipment?.externalShipmentId}
+                    onClick={() => void deliveryAction(selected.orderId, "refresh")}
+                  >
+                    تحديث الحالة / إعادة المحاولة
+                  </Button>
+                  {selected.shipment?.trackingUrl && (
+                    <Button size="sm" variant="outline" className="rounded-full" asChild>
+                      <a href={selected.shipment.trackingUrl} target="_blank" rel="noreferrer">
+                        تتبع
+                      </a>
+                    </Button>
+                  )}
+                </div>
+                {deliveryMsg && (
+                  <p className="mt-2 text-xs font-semibold text-amber-800" role="status">
+                    {deliveryMsg}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Status</p>
                 <span

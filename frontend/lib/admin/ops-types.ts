@@ -269,70 +269,105 @@ export const PAYMENT_COLLECTION_STATUSES: PaymentCollectionStatus[] = [
 
 /** Permissions granted per role (server-enforced). */
 export type AdminPermission =
+  // Orders
   | "orders:read"
   | "orders:write"
   | "orders:all" // see all orders, not only assigned
+  | "orders:delete"
+  | "orders:assign"
+  | "orders:change_status"
+  // Customers
   | "customers:read"
   | "customers:write"
+  | "customers:delete"
+  | "customers:view_phone"
+  | "customers:view_address"
+  | "customers:view_notes"
+  // Products
+  | "products:read"
+  | "products:write"
+  | "products:delete"
+  | "products:view_cost"
+  // Delivery
+  | "delivery:read"
+  | "delivery:create_shipment"
+  | "delivery:update_status"
+  | "delivery:view_financials"
+  // Finance
   | "finance:read"
   | "finance:write"
+  | "finance:view_profit"
+  | "finance:view_cash"
+  // Partners
   | "partners:read"
   | "partners:write"
+  | "partners:view_balances"
+  // Cash
   | "cash:read"
   | "cash:write"
+  // Ads
   | "ads:read"
   | "ads:write"
+  | "ads:delete"
+  // Expenses
   | "expenses:read"
   | "expenses:write"
+  | "expenses:delete"
+  // Agents / team
   | "agents:read"
   | "agents:write"
+  | "team:view"
+  | "team:invite"
+  | "team:edit_permissions"
+  | "team:remove_member"
+  // Reports
   | "reports:read"
+  | "reports:export"
+  // Audit
   | "audit:read"
-  | "products:write"
+  // Settings & content
+  | "settings:view"
   | "settings:write"
   | "content:write";
 
 export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
   admin: [
-    "orders:read",
-    "orders:write",
-    "orders:all",
-    "customers:read",
-    "customers:write",
-    "finance:read",
-    "finance:write",
-    "partners:read",
-    "partners:write",
-    "cash:read",
-    "cash:write",
-    "ads:read",
-    "ads:write",
-    "expenses:read",
-    "expenses:write",
-    "agents:read",
-    "agents:write",
-    "reports:read",
+    "orders:read", "orders:write", "orders:all", "orders:delete", "orders:assign", "orders:change_status",
+    "customers:read", "customers:write", "customers:delete",
+    "customers:view_phone", "customers:view_address", "customers:view_notes",
+    "products:read", "products:write", "products:delete", "products:view_cost",
+    "delivery:read", "delivery:create_shipment", "delivery:update_status", "delivery:view_financials",
+    "finance:read", "finance:write", "finance:view_profit", "finance:view_cash",
+    "partners:read", "partners:write", "partners:view_balances",
+    "cash:read", "cash:write",
+    "ads:read", "ads:write", "ads:delete",
+    "expenses:read", "expenses:write", "expenses:delete",
+    "agents:read", "agents:write",
+    "team:view", "team:invite", "team:edit_permissions", "team:remove_member",
+    "reports:read", "reports:export",
     "audit:read",
-    "products:write",
-    "settings:write",
+    "settings:view", "settings:write",
     "content:write",
   ],
   manager: [
-    "orders:read",
-    "orders:write",
-    "orders:all",
-    "customers:read",
-    "customers:write",
-    "finance:read",
+    "orders:read", "orders:write", "orders:all", "orders:assign", "orders:change_status",
+    "customers:read", "customers:write",
+    "customers:view_phone", "customers:view_address", "customers:view_notes",
+    "products:read", "products:write", "products:view_cost",
+    "delivery:read", "delivery:create_shipment", "delivery:update_status",
+    "finance:read", "finance:view_profit",
+    "partners:read",
     "ads:read",
     "expenses:read",
     "agents:read",
+    "team:view",
     "reports:read",
-    "products:write",
+    "settings:view",
   ],
   confirmation_agent: [
-    "orders:read",
-    "orders:write", // only assigned — enforced in handlers
-    "customers:read", // limited fields only
+    "orders:read", "orders:write", "orders:change_status",
+    "customers:read", "customers:view_phone", "customers:view_address",
+    "delivery:read",
+    "settings:view",
   ],
 };
