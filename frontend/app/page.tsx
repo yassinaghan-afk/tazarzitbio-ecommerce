@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { BestSellersSection } from "@/components/home/best-sellers-section";
+import { HomeProductsSection } from "@/components/home/home-products-section";
 import { ProductShowcasesSection } from "@/components/home/product-showcases-section";
 import { CtaSection } from "@/components/home/cta-section";
 import { FaqSection } from "@/components/home/faq-section";
@@ -28,6 +29,7 @@ export default async function HomePage() {
     story: <StorySection />,
     showcases: <ProductShowcasesSection />,
     "best-sellers": <BestSellersSection />,
+    "discover-products": <HomeProductsSection />,
     reviews: <ReviewSection cmsReviews={cmsReviews} />,
     ingredients: <IngredientsSection />,
     lifestyle: <LifestyleSection />,

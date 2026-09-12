@@ -162,6 +162,7 @@ export type HomeSectionId =
   | "story"
   | "showcases"
   | "best-sellers"
+  | "discover-products"
   | "reviews"
   | "ingredients"
   | "lifestyle"
@@ -179,6 +180,7 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
   story: "Brand Story",
   showcases: "Product Showcases",
   "best-sellers": "Best Sellers",
+  "discover-products": "Discover Products",
   reviews: "Customer Reviews",
   ingredients: "Ingredients",
   lifestyle: "Lifestyle",
@@ -192,6 +194,7 @@ export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
   { id: "story", isVisible: true },
   { id: "showcases", isVisible: true },
   { id: "best-sellers", isVisible: true },
+  { id: "discover-products", isVisible: true },
   { id: "reviews", isVisible: true },
   { id: "ingredients", isVisible: true },
   { id: "lifestyle", isVisible: true },
