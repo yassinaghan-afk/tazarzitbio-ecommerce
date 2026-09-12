@@ -1,23 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Activity,
   BarChart3,
   Bell,
-  Boxes,
-  Briefcase,
   ChevronLeft,
   ChevronRight,
-  Coins,
   Globe,
   HandshakeIcon,
-  Home,
   LayoutDashboard,
   LogOut,
   Megaphone,
   Menu,
+  Moon,
   Package,
   Radar,
   Receipt,
@@ -25,6 +22,7 @@ import {
   Settings2,
   Shield,
   ShoppingBag,
+  Sun,
   TrendingUp,
   Truck,
   Users,
@@ -49,9 +47,9 @@ import { DashSection } from "@/components/admin/sections/dash-section";
 import { RolesSection } from "@/components/admin/sections/roles-section";
 import { TeamSection } from "@/components/admin/sections/team-section";
 
+import { useAdminTheme } from "@/components/admin/admin-theme-provider";
 import type { OrderRecord } from "@/lib/orders/types";
 import { cn } from "@/lib/utils";
-import { BrandLogo } from "@/components/brand/brand-logo";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -151,7 +149,12 @@ function Sidebar({
       <div className={cn("flex items-center gap-3 border-b border-border/40 px-4 py-4", collapsed && !mobile && "justify-center px-2")}>
         {(!collapsed || mobile) && (
           <div className="min-w-0 flex-1">
-            <BrandLogo variant="admin" className="h-8 w-auto" />
+            <p className="truncate text-sm font-extrabold tracking-tight text-foreground">
+              TazarzitBio
+            </p>
+            <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("Admin", "لوحة الإدارة")}
+            </p>
             {session && (
               <p className="mt-1 truncate text-[11px] text-muted-foreground">
                 {session.userName} · <span className="capitalize">{session.role.replace("_", " ")}</span>
@@ -262,7 +265,7 @@ function Sidebar({
           type="button"
           onClick={logout}
           className={cn(
-            "flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-rose-50 hover:text-rose-700 transition-colors",
+            "flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/40 dark:hover:text-rose-300 transition-colors",
             collapsed && !mobile && "justify-center px-2",
           )}
           title={collapsed && !mobile ? "Sign out" : undefined}
@@ -288,35 +291,48 @@ function Topbar({
 }) {
   const t = (en: string, ar: string) => locale === "ar" ? ar : en;
   const sectionLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === section);
+  const { theme, toggleTheme } = useAdminTheme();
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 bg-card px-4">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/50 bg-card px-3 sm:gap-3 sm:px-4">
       <button
         type="button"
         onClick={onMenuClick}
         className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors lg:hidden"
+        aria-label={t("Open menu", "فتح القائمة")}
       >
         <Menu className="size-5" />
       </button>
 
-      <div className="flex-1 min-w-0">
-        <h1 className="text-sm font-bold text-foreground truncate">
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-sm font-bold text-foreground">
           {sectionLabel ? t(sectionLabel.labelEn, sectionLabel.labelAr) : t("Admin", "لوحة الإدارة")}
         </h1>
       </div>
 
       {/* Search */}
-      <div className="hidden md:flex items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-1.5 w-56">
+      <div className="hidden w-56 items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-1.5 md:flex">
         <Search className="size-3.5 shrink-0 text-muted-foreground" />
         <input
           type="search"
           placeholder={t("Search…", "بحث…")}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 min-w-0"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
         />
       </div>
 
+      {/* Theme toggle */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+        aria-label={theme === "dark" ? t("Switch to light mode", "التبديل للوضع الفاتح") : t("Switch to dark mode", "التبديل للوضع الداكن")}
+        title={theme === "dark" ? t("Light", "فاتح") : t("Dark", "داكن")}
+      >
+        {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+      </button>
+
       {/* Notifications */}
-      <button type="button" className="relative rounded-lg p-2 text-muted-foreground hover:bg-secondary transition-colors">
+      <button type="button" className="relative rounded-lg p-2 text-muted-foreground hover:bg-secondary transition-colors" aria-label={t("Notifications", "الإشعارات")}>
         <Bell className="size-5" />
         {notifCount != null && notifCount > 0 && (
           <span className="absolute -top-0.5 -end-0.5 flex size-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
@@ -572,12 +588,19 @@ export function AdminDashboard() {
       .catch(() => null);
   }, []);
 
-  /* Close drawer on ESC */
+  /* Close drawer on ESC; lock body scroll while open */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawerOpen(false); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [drawerOpen]);
 
   /* Attention count for notifications bell */
   const attentionCount =
@@ -594,11 +617,11 @@ export function AdminDashboard() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex bg-muted/30"
+      className="relative flex h-dvh max-w-full overflow-hidden bg-muted/40"
       dir={locale === "ar" ? "rtl" : "ltr"}
     >
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex flex-col h-full">
+      <div className="hidden h-full shrink-0 lg:flex lg:flex-col">
         <Sidebar
           section={section}
           onSection={setSection}
@@ -612,7 +635,7 @@ export function AdminDashboard() {
       {/* Mobile drawer overlay */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-[150] bg-black/40 lg:hidden"
+          className="absolute inset-0 z-40 bg-black/40 lg:hidden"
           onClick={() => setDrawerOpen(false)}
           aria-hidden="true"
         />
@@ -620,8 +643,8 @@ export function AdminDashboard() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          "fixed top-0 bottom-0 z-[160] flex flex-col transition-transform duration-300 lg:hidden",
-          locale === "ar" ? "right-0" : "left-0",
+          "absolute top-0 bottom-0 z-50 flex flex-col shadow-xl transition-transform duration-300 lg:hidden",
+          locale === "ar" ? "end-0" : "start-0",
           drawerOpen ? "translate-x-0" : locale === "ar" ? "translate-x-full" : "-translate-x-full",
         )}
       >
@@ -647,7 +670,7 @@ export function AdminDashboard() {
         />
 
         {/* Content area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
           <div className="mx-auto max-w-6xl">
             {/* Dashboard */}
             {section === "dashboard" && (

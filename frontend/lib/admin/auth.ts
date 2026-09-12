@@ -160,12 +160,40 @@ export async function createAdminSessionToken(): Promise<string> {
   return `${payload}.${sig}`;
 }
 
+/**
+ * Validate session cookie (v2 legacy or v3 role token).
+ * Intentionally does NOT hit the store — safe for Edge middleware.
+ * API handlers should still call parseAdminSession for role/user resolution.
+ */
 export async function isValidAdminCookieValue(
   value: string | undefined | null,
 ): Promise<boolean> {
   const secret = getSessionSecret();
   if (!secret || !value) return false;
+
   const parts = value.split(".");
+
+  // v3.<role>.<userId>.<expires>.<hmac>
+  if (parts[0] === "v3" && parts.length === 5) {
+    const [, role, userId, expiresStr, sig] = parts;
+    if (
+      role !== "admin" &&
+      role !== "manager" &&
+      role !== "confirmation_agent"
+    ) {
+      return false;
+    }
+    if (!userId || userId.length > 40) return false;
+    const expires = Number(expiresStr);
+    if (!Number.isFinite(expires) || expires * 1000 < Date.now()) return false;
+    const expected = await hmacHex(
+      secret,
+      `v3.${role}.${userId}.${expiresStr}`,
+    );
+    return timingSafeEqual(expected, sig);
+  }
+
+  // Legacy v2.<expires>.<hmac>
   if (parts.length !== 3 || parts[0] !== TOKEN_PREFIX) return false;
   const expires = Number(parts[1]);
   if (!Number.isFinite(expires) || expires * 1000 < Date.now()) return false;

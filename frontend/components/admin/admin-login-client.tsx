@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,15 +55,15 @@ export function AdminLoginClient() {
   };
 
   return (
-    <div className="glass-card rounded-3xl border border-border/60 bg-card/70 p-6 shadow-warm-lg">
-      <div className="mb-6 flex flex-col items-center gap-4 text-center">
-        <BrandLogo variant="admin" />
+    <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+      <div className="mb-6 flex flex-col items-center gap-3 text-center">
+        <p className="text-lg font-extrabold tracking-tight text-foreground">TazarzitBio</p>
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/10">
             <Lock className="size-4 text-accent" />
           </div>
           <div className="text-start">
-            <h1 className="text-display text-2xl text-foreground">Admin Panel</h1>
+            <h1 className="text-xl font-extrabold text-foreground">Admin Panel</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Admin or confirmation agent login
             </p>

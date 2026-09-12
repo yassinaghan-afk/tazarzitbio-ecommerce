@@ -16,7 +16,6 @@ import {
   Tag,
 } from "lucide-react";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -183,7 +182,7 @@ export function TrackingSettingsManager({
               العودة للوحة الإدارة
             </Link>
           </Button>
-          <BrandLogo variant="checkout" className="opacity-80" />
+          <p className="text-sm font-extrabold text-foreground">TazarzitBio Admin</p>
         </div>
       )}
 

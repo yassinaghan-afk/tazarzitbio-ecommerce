@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 
 import { AdminLoginClient } from "@/components/admin/admin-login-client";
-import { Container, Section } from "@/components/layout/container";
 
 export const metadata: Metadata = {
-  title: "تسجيل دخول الإدارة",
+  title: "Admin Login",
   robots: { index: false, follow: false },
 };
 
 export default function AdminLoginPage() {
   return (
-    <Section spacing="lg" className="texture-grain">
-      <Container className="max-w-md">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-10">
+      <div className="w-full max-w-md">
         <AdminLoginClient />
-      </Container>
-    </Section>
+      </div>
+    </div>
   );
 }
 

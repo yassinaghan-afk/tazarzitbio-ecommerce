@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 
-import { CommerceShell } from "@/components/commerce/commerce-shell";
-import { AnnouncementBar } from "@/components/layout/announcement-bar";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-
 import "./globals.css";
 
 const tajawal = Tajawal({
@@ -50,11 +45,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+/**
+ * Minimal root layout — NO storefront chrome.
+ * Public pages use (storefront)/layout.tsx.
+ * Admin pages use admin/layout.tsx.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { readStore } = await import("@/lib/server/store");
-  const store = await readStore();
   return (
     <html
       lang="ar"
@@ -63,17 +61,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen max-w-full overflow-x-hidden font-sans selection:bg-accent/20">
-        <CommerceShell>
-          <SiteHeader cmsNav={store.navigation.header} />
-          <AnnouncementBar />
-          <main className="max-w-full overflow-x-hidden pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
-            {children}
-          </main>
-          <SiteFooter
-            cmsNavigation={store.navigation}
-            settings={store.siteSettings}
-          />
-        </CommerceShell>
+        {children}
       </body>
     </html>
   );
