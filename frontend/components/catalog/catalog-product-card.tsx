@@ -14,7 +14,6 @@ import {
   buildAddToCartPayload,
   getStartingOffer,
 } from "@/lib/cart/product-payload";
-import { isFamilyPackProduct } from "@/lib/brand";
 import type { PublicProduct } from "@/lib/products";
 import { getBadgeLabel } from "@/lib/i18n/badges";
 import { useTranslation } from "@/lib/i18n/language-provider";
@@ -41,7 +40,7 @@ export function CatalogProductCard({
   const fromPrice = startingOffer.price;
   const productHref = `/products/${product.slug}`;
   const hasVariants = product.offers.length > 1;
-  const orderOnly = isFamilyPackProduct(product.slug);
+  const orderOnlyCard = !showAddToCart;
 
   const handleOrderNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,8 +55,6 @@ export function CatalogProductCard({
       buildAddToCartPayload(product, startingOffer, { openDrawer: "cart" }),
     );
   };
-
-  const orderOnlyCard = orderOnly || !showAddToCart;
 
   return (
     <motion.article
@@ -134,7 +131,7 @@ export function CatalogProductCard({
             <Zap className="size-4" />
             {t("catalog.orderNow")}
           </Button>
-          {showAddToCart && !orderOnly && (
+          {showAddToCart && (
             <Button
               variant="outline"
               size="lg"
@@ -146,7 +143,7 @@ export function CatalogProductCard({
             </Button>
           )}
         </div>
-        {showAddToCart && !orderOnly && (
+        {showAddToCart && (
           <Button
             variant="ghost"
             size="sm"

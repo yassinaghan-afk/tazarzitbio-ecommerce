@@ -1,13 +1,23 @@
 import { AMLOU_ROYAL_SLUG } from "./amlou-royal";
+import { FAMILY_PACK_SLUG } from "@/lib/brand";
 import type { PublicProduct } from "./types";
 
 /** Dedicated landing pages — keep shop/home grids unchanged */
 export const LANDING_ONLY_SLUGS = [AMLOU_ROYAL_SLUG] as const;
 
+/** Removed from storefront catalog and shop grids */
+export const REMOVED_PRODUCT_SLUGS = [FAMILY_PACK_SLUG] as const;
+
 export function isLandingOnlyProduct(
   product: Pick<PublicProduct, "slug">,
 ): boolean {
   return (LANDING_ONLY_SLUGS as readonly string[]).includes(product.slug);
+}
+
+export function isRemovedProduct(
+  product: Pick<PublicProduct, "slug">,
+): boolean {
+  return (REMOVED_PRODUCT_SLUGS as readonly string[]).includes(product.slug);
 }
 
 /** SEO variant rows and slug aliases — not shown in shop grids */
@@ -31,6 +41,7 @@ export function getListingProducts(
     (p) =>
       !isExpandedVariantRow(p) &&
       !isLandingOnlyProduct(p) &&
+      !isRemovedProduct(p) &&
       !exclude.has(p.slug),
   );
 }

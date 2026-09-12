@@ -14,7 +14,6 @@ import {
   REVIEWS_ARGAN,
   REVIEWS_DAGHMOUS,
   REVIEWS_EUCALYPTUS,
-  REVIEWS_FAMILY,
   REVIEWS_NUTS,
   REVIEWS_PEANUT_AMLou,
   REVIEWS_PISTACHIO,
@@ -73,18 +72,6 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
 
   const nutsOffers = [
     offer("nuts-250", "NUT-HON-250", "250 غ", "250 غ", { costPrice: 62, salePrice: 129 }, undefined, overrides),
-  ];
-
-  const familyOffers = [
-    offer(
-      "premium-family-pack",
-      "BND-FAM-01",
-      "باقة عائلية — تشكيلة 250غ",
-      "4 منتجات",
-      { costPrice: 400.5, salePrice: 499 },
-      "أملو لوز + فستق + مكسرات + أركان",
-      overrides,
-    ),
   ];
 
   const daghmousOffers = [
@@ -170,7 +157,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_ALMOND,
       rating: 4.9,
       reviewCount: 312,
-      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey", "premium-family-pack"],
+      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey"],
     },
     {
       id: "pistachio-amlou",
@@ -212,7 +199,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_PISTACHIO,
       rating: 5,
       reviewCount: 198,
-      relatedSlugs: ["almond-amlou", "mixed-nuts-honey", "premium-family-pack"],
+      relatedSlugs: ["almond-amlou", "mixed-nuts-honey"],
     },
     {
       id: "argan-oil",
@@ -253,7 +240,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_ARGAN,
       rating: 4.8,
       reviewCount: 156,
-      relatedSlugs: ["almond-amlou", "premium-family-pack"],
+      relatedSlugs: ["almond-amlou"],
     },
     {
       id: "mixed-nuts-honey",
@@ -291,7 +278,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_NUTS,
       rating: 4.9,
       reviewCount: 241,
-      relatedSlugs: ["almond-amlou", "pistachio-amlou", "premium-family-pack"],
+      relatedSlugs: ["almond-amlou", "pistachio-amlou"],
     },
     {
       id: "daghmous-honey",
@@ -478,53 +465,8 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       rating: 0,
       reviewCount: 0,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
-    },
-    {
-      id: "premium-family-pack",
-      slug: "premium-family-pack",
-      nameAr: "باقة العائلة — قيمة ممتازة",
-      shortDescription:
-        "تشكيلة عائلية: أملو لوز وفستق، مكسرات بالعسل، وزيت أركان — بسعر أوفر من الشراء المنفصل.",
-      description:
-        "باقة العائلة تجمع منتجاتنا الأساسية بحجم 250غ/250مل لتجربة كاملة بسعر مناسب. مثالية للفطور اليومي والمخزون العائلي — دون تغليف هدايا فاخر.",
-      price: lowestPrice(familyOffers),
-      image: `${IMG}/pack.png`,
-      images: [`${IMG}/pack.png`],
-      category: "bundles",
-      badges: ["bestseller", "limited"],
-      weight: "4 منتجات",
-      ingredients: [
-        "أملو لوز 250غ",
-        "أملو فستق 250غ",
-        "مكسرات بالعسل 250غ",
-        "زيت أركان 250مل",
-      ],
-      benefits: [
-        "توفير مقارنة بالشراء المنفصل",
-        "تشكيلة متكاملة للعائلة",
-        "أسعار مناسبة",
-      ],
-      usageSuggestions: [
-        "فطور الأسبوع للعائلة",
-        "تجربة العلامة لأول مرة",
-        "مخزون شهري",
-      ],
-      offers: familyOffers,
-      faq: [
-        {
-          q: "ماذا تحتوي الباقة؟",
-          a: "أملو لوز 250غ، أملو فستق 250غ، مكسرات بالعسل 250غ، زيت أركان 250مل.",
-        },
-        {
-          q: "هل هذا تغليف هدايا؟",
-          a: "لا، باقة قيمة عائلية بتغليف عملي وليس علبة هدايا فاخرة.",
-        },
-      ],
-      reviews: REVIEWS_FAMILY,
-      rating: 4.9,
-      reviewCount: 124,
-      relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
-    },
+    }
+
   ];
 
   return expandCatalogWithVariants(catalog);

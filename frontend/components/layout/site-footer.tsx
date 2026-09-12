@@ -88,10 +88,10 @@ export function SiteFooter({
               {cmsShop.length === 0 && (
                 <li>
                   <Link
-                    href="/#bundles"
+                    href="/products"
                     className="inline-flex min-h-11 items-center text-sm font-semibold text-accent transition-colors hover:text-accent/80"
                   >
-                    {t("footer.gifts")}
+                    {t("nav.products")}
                   </Link>
                 </li>
               )}

@@ -23,9 +23,6 @@ import { QuantitySelector } from "@/components/product/quantity-selector";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
-import { isFamilyPackProduct } from "@/lib/brand";
-import { FamilyPackContentsSection } from "@/components/product/family-pack-contents-section";
-import { FamilyPackStoryVisual } from "@/components/product/family-pack-story-visual";
 import { ShippingPromoBanner } from "@/components/product/shipping-promo-banner";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { Badge } from "@/components/ui/badge";
@@ -103,7 +100,6 @@ export function ProductPageClient({
     product.relatedSlugs.filter((s) => s !== product.slug),
   );
   const showSizePicker = product.offers.length > 1;
-  const orderOnly = isFamilyPackProduct(product.slug);
 
   return (
     <>
@@ -231,7 +227,6 @@ export function ProductPageClient({
                 offer={selectedOffer}
                 quantity={quantity}
                 onQuantityChange={setQuantity}
-                orderOnly={orderOnly}
                 className="hidden lg:flex"
               />
 
@@ -240,8 +235,6 @@ export function ProductPageClient({
           </div>
         </Container>
       </Section>
-
-      {isFamilyPackProduct(product.slug) && <FamilyPackContentsSection />}
 
       <Section spacing="md" bg="alt" className="!pt-8 sm:!pt-10">
         <Container className="max-w-3xl">
@@ -252,9 +245,6 @@ export function ProductPageClient({
             {product.description}
           </p>
         </Container>
-        {isFamilyPackProduct(product.slug) && (
-          <FamilyPackStoryVisual className="mt-6 sm:mt-8 lg:mt-10" />
-        )}
       </Section>
 
       <Section spacing="md">
@@ -444,24 +434,22 @@ export function ProductPageClient({
               <Zap className="size-5" />
               {t("product.orderNow")}
             </Button>
-            {!orderOnly && (
-              <Button
-                variant="outline"
-                size="lg"
-                className="min-h-12 h-12 w-full gap-2 rounded-xl text-base font-bold"
-                onClick={() =>
-                  addToCart(
-                    buildAddToCartPayload(product, selectedOffer, {
-                      quantity,
-                      openDrawer: "cart",
-                    }),
-                  )
-                }
-              >
-                <ShoppingBag className="size-5" />
-                {t("product.addToCart")}
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="lg"
+              className="min-h-12 h-12 w-full gap-2 rounded-xl text-base font-bold"
+              onClick={() =>
+                addToCart(
+                  buildAddToCartPayload(product, selectedOffer, {
+                    quantity,
+                    openDrawer: "cart",
+                  }),
+                )
+              }
+            >
+              <ShoppingBag className="size-5" />
+              {t("product.addToCart")}
+            </Button>
           </div>
         </div>
       </div>

@@ -81,7 +81,6 @@ export interface HomepageContent {
   heroBannerUrl: string;
   trustBadges: HomepageTrustBadge[];
   bestSellersTitle: string;
-  familyPackTitle: string;
   reviewsTitle: string;
   faqTitle: string;
   finalCtaTitle: string;
@@ -101,7 +100,6 @@ export const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
     { icon: "phone", text: "فريقنا يتصل بك لتأكيد الطلب" },
   ],
   bestSellersTitle: "الأكثر مبيعاً",
-  familyPackTitle: "الباقة العائلية",
   reviewsTitle: "آراء عملائنا",
   faqTitle: "أسئلة شائعة",
   finalCtaTitle: "اطلب الآن وادفع عند الاستلام",

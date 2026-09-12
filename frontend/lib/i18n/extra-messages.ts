@@ -70,9 +70,9 @@ export const extraAr: Record<string, string> = {
   "faq.q3": "ما هي مدة التوصيل؟",
   "faq.a3":
     "المدن الكبرى من 1–3 أيام عمل. باقي المدن من 3–5 أيام. نتصل بك لتأكيد الموعد قبل الشحن.",
-  "faq.q4": "هل لديكم باقات عائلية؟",
+  "faq.q4": "ما هي المنتجات المتوفرة؟",
   "faq.a4":
-    "نعم — باقات قيمة عائلية بتشكيلات عملية وأسعار مناسبة، وليست علب هدايا فاخرة.",
+    "أملو بأنواعه، زيت الأركان، العسل الطبيعي، والمكسرات بالعسل — كل المنتوجات طبيعية والدفع عند الاستلام.",
   "faq.q5": "هل يمكنني إرجاع المنتج؟",
   "faq.a5":
     "في حال وجود مشكلة أو تلف أثناء الشحن، نلتزم بالاستبدال. تواصل خلال 24 ساعة من الاستلام.",
@@ -324,9 +324,9 @@ export const extraFr: Record<string, string> = {
   "faq.q3": "Quels sont les délais de livraison ?",
   "faq.a3":
     "Grandes villes : 1 à 3 jours ouvrés. Autres villes : 3 à 5 jours. Nous vous appelons pour confirmer la date avant l'expédition.",
-  "faq.q4": "Proposez-vous des packs familiaux ?",
+  "faq.q4": "Quels produits proposez-vous ?",
   "faq.a4":
-    "Oui — des packs familiaux pratiques à prix avantageux, pas des coffrets cadeaux de luxe.",
+    "Amlou, huile d’argan, miels naturels et fruits secs au miel — produits naturels, paiement à la livraison.",
   "faq.q5": "Puis-je retourner un produit ?",
   "faq.a5":
     "En cas de problème ou de dommage pendant la livraison, nous nous engageons à remplacer. Contactez-nous dans les 24 h suivant la réception.",
@@ -584,9 +584,9 @@ export const extraEn: Record<string, string> = {
   "faq.q3": "What are the delivery times?",
   "faq.a3":
     "Major cities: 1–3 business days. Other cities: 3–5 days. We call you to confirm the date before shipping.",
-  "faq.q4": "Do you offer family packs?",
+  "faq.q4": "What products do you offer?",
   "faq.a4":
-    "Yes — practical family packs at great prices, not luxury gift boxes.",
+    "Amlou varieties, argan oil, natural honeys, and honey nuts — all natural, cash on delivery.",
   "faq.q5": "Can I return a product?",
   "faq.a5":
     "If there is a problem or damage during shipping, we will replace it. Contact us within 24 hours of delivery.",

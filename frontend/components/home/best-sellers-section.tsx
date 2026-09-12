@@ -24,10 +24,7 @@ export function BestSellersSection() {
   const [category, setCategory] = useState<ProductCategory>("all");
 
   const listingProducts = useMemo(
-    () =>
-      getListingProducts(allProducts, {
-        excludeSlugs: ["premium-family-pack"],
-      }),
+    () => getListingProducts(allProducts),
     [allProducts],
   );
 

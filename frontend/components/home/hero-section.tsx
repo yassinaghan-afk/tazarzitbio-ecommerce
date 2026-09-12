@@ -64,17 +64,6 @@ export function HeroSection() {
               </div>
             </div>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.95, duration: 0.45 }}
-            className="glass-card absolute end-2 top-4 z-10 max-w-[calc(100%-1rem)] rounded-full px-3 py-1.5 md:end-2 md:top-8 md:px-4 md:py-2"
-          >
-            <p className="text-[0.65rem] font-semibold text-primary sm:text-xs">
-              {t("hero.familyPack")}
-            </p>
-          </motion.div>
         </motion.div>
 
         <motion.div

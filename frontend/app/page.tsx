@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { BestSellersSection } from "@/components/home/best-sellers-section";
 import { ProductShowcasesSection } from "@/components/home/product-showcases-section";
 import { CtaSection } from "@/components/home/cta-section";
-import { FamilyPackSection } from "@/components/home/family-pack-section";
 import { FaqSection } from "@/components/home/faq-section";
 import { HeroSection } from "@/components/home/hero-section";
 import { IngredientsSection } from "@/components/home/ingredients-section";
@@ -26,7 +25,6 @@ export default async function HomePage() {
   const sections: Record<HomeSectionId, ReactNode> = {
     hero: <HeroSection />,
     "trust-badges": <TrustBadges />,
-    "family-pack": <FamilyPackSection />,
     story: <StorySection />,
     showcases: <ProductShowcasesSection />,
     "best-sellers": <BestSellersSection />,

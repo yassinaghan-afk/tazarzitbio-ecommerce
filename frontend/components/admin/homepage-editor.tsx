@@ -112,10 +112,6 @@ export function HomepageEditor() {
             <Input value={content.bestSellersTitle} onChange={(e) => update("bestSellersTitle", e.target.value)} dir="rtl" />
           </div>
           <div className="space-y-1.5">
-            <Label>Family Pack Title</Label>
-            <Input value={content.familyPackTitle} onChange={(e) => update("familyPackTitle", e.target.value)} dir="rtl" />
-          </div>
-          <div className="space-y-1.5">
             <Label>Reviews Title</Label>
             <Input value={content.reviewsTitle} onChange={(e) => update("reviewsTitle", e.target.value)} dir="rtl" />
           </div>

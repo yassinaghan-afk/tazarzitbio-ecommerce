@@ -26,7 +26,6 @@ export function getDefaultCategoryFilters(locale: Language) {
     "all",
     "honey",
     "amlou",
-    "bundles",
     "oils",
     "honey-nuts",
   ] as const satisfies readonly ProductCategory[];

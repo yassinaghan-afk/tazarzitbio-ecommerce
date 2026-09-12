@@ -159,7 +159,6 @@ export interface AuditLogEntry {
 export type HomeSectionId =
   | "hero"
   | "trust-badges"
-  | "family-pack"
   | "story"
   | "showcases"
   | "best-sellers"
@@ -177,7 +176,6 @@ export interface HomeSectionConfig {
 export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
   hero: "Hero",
   "trust-badges": "Trust Badges",
-  "family-pack": "Family Pack",
   story: "Brand Story",
   showcases: "Product Showcases",
   "best-sellers": "Best Sellers",
@@ -191,7 +189,6 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
 export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
   { id: "hero", isVisible: true },
   { id: "trust-badges", isVisible: true },
-  { id: "family-pack", isVisible: true },
   { id: "story", isVisible: true },
   { id: "showcases", isVisible: true },
   { id: "best-sellers", isVisible: true },

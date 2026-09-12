@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ProductPageClient } from "@/components/product/product-page-client";
+import { FAMILY_PACK_SLUG } from "@/lib/brand";
 import { toPublicProduct } from "@/lib/products/catalog";
 import { getMergedCatalog, getMergedProductBySlug } from "@/lib/products/cms-catalog";
 
@@ -11,13 +12,18 @@ interface ProductPageProps {
 
 export async function generateStaticParams() {
   const catalog = await getMergedCatalog();
-  return catalog.map((p) => ({ slug: p.slug }));
+  return catalog
+    .filter((p) => p.slug !== FAMILY_PACK_SLUG)
+    .map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === FAMILY_PACK_SLUG) {
+    return { title: "المنتجات" };
+  }
   const product = await getMergedProductBySlug(slug);
   if (!product) return { title: "منتج غير موجود" };
 
@@ -32,6 +38,9 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
+  if (slug === FAMILY_PACK_SLUG) {
+    redirect("/products");
+  }
   const product = await getMergedProductBySlug(slug);
   if (!product) notFound();
 
