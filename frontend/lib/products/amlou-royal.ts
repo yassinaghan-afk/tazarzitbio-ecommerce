@@ -22,8 +22,8 @@ export const AMLOU_ROYAL_LP_IMAGES = [
   {
     src: "/images/royal/01-hero.webp",
     alt: "استمتع بالطاقة الحقيقية مع أملو ملكي اللذيذ والصحي",
-    width: 298,
-    height: 476,
+    width: 373,
+    height: 595,
   },
   {
     src: "/images/royal/02-problem.webp",
