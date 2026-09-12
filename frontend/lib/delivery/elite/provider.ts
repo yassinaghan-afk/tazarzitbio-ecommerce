@@ -250,7 +250,7 @@ export class EliteDeliveryProvider implements DeliveryProvider {
     let resolvedId = extractPackageId(first, order.orderId);
     if (!resolvedId && batch.data.raw) {
       const rawStr = JSON.stringify(batch.data.raw);
-      const m = rawStr.match(/CL-ELITE-[A-Z0-9-]+/i);
+      const m = rawStr.match(/(?:CL-)?ELITE-[A-Z0-9-]+/i);
       if (m) resolvedId = m[0];
     }
 

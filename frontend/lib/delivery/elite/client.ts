@@ -294,3 +294,9 @@ export function extractPackageId(
   }
   return undefined;
 }
+
+/** Elite panel IDs look like ELITE-… or CL-ELITE-… */
+export function looksLikeElitePackageId(value: string | undefined | null): boolean {
+  if (!value) return false;
+  return /^(CL-)?ELITE-[A-Z0-9-]+$/i.test(value.trim());
+}
