@@ -38,6 +38,7 @@ import {
   normalizeTrackingSettings,
 } from "@/lib/tracking/settings";
 import type { TrackingSettings } from "@/lib/tracking/types";
+import { DEFAULT_OPS_STATE, type OpsState } from "@/lib/admin/ops-types";
 
 function normalizeShippingSettings(
   raw?: ShippingSettings | null,
@@ -51,6 +52,29 @@ function normalizeShippingSettings(
     ...raw,
     freeShippingMinimumAmount:
       migratedAmount ?? DEFAULT_SHIPPING_SETTINGS.freeShippingMinimumAmount,
+  };
+}
+
+function normalizeOps(raw: unknown): OpsState {
+  if (!raw || typeof raw !== "object") return structuredClone(DEFAULT_OPS_STATE);
+  const o = raw as Partial<OpsState>;
+  const partners =
+    Array.isArray(o.partners) && o.partners.length > 0
+      ? o.partners
+      : DEFAULT_OPS_STATE.partners;
+  return {
+    settings: { ...DEFAULT_OPS_STATE.settings, ...(o.settings ?? {}) },
+    partners,
+    partnerTransactions: Array.isArray(o.partnerTransactions)
+      ? o.partnerTransactions
+      : [],
+    expenses: Array.isArray(o.expenses) ? o.expenses : [],
+    adExpenses: Array.isArray(o.adExpenses) ? o.adExpenses : [],
+    cashTransactions: Array.isArray(o.cashTransactions) ? o.cashTransactions : [],
+    financialTransactions: Array.isArray(o.financialTransactions)
+      ? o.financialTransactions
+      : [],
+    adminUsers: Array.isArray(o.adminUsers) ? o.adminUsers : [],
   };
 }
 
@@ -77,10 +101,9 @@ export interface PersistedStore {
   siteSettings: SiteSettings;
   promotions: Promotion[];
   auditLogs: AuditLogEntry[];
-  /** admin notes about customers, keyed by phone number */
   customerNotes: Record<string, string>;
-  /** alt text and metadata for media library files, keyed by url */
   mediaMeta: MediaAssetMeta[];
+  ops: OpsState;
 }
 
 const STORE_PATH = path.join(process.cwd(), "data", "store.json");
@@ -110,6 +133,7 @@ const DEFAULT_STORE: PersistedStore = {
   auditLogs: [],
   customerNotes: {},
   mediaMeta: [],
+  ops: structuredClone(DEFAULT_OPS_STATE),
 };
 
 function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
@@ -121,7 +145,6 @@ function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
     seen.add(s.id);
     return true;
   });
-  // append any newly added sections missing from stored config
   for (const def of DEFAULT_HOME_SECTIONS) {
     if (!seen.has(def.id)) sections.push(def);
   }
@@ -206,9 +229,10 @@ export async function readStore(): Promise<PersistedStore> {
       mediaMeta: Array.isArray(parsed.mediaMeta)
         ? (parsed.mediaMeta as MediaAssetMeta[])
         : [],
+      ops: normalizeOps(parsed.ops),
     };
   } catch {
-    return DEFAULT_STORE;
+    return structuredClone(DEFAULT_STORE);
   }
 }
 
@@ -227,4 +251,3 @@ export async function updateStore(
   await writeStore(next);
   return next;
 }
-

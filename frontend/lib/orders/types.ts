@@ -50,6 +50,7 @@ export interface OrderRecord {
   /** page the order came from (referer) */
   source?: string;
   createdAt: string; // ISO
+  updatedAt?: string;
   /** Secret token required to attach post-purchase upsell items */
   upsellToken?: string;
   /** Once true, upsell product mutations are locked (finalize may still retry export) */
@@ -57,6 +58,20 @@ export interface OrderRecord {
   /** Idempotency: order already written to Google Sheets */
   sheetsExported?: boolean;
   sheetsExportedAt?: string;
+
+  /* ---- Ops extensions (optional for backward compatibility) ---- */
+  confirmationStatus?: import("@/lib/admin/ops-types").ConfirmationStatus;
+  deliveryStatus?: import("@/lib/admin/ops-types").DeliveryStatus;
+  paymentCollectionStatus?: import("@/lib/admin/ops-types").PaymentCollectionStatus;
+  assignedAgentId?: string;
+  assignedAgentName?: string;
+  confirmationNotes?: string;
+  /** Snapshot commission MAD when confirmed (immutable history) */
+  confirmationCommission?: number;
+  /** Snapshot product COGS at confirmation/delivery */
+  productCostSnapshot?: number;
+  statusHistory?: import("@/lib/admin/ops-types").OrderStatusHistoryEntry[];
+  timeline?: import("@/lib/admin/ops-types").OrderTimelineEvent[];
 }
 
 export interface CreateOrderInput {

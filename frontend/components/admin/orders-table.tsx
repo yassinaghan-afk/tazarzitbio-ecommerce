@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, Eye, RefreshCw, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { ConfirmationStatus } from "@/lib/admin/ops-types";
+import { CONFIRMATION_STATUSES } from "@/lib/admin/ops-types";
 import type { OrderRecord, OrderStatus } from "@/lib/orders/types";
 import { ORDER_STATUSES } from "@/lib/orders/types";
 import { cn } from "@/lib/utils";
@@ -60,6 +62,18 @@ export function OrdersTable({
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
 
+  const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
+  const [confirmNote, setConfirmNote] = useState("");
+
+  useEffect(() => {
+    void fetch("/api/admin/orders?pageSize=1", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { agents?: { id: string; name: string }[] }) => {
+        if (Array.isArray(d.agents)) setAgents(d.agents);
+      })
+      .catch(() => null);
+  }, []);
+
   const filtered = useMemo(() => {
     let list = orders;
     if (statusFilter !== "all") {
@@ -87,6 +101,24 @@ export function OrdersTable({
         body: JSON.stringify({ orderStatus }),
       });
       await onRefresh();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const patchOrder = async (orderId: string, body: Record<string, unknown>) => {
+    setBusyId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { order: OrderRecord };
+        setSelected(data.order);
+        await onRefresh();
+      }
     } finally {
       setBusyId(null);
     }
@@ -313,6 +345,70 @@ export function OrdersTable({
                 <p className="text-xs font-bold text-muted-foreground uppercase">Address</p>
                 <p className="mt-1 text-sm leading-relaxed text-foreground">{selected.address}</p>
               </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase">Confirmation</p>
+                <select
+                  className="mt-1 h-9 w-full rounded-xl border border-border bg-card px-2 text-xs font-semibold"
+                  value={selected.confirmationStatus ?? "pending_confirmation"}
+                  disabled={busyId === selected.orderId}
+                  onChange={(e) =>
+                    void patchOrder(selected.orderId, {
+                      confirmationStatus: e.target.value as ConfirmationStatus,
+                      confirmationNotes: confirmNote || undefined,
+                    })
+                  }
+                >
+                  {CONFIRMATION_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  className="mt-2"
+                  placeholder="Call note (Arabic ok)"
+                  value={confirmNote}
+                  onChange={(e) => setConfirmNote(e.target.value)}
+                />
+              </div>
+              {agents.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">Assigned agent</p>
+                  <select
+                    className="mt-1 h-9 w-full rounded-xl border border-border bg-card px-2 text-xs font-semibold"
+                    value={selected.assignedAgentId ?? ""}
+                    disabled={busyId === selected.orderId}
+                    onChange={(e) =>
+                      void patchOrder(selected.orderId, {
+                        assignedAgentId: e.target.value || null,
+                      })
+                    }
+                  >
+                    <option value="">Unassigned</option>
+                    {agents.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {selected.timeline && selected.timeline.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">Timeline</p>
+                  <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto text-xs">
+                    {selected.timeline.slice(0, 20).map((t) => (
+                      <li key={t.id} className="border-b border-border/40 py-1">
+                        <span className="font-semibold">{t.action}</span>
+                        {t.note ? ` — ${t.note}` : ""}
+                        <span className="block text-muted-foreground">
+                          {t.userName} · {formatDate(t.at)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Status</p>
                 <span

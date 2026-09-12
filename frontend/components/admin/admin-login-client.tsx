@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 
 export function AdminLoginClient() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,10 @@ export function AdminLoginClient() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({
+          password,
+          ...(username.trim() ? { username: username.trim() } : {}),
+        }),
       });
       if (!res.ok) {
         let code = "";
@@ -31,7 +35,7 @@ export function AdminLoginClient() {
           const data = (await res.json()) as { code?: string; error?: string };
           code = data.code ?? "";
         } catch {
-          /* ignore non-JSON bodies */
+          /* ignore */
         }
         if (res.status === 503 || code === "ADMIN_PASSWORD_MISSING") {
           setError(
@@ -40,7 +44,7 @@ export function AdminLoginClient() {
         } else if (res.status === 429 || code === "RATE_LIMITED") {
           setError("Too many attempts. Wait a few minutes and try again.");
         } else {
-          setError("Incorrect password. Please try again.");
+          setError("Incorrect credentials. Please try again.");
         }
         return;
       }
@@ -62,13 +66,23 @@ export function AdminLoginClient() {
           <div className="text-start">
             <h1 className="text-display text-2xl text-foreground">Admin Panel</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Secure admin access
+              Admin or confirmation agent login
             </p>
           </div>
         </div>
       </div>
 
       <form onSubmit={submit} className="space-y-4">
+        <div>
+          <Label htmlFor="adminUsername">Username (agents only)</Label>
+          <Input
+            id="adminUsername"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Leave empty for master admin"
+            autoComplete="username"
+          />
+        </div>
         <div>
           <Label htmlFor="adminPassword">Password</Label>
           <Input
@@ -77,23 +91,19 @@ export function AdminLoginClient() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            autoComplete="current-password"
+            required
           />
-          {error && (
-            <p className="mt-2 text-sm font-medium text-destructive">{error}</p>
-          )}
         </div>
-
-        <Button
-          type="submit"
-          variant="gold"
-          size="lg"
-          className="w-full rounded-full shadow-gold"
-          disabled={loading || password.trim().length === 0}
-        >
-          {loading ? "Signing in..." : "Sign In"}
+        <Button type="submit" className="w-full rounded-full" disabled={loading || !password}>
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
+        {error && (
+          <p className="text-center text-sm font-semibold text-destructive" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   );
 }
-

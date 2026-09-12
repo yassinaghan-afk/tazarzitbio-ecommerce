@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   Boxes,
+  Briefcase,
   Globe,
   Home,
   LogOut,
@@ -18,6 +19,7 @@ import {
 import { BannersManager } from "@/components/admin/banners-manager";
 import { HomepageEditor } from "@/components/admin/homepage-editor";
 import { LandingPagesManager } from "@/components/admin/landing-pages-manager";
+import { OpsAdminPanel } from "@/components/admin/ops-admin-panel";
 import { OrdersTable } from "@/components/admin/orders-table";
 import { PricingDashboard } from "@/components/admin/pricing-dashboard";
 import { ProductsManager } from "@/components/admin/products-manager";
@@ -29,6 +31,7 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 
 type AdminSection =
   | "overview"
+  | "ops"
   | "orders"
   | "products"
   | "landing-pages"
@@ -37,15 +40,16 @@ type AdminSection =
   | "shipping"
   | "analytics";
 
-const NAV: { id: AdminSection; label: string; icon: React.ElementType; group?: string }[] = [
-  { id: "overview", label: "Overview", icon: BarChart3, group: "main" },
-  { id: "orders", label: "Orders", icon: ShoppingBag, group: "main" },
-  { id: "products", label: "Products", icon: Boxes, group: "content" },
-  { id: "landing-pages", label: "Landing Pages", icon: Globe, group: "content" },
-  { id: "homepage", label: "Homepage", icon: Home, group: "content" },
-  { id: "banners", label: "Banners", icon: Megaphone, group: "content" },
-  { id: "shipping", label: "Shipping", icon: Settings2, group: "settings" },
-  { id: "analytics", label: "Analytics", icon: TrendingUp, group: "settings" },
+const NAV: { id: AdminSection; label: string; labelAr: string; icon: React.ElementType; group?: string; financeOnly?: boolean }[] = [
+  { id: "overview", label: "Overview", labelAr: "نظرة عامة", icon: BarChart3, group: "main" },
+  { id: "ops", label: "Ops & Finance", labelAr: "عمليات ومالية", icon: Briefcase, group: "main", financeOnly: true },
+  { id: "orders", label: "Orders", labelAr: "الطلبات", icon: ShoppingBag, group: "main" },
+  { id: "products", label: "Products", labelAr: "المنتجات", icon: Boxes, group: "content" },
+  { id: "landing-pages", label: "Landing Pages", labelAr: "صفحات الهبوط", icon: Globe, group: "content" },
+  { id: "homepage", label: "Homepage", labelAr: "الرئيسية", icon: Home, group: "content" },
+  { id: "banners", label: "Banners", labelAr: "الإعلانات", icon: Megaphone, group: "content" },
+  { id: "shipping", label: "Shipping", labelAr: "الشحن", icon: Settings2, group: "settings" },
+  { id: "analytics", label: "Analytics", labelAr: "التحليلات", icon: TrendingUp, group: "settings" },
 ];
 
 const SETTINGS_LINKS = [
@@ -94,11 +98,17 @@ export function AdminDashboard() {
   const [section, setSection] = useState<AdminSection>("overview");
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locale, setLocale] = useState<"en" | "ar">("en");
+  const [session, setSession] = useState<{
+    role: string;
+    userName: string;
+    permissions: { finance?: boolean; content?: boolean; ordersAll?: boolean };
+  } | null>(null);
 
   const refreshOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/orders", { cache: "no-store" });
+      const res = await fetch("/api/admin/orders?pageSize=100", { cache: "no-store" });
       const data = (await res.json()) as { orders: OrderRecord[] };
       setOrders(Array.isArray(data.orders) ? data.orders : []);
     } finally {
@@ -108,7 +118,16 @@ export function AdminDashboard() {
 
   useEffect(() => {
     void refreshOrders();
+    void fetch("/api/admin/session", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: typeof session) => {
+        if (d && "role" in (d as object)) setSession(d as NonNullable<typeof session>);
+      })
+      .catch(() => null);
   }, []);
+
+  const canFinance = session?.permissions?.finance !== false && session?.role !== "confirmation_agent";
+  const canContent = session?.role !== "confirmation_agent";
 
   const stats = useMemo(() => {
     const totalOrders = orders.length;
@@ -145,18 +164,45 @@ export function AdminDashboard() {
   };
 
   const groups = [
-    { label: "Main", ids: NAV.filter((n) => n.group === "main") },
-    { label: "Content", ids: NAV.filter((n) => n.group === "content") },
-    { label: "Settings", ids: NAV.filter((n) => n.group === "settings") },
+    { label: locale === "ar" ? " رئيسي" : "Main", ids: NAV.filter((n) => n.group === "main" && (!n.financeOnly || canFinance)) },
+    ...(canContent
+      ? [
+          { label: locale === "ar" ? "المحتوى" : "Content", ids: NAV.filter((n) => n.group === "content") },
+          { label: locale === "ar" ? "الإعدادات" : "Settings", ids: NAV.filter((n) => n.group === "settings") },
+        ]
+      : []),
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr]" dir="ltr">
+    <div className="grid gap-6 lg:grid-cols-[260px_1fr]" dir={locale === "ar" ? "rtl" : "ltr"}>
       {/* Sidebar */}
       <aside className="rounded-3xl border border-border/60 bg-card/60 p-4 shadow-warm-md h-fit lg:sticky lg:top-6">
         <div className="mb-5">
           <BrandLogo variant="admin" className="mb-3" />
-          <h1 className="text-xl font-extrabold text-foreground">Admin Panel</h1>
+          <h1 className="text-xl font-extrabold text-foreground">
+            {locale === "ar" ? "لوحة الإدارة" : "Admin Panel"}
+          </h1>
+          {session && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {session.userName} · {session.role}
+            </p>
+          )}
+          <div className="mt-2 flex gap-1">
+            <button
+              type="button"
+              className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", locale === "en" ? "bg-accent text-accent-foreground" : "bg-secondary")}
+              onClick={() => setLocale("en")}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", locale === "ar" ? "bg-accent text-accent-foreground" : "bg-secondary")}
+              onClick={() => setLocale("ar")}
+            >
+              ع
+            </button>
+          </div>
         </div>
 
         <nav className="space-y-4">
@@ -166,7 +212,7 @@ export function AdminDashboard() {
                 {g.label}
               </p>
               <div className="space-y-0.5">
-                {g.ids.map(({ id, label, icon: Icon }) => (
+                {g.ids.map(({ id, label, labelAr, icon: Icon }) => (
                   <button
                     key={id}
                     type="button"
@@ -179,11 +225,11 @@ export function AdminDashboard() {
                     )}
                   >
                     <Icon className="size-4 shrink-0 text-accent" />
-                    {label}
+                    {locale === "ar" ? labelAr : label}
                   </button>
                 ))}
-                {g.label === "Settings" &&
-                  SETTINGS_LINKS.map(({ href, label, icon: Icon, description }) => (
+                {g.label.includes("Settings") || g.label.includes("الإعدادات")
+                  ? SETTINGS_LINKS.map(({ href, label, labelAr, icon: Icon, description }) => (
                     <Link
                       key={href}
                       href={href}
@@ -191,13 +237,14 @@ export function AdminDashboard() {
                     >
                       <Icon className="size-4 shrink-0 text-accent" />
                       <span>
-                        {label}
+                        {locale === "ar" ? labelAr : label}
                         <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">
                           {description}
                         </span>
                       </span>
                     </Link>
-                  ))}
+                  ))
+                  : null}
               </div>
             </div>
           ))}
@@ -276,11 +323,13 @@ export function AdminDashboard() {
           </div>
         )}
 
+        {section === "ops" && canFinance && <OpsAdminPanel locale={locale} />}
+
         {section === "orders" && (
           <OrdersTable orders={orders} loading={loading} onRefresh={refreshOrders} />
         )}
 
-        {section === "products" && (
+        {section === "products" && canContent && (
           <div className="space-y-6">
             <ProductsManager />
             <div className="rounded-3xl border border-border/60 bg-card/60 p-5 shadow-warm-md">
