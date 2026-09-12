@@ -270,3 +270,33 @@ export function markPurchaseTracked(orderId: string): void {
     /* ignore quota errors */
   }
 }
+
+/** Post-purchase upsell funnel — logs only; does not fire Purchase. */
+export function trackUpsellView(payload: { orderId: string }): void {
+  if (typeof window === "undefined") return;
+  logTracking("UpsellView", payload);
+}
+
+export function trackUpsellAdd(payload: {
+  orderId: string;
+  productId: string;
+  quantity: number;
+  value: number;
+}): void {
+  if (typeof window === "undefined") return;
+  logTracking("UpsellAdd", payload);
+}
+
+export function trackUpsellSkip(payload: { orderId: string }): void {
+  if (typeof window === "undefined") return;
+  logTracking("UpsellSkip", payload);
+}
+
+export function trackUpsellComplete(payload: {
+  orderId: string;
+  itemCount: number;
+  upsellTotal: number;
+}): void {
+  if (typeof window === "undefined") return;
+  logTracking("UpsellComplete", payload);
+}

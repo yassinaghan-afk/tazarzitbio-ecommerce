@@ -65,7 +65,10 @@ interface CommerceContextValue {
   crossSellProducts: ReturnType<typeof getHoneyUpsellRecommendations>;
   submitOrder: (
     form: CheckoutFormData,
-  ) => { success: boolean; errors?: import("@/lib/checkout/types").CheckoutFormErrors };
+  ) => Promise<{
+    success: boolean;
+    errors?: import("@/lib/checkout/types").CheckoutFormErrors;
+  }>;
 }
 
 const CommerceContext = createContext<CommerceContextValue | null>(null);
@@ -284,7 +287,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
 
   const submitOrder = useCallback(
-    (form: CheckoutFormData) => {
+    async (form: CheckoutFormData) => {
       const errors = validateCheckoutFormLocalized(form, locale);
       if (hasCheckoutErrors(errors)) return { success: false, errors };
       if (items.length === 0) return { success: false };
@@ -321,8 +324,6 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         },
       };
 
-      // Optimistic local order for thank-you UX (does NOT fire Purchase yet).
-      const optimisticId = `TZ-${placedAt.replace(/[-:TZ.]/g, "").slice(0, 14)}-LOCAL`;
       const lineItems = items.map((i) => ({
         nameAr: i.nameAr,
         offerLabel: i.offerLabel,
@@ -338,68 +339,61 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         price: i.unitPrice,
         quantity: i.quantity,
       }));
-      const optimistic: PlacedOrder = {
-        id: optimisticId,
-        placedAt,
-        customer: form,
-        items: lineItems.map(({ nameAr, offerLabel, quantity, unitPrice, slug }) => ({
-          nameAr,
-          offerLabel,
-          quantity,
-          unitPrice,
-          slug,
-        })),
-        subtotal: shipping.subtotal,
-        shippingFee: shipping.shippingFee,
-        total: shipping.total,
-        shippingLabelFr: shipping.labelFr,
-        shippingLabelAr: shipping.labelAr,
-      };
 
-      sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(optimistic));
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(createPayload),
+        });
+        if (!res.ok) return { success: false };
 
-      // Persist order. Purchase Meta Pixel fires ONLY after the backend accepts the order.
-      void fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(createPayload),
-      })
-        .then(async (res) => {
-          if (!res.ok) return null;
-          return (await res.json()) as CreateOrderResponse;
-        })
-        .then((data) => {
-          if (!data?.order?.orderId) return;
+        const data = (await res.json()) as CreateOrderResponse;
+        const realOrderId = data.order?.orderId;
+        if (!realOrderId) return { success: false };
 
-          const realOrderId = data.order.orderId;
-          const eventId =
-            data.meta?.purchaseEventId ??
-            `purchase_${realOrderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40)}`;
+        const eventId =
+          data.meta?.purchaseEventId ??
+          `purchase_${realOrderId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40)}`;
 
-          const updated: PlacedOrder = { ...optimistic, id: realOrderId };
-          try {
-            sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(updated));
-          } catch {
-            /* ignore */
-          }
+        const placed: PlacedOrder = {
+          id: realOrderId,
+          placedAt: data.order.createdAt ?? placedAt,
+          customer: form,
+          items: lineItems,
+          subtotal: data.order.subtotal ?? shipping.subtotal,
+          shippingFee: data.order.shippingPrice ?? shipping.shippingFee,
+          total: data.order.total ?? shipping.total,
+          shippingLabelFr: shipping.labelFr,
+          shippingLabelAr: shipping.labelAr,
+          upsellToken: data.meta?.upsellToken ?? data.order.upsellToken,
+          upsellCompleted: false,
+          thankYouPath: "/thank-you",
+        };
 
-          // Browser Pixel Purchase — same event_id as server CAPI (dedupe at Meta).
-          trackPurchase({
-            orderId: realOrderId,
-            products: purchaseProducts,
-            subtotal: data.order.subtotal ?? shipping.subtotal,
-            shipping: data.order.shippingPrice ?? shipping.shippingFee,
-            total: data.order.total ?? shipping.total,
-            eventId,
-          });
-        })
-        .catch(() => null);
+        try {
+          sessionStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(placed));
+        } catch {
+          /* ignore */
+        }
 
-      clearCart();
-      setCoupon(null);
-      setCheckoutOpen(false);
-      router.push("/thank-you");
-      return { success: true };
+        trackPurchase({
+          orderId: realOrderId,
+          products: purchaseProducts,
+          subtotal: placed.subtotal,
+          shipping: placed.shippingFee,
+          total: placed.total,
+          eventId,
+        });
+
+        clearCart();
+        setCoupon(null);
+        setCheckoutOpen(false);
+        router.push("/upsell");
+        return { success: true };
+      } catch {
+        return { success: false };
+      }
     },
     [items, shipping, coupon, clearCart, router, locale],
   );

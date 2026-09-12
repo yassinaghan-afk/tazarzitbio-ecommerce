@@ -145,6 +145,7 @@ export function CheckoutDrawer() {
   const [form, setForm] = useState<CheckoutFormData>(emptyForm);
   const [errors, setErrors] = useState<CheckoutFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const checkoutTrackedRef = useRef(false);
 
   useEffect(() => {
@@ -174,19 +175,22 @@ export function CheckoutDrawer() {
     setErrors({});
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const nextErrors = validateCheckoutFormLocalized(form, locale);
     setErrors(nextErrors);
     if (hasCheckoutErrors(nextErrors)) return;
 
     setSubmitting(true);
-    const result = submitOrder(form);
+    setSubmitError("");
+    const result = await submitOrder(form);
     if (result.errors) setErrors(result.errors);
     if (result.success) {
       setForm(emptyForm);
       setErrors({});
       setStep("review");
+    } else if (!result.errors) {
+      setSubmitError("تعذر إرسال الطلب. حاول مرة أخرى.");
     }
     setSubmitting(false);
   };
@@ -236,6 +240,11 @@ export function CheckoutDrawer() {
         >
           {submitting ? t("checkout.submitting") : t("checkout.confirm")}
         </Button>
+        {submitError && (
+          <p className="text-center text-xs font-semibold text-red-600" role="alert">
+            {submitError}
+          </p>
+        )}
         <Button
           type="button"
           variant="ghost"

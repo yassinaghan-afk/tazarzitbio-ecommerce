@@ -253,6 +253,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
               quantity: offer.bottles,
               unitPrice: offer.price,
               slug: AMLOU_ROYAL_SLUG,
+              productId: AMLOU_ROYAL_ID,
             },
           ],
           subtotal: data.order.subtotal,
@@ -266,6 +267,9 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
             data.order.shippingPrice === 0
               ? "التوصيل مجاناً"
               : `+ ${data.order.shippingPrice} درهم توصيل`,
+          upsellToken: data.meta?.upsellToken ?? data.order.upsellToken,
+          upsellCompleted: false,
+          thankYouPath: "/royal/thank-you",
         }),
       );
 
@@ -286,7 +290,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         eventId: data.meta?.purchaseEventId,
       });
 
-      router.push(withCurrentSearch("/royal/thank-you"));
+      router.push(withCurrentSearch("/upsell"));
     } catch {
       setSubmitting(false);
       setSubmitError("مشكلة فالشبكة. تأكد من الاتصال وحاول مرة أخرى.");

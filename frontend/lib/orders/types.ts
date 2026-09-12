@@ -20,6 +20,8 @@ export interface OrderLineItem {
   unitPrice: number;
   quantity: number;
   isBundle?: boolean;
+  /** Post-purchase upsell line — excluded from "original" product set */
+  isUpsell?: boolean;
 }
 
 export interface OrderRecord {
@@ -44,6 +46,10 @@ export interface OrderRecord {
   /** page the order came from (referer) */
   source?: string;
   createdAt: string; // ISO
+  /** Secret token required to attach post-purchase upsell items */
+  upsellToken?: string;
+  /** Once true, upsell mutations are rejected */
+  upsellCompleted?: boolean;
 }
 
 export interface CreateOrderInput {
@@ -64,7 +70,20 @@ export interface CreateOrderResponse {
   /** Shared Meta Pixel + CAPI event_id for Purchase deduplication */
   meta?: {
     purchaseEventId: string;
+    /** Present when upsell flow is available for this order */
+    upsellToken?: string;
   };
+}
+
+export interface UpsellItemInput {
+  productId: string;
+  offerId?: string;
+  quantity: number;
+}
+
+export interface UpsellOrderResponse {
+  order: OrderRecord;
+  upsellCompleted: boolean;
 }
 
 export const ORDER_STATUSES: { id: OrderStatus; labelAr: string; label: string }[] = [

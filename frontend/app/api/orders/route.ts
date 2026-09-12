@@ -105,6 +105,7 @@ export async function POST(req: Request) {
     .randomUUID()
     .slice(0, 6)
     .toUpperCase()}`;
+  const upsellToken = crypto.randomBytes(24).toString("hex");
 
   const order: OrderRecord = {
     orderId,
@@ -123,6 +124,8 @@ export async function POST(req: Request) {
     ...(customerNote ? { customerNote } : {}),
     source: req.headers.get("referer") ?? "",
     createdAt,
+    upsellToken,
+    upsellCompleted: false,
   };
 
   await updateStore((prev) => ({
@@ -209,10 +212,10 @@ export async function POST(req: Request) {
   }
 
   const res: CreateOrderResponse & {
-    meta?: { purchaseEventId: string };
+    meta?: { purchaseEventId: string; upsellToken?: string };
   } = {
     order,
-    meta: { purchaseEventId: eventId },
+    meta: { purchaseEventId: eventId, upsellToken },
   };
   return NextResponse.json(res);
 }
