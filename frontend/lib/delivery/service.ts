@@ -1,21 +1,29 @@
-
 import crypto from "node:crypto";
 
 import type { DeliveryStatus } from "@/lib/admin/ops-types";
-import { getDeliveryProvider } from "@/lib/delivery/registry";
+import { resolveEliteStatusName } from "@/lib/delivery/elite/status-catalog";
 import {
-  DEFAULT_DELIVERY_STATE,
+  DEFAULT_ELITE_STATUS_MAP,
+  mapEliteStatusId,
+} from "@/lib/delivery/elite/status-map";
+import { getDeliveryProvider } from "@/lib/delivery/registry";
+import { resolveEliteSecrets } from "@/lib/delivery/secrets";
+import {
   normalizeDeliveryState,
   type DeliveryIntegrationLog,
   type DeliveryProviderId,
   type DeliveryStatusHistoryEntry,
+  type EliteWebhookEvent,
+  type EliteWebhookProcessStatus,
   type OrderShipment,
 } from "@/lib/delivery/types";
 import { logAudit } from "@/lib/server/audit";
 import { readStore, updateStore } from "@/lib/server/store";
 
 const MAX_LOGS = 300;
-const MAX_WEBHOOK_IDS = 500;
+const MAX_WEBHOOK_IDS = 800;
+const MAX_WEBHOOK_EVENTS = 400;
+const STALE_SYNC_MS = 12 * 60 * 60 * 1000;
 
 export async function appendDeliveryLog(
   entry: Omit<DeliveryIntegrationLog, "id" | "at"> & { at?: string },
@@ -31,19 +39,21 @@ export async function appendDeliveryLog(
     errorCode: entry.errorCode,
     message: entry.message,
   };
-  await updateStore((prev) => ({
-    ...prev,
-    delivery: {
-      ...normalizeDeliveryState(prev.delivery),
-      integrationLogs: [log, ...(prev.delivery?.integrationLogs ?? [])].slice(
-        0,
-        MAX_LOGS,
-      ),
-    },
-  }));
+  await updateStore((prev) => {
+    const delivery = normalizeDeliveryState(prev.delivery);
+    return {
+      ...prev,
+      delivery: {
+        ...delivery,
+        integrationLogs: [log, ...delivery.integrationLogs].slice(0, MAX_LOGS),
+      },
+    };
+  });
 }
 
-function historyEntry(partial: Omit<DeliveryStatusHistoryEntry, "id" | "at"> & { at?: string }): DeliveryStatusHistoryEntry {
+function historyEntry(
+  partial: Omit<DeliveryStatusHistoryEntry, "id" | "at"> & { at?: string },
+): DeliveryStatusHistoryEntry {
   return {
     id: crypto.randomUUID().slice(0, 8),
     at: partial.at ?? new Date().toISOString(),
@@ -56,9 +66,79 @@ function historyEntry(partial: Omit<DeliveryStatusHistoryEntry, "id" | "at"> & {
   };
 }
 
+function webhookEventKey(payload: {
+  package_id: string;
+  notif_type: string;
+  delivery_status: number | string;
+  event_time?: string;
+}): string {
+  return `${payload.package_id}|${payload.notif_type}|${payload.delivery_status}|${payload.event_time ?? ""}`;
+}
+
+function parseEliteEventTime(eventTime?: string): string {
+  if (!eventTime) return new Date().toISOString();
+  const normalized = eventTime.includes("T")
+    ? eventTime
+    : eventTime.replace(" ", "T") + "+01:00";
+  const d = new Date(normalized);
+  return Number.isFinite(d.getTime()) ? d.toISOString() : new Date().toISOString();
+}
+
+function findOrderForElitePackage(
+  orders: {
+    orderId: string;
+    total: number;
+    orderStatus?: string;
+    deliveryStatus?: DeliveryStatus;
+    paymentCollectionStatus?: string;
+    shipment?: OrderShipment;
+    deliveryHistory?: DeliveryStatusHistoryEntry[];
+  }[],
+  packageId: string,
+  internalId?: string,
+) {
+  const byPackage = orders.find(
+    (o) =>
+      o.shipment?.providerId === "elite" &&
+      (o.shipment.externalShipmentId === packageId ||
+        o.shipment.trackingNumber === packageId),
+  );
+  if (byPackage) return byPackage;
+
+  if (internalId) {
+    const byInternal = orders.find(
+      (o) =>
+        o.orderId === internalId ||
+        (o.shipment?.providerId === "elite" &&
+          o.shipment.internalId === internalId),
+    );
+    if (byInternal) return byInternal;
+  }
+  return undefined;
+}
+
+function deriveOrderStatus(
+  current: string | undefined,
+  internalStatus: DeliveryStatus | undefined,
+): string | undefined {
+  if (!internalStatus) return current;
+  if (internalStatus === "delivered") return "delivered";
+  if (internalStatus === "returned") return "returned";
+  if (internalStatus === "cancelled") return "cancelled";
+  if (
+    (internalStatus === "shipped" || internalStatus === "in_transit") &&
+    (current === "confirmed" ||
+      current === "preparing" ||
+      current === "pending" ||
+      current === "contacted")
+  ) {
+    return "shipped";
+  }
+  return current;
+}
+
 /**
  * Controlled send-to-courier action.
- * Does not invent Elite HTTP calls — provider returns API_DOCS_REQUIRED until wired.
  */
 export async function sendOrderToDelivery(
   orderId: string,
@@ -103,13 +183,25 @@ export async function sendOrderToDelivery(
     return result;
   }
 
+  const baseUrl =
+    resolveEliteSecrets(store.delivery?.providers?.elite).baseUrl || undefined;
+  const externalStatusName =
+    result.shipment.externalStatusName ||
+    (await resolveEliteStatusName(result.shipment.externalStatus, baseUrl));
+
+  const now = new Date().toISOString();
   const shipment: OrderShipment = {
     ...result.shipment,
     providerId,
     idempotencyKey,
+    internalId: order.orderId,
     customerShippingCharge: order.shippingPrice,
-    createdAt: result.shipment.createdAt ?? new Date().toISOString(),
-    lastSyncAt: new Date().toISOString(),
+    externalStatusName,
+    createdAt: result.shipment.createdAt ?? now,
+    eliteLinkedAt: result.shipment.eliteLinkedAt ?? now,
+    lastSyncAt: now,
+    syncState: result.shipment.externalShipmentId ? "synced" : "error",
+    elitePaymentStatus: result.shipment.elitePaymentStatus ?? "unknown",
   };
 
   await updateStore((prev) => ({
@@ -122,7 +214,9 @@ export async function sendOrderToDelivery(
           externalStatus: shipment.externalStatus,
           internalStatus: shipment.internalStatus,
           source: "api",
-          note: result.alreadyExists ? "Existing shipment reused" : "Shipment create requested",
+          note: result.alreadyExists
+            ? `Linked Elite package ${shipment.externalShipmentId}`
+            : `Sent to Elite — package ${shipment.externalShipmentId}`,
         }),
         ...(o.deliveryHistory ?? []),
       ].slice(0, 100);
@@ -131,11 +225,11 @@ export async function sendOrderToDelivery(
           id: crypto.randomUUID().slice(0, 8),
           action: result.alreadyExists
             ? "Delivery shipment already exists"
-            : "Sent to delivery company",
+            : "Sent to Elite Delivery",
           userId: actor?.userId,
           userName: actor?.userName,
-          note: shipment.trackingNumber,
-          at: new Date().toISOString(),
+          note: shipment.externalShipmentId || shipment.trackingNumber,
+          at: now,
         },
         ...(o.timeline ?? []),
       ].slice(0, 100);
@@ -145,7 +239,11 @@ export async function sendOrderToDelivery(
         deliveryHistory,
         timeline,
         deliveryStatus: shipment.internalStatus ?? o.deliveryStatus,
-        updatedAt: new Date().toISOString(),
+        orderStatus: deriveOrderStatus(
+          o.orderStatus,
+          shipment.internalStatus,
+        ) as typeof o.orderStatus,
+        updatedAt: now,
       };
     }),
   }));
@@ -153,7 +251,7 @@ export async function sendOrderToDelivery(
   void logAudit(
     result.alreadyExists
       ? `Delivery shipment exists ${orderId}`
-      : `Delivery send ${orderId}`,
+      : `Delivery send ${orderId} → ${shipment.externalShipmentId}`,
     "delivery",
     orderId,
   );
@@ -161,6 +259,11 @@ export async function sendOrderToDelivery(
   return { ...result, shipment };
 }
 
+/**
+ * Manual sync fallback.
+ * Elite docs expose no package GET — refresh re-resolves status names from
+ * GET /statuses, remaps internal status, and updates sync metadata.
+ */
 export async function refreshOrderDelivery(
   orderId: string,
   providerId: DeliveryProviderId = "elite",
@@ -174,12 +277,23 @@ export async function refreshOrderDelivery(
     };
   }
 
+  const store = await readStore();
+  const order = store.orders.find((o) => o.orderId === orderId);
+  if (!order?.shipment?.externalShipmentId) {
+    return {
+      ok: false as const,
+      errorCode: "NO_SHIPMENT",
+      errorMessage: "لا توجد شحنة Elite مرتبطة بهذا الطلب",
+    };
+  }
+
   const result = await provider.refreshShipment(orderId);
   await appendDeliveryLog({
     providerId,
     requestType: "refresh_shipment",
     orderId,
-    externalShipmentId: result.shipment?.externalShipmentId,
+    externalShipmentId:
+      result.shipment?.externalShipmentId || order.shipment.externalShipmentId,
     success: result.ok,
     errorCode: result.errorCode,
     message: result.errorMessage,
@@ -187,51 +301,164 @@ export async function refreshOrderDelivery(
 
   if (!result.ok || !result.shipment) return result;
 
+  const baseUrl =
+    resolveEliteSecrets(store.delivery?.providers?.elite).baseUrl || undefined;
+  const statusMap = {
+    ...DEFAULT_ELITE_STATUS_MAP,
+    ...(store.delivery?.providers?.elite?.config.statusMap ?? {}),
+  };
+
+  const externalStatus = result.shipment.externalStatus;
+  const externalStatusName =
+    (await resolveEliteStatusName(externalStatus, baseUrl)) ||
+    result.shipment.externalStatusName;
+  const internalStatus =
+    (externalStatus != null
+      ? mapEliteStatusId(externalStatus, statusMap)
+      : null) ?? result.shipment.internalStatus;
+
+  const now = new Date().toISOString();
   const nextShipment: OrderShipment = {
     ...result.shipment,
     providerId,
-    lastSyncAt: new Date().toISOString(),
+    internalId: result.shipment.internalId || order.orderId,
+    externalStatus,
+    externalStatusName,
+    internalStatus: internalStatus ?? result.shipment.internalStatus,
+    lastSyncAt: now,
+    syncState: "synced",
+    lastError: undefined,
   };
 
   await updateStore((prev) => ({
     ...prev,
     orders: prev.orders.map((o) => {
       if (o.orderId !== orderId) return o;
-      const deliveryHistory = [
-        historyEntry({
-          providerId,
-          externalStatus: nextShipment.externalStatus,
-          internalStatus: nextShipment.internalStatus,
-          source: "api",
-          note: "Status refresh",
-        }),
-        ...(o.deliveryHistory ?? []),
-      ].slice(0, 100);
+      const statusChanged =
+        nextShipment.internalStatus !== o.shipment?.internalStatus ||
+        nextShipment.externalStatus !== o.shipment?.externalStatus;
+      const deliveryHistory = statusChanged
+        ? [
+            historyEntry({
+              providerId,
+              externalStatus: nextShipment.externalStatus,
+              internalStatus: nextShipment.internalStatus,
+              source: "api",
+              note: "Manual Sync with Elite (status catalog remap)",
+            }),
+            ...(o.deliveryHistory ?? []),
+          ].slice(0, 100)
+        : o.deliveryHistory;
       return {
         ...o,
         shipment: nextShipment,
         deliveryHistory,
         deliveryStatus: nextShipment.internalStatus ?? o.deliveryStatus,
-        updatedAt: new Date().toISOString(),
+        orderStatus: deriveOrderStatus(
+          o.orderStatus,
+          nextShipment.internalStatus,
+        ) as typeof o.orderStatus,
+        updatedAt: now,
       };
     }),
   }));
 
-  return { ...result, shipment: nextShipment };
+  return {
+    ...result,
+    shipment: nextShipment,
+    note:
+      "Elite has no package status GET endpoint — remapped from cached Elite status IDs and last known delivery_status.",
+  };
 }
 
-export async function rememberWebhookEventId(eventId: string): Promise<boolean> {
+/**
+ * Mark active Elite shipments without recent webhooks as delayed,
+ * and re-resolve Elite status names from GET /statuses.
+ */
+export async function runEliteFallbackSync(limit = 40): Promise<{
+  ok: true;
+  scanned: number;
+  updated: number;
+  delayed: number;
+}> {
   const store = await readStore();
-  const ids = store.delivery?.processedWebhookEventIds ?? [];
-  if (ids.includes(eventId)) return false;
-  await updateStore((prev) => ({
-    ...prev,
-    delivery: {
-      ...normalizeDeliveryState(prev.delivery),
-      processedWebhookEventIds: [eventId, ...ids].slice(0, MAX_WEBHOOK_IDS),
-    },
-  }));
-  return true;
+  const baseUrl =
+    resolveEliteSecrets(store.delivery?.providers?.elite).baseUrl || undefined;
+  const statusMap = {
+    ...DEFAULT_ELITE_STATUS_MAP,
+    ...(store.delivery?.providers?.elite?.config.statusMap ?? {}),
+  };
+
+  const active = store.orders.filter((o) => {
+    if (o.shipment?.providerId !== "elite" || !o.shipment.externalShipmentId) {
+      return false;
+    }
+    const st = o.shipment.internalStatus || o.deliveryStatus;
+    return (
+      st !== "delivered" &&
+      st !== "returned" &&
+      st !== "cancelled" &&
+      st !== "refused"
+    );
+  });
+
+  let updated = 0;
+  let delayed = 0;
+  const now = Date.now();
+  const targets = active.slice(0, limit);
+
+  const patches = new Map<string, OrderShipment>();
+  for (const o of targets) {
+    const s = o.shipment!;
+    const lastEvent = s.eliteLastEventAt || s.lastWebhookAt || s.lastSyncAt;
+    const age = lastEvent ? now - new Date(lastEvent).getTime() : Infinity;
+    const isDelayed = age > STALE_SYNC_MS;
+    if (isDelayed) delayed += 1;
+
+    const externalStatusName =
+      (await resolveEliteStatusName(s.externalStatus, baseUrl)) ||
+      s.externalStatusName;
+    const internalStatus =
+      (s.externalStatus != null
+        ? mapEliteStatusId(s.externalStatus, statusMap)
+        : null) ?? s.internalStatus;
+
+    patches.set(o.orderId, {
+      ...s,
+      externalStatusName,
+      internalStatus: internalStatus ?? s.internalStatus,
+      syncState: isDelayed ? "delayed" : s.syncState === "error" ? "error" : "synced",
+      lastSyncAt: new Date().toISOString(),
+    });
+  }
+
+  if (patches.size > 0) {
+    let count = 0;
+    await updateStore((prev) => ({
+      ...prev,
+      orders: prev.orders.map((o) => {
+        const next = patches.get(o.orderId);
+        if (!next) return o;
+        count += 1;
+        return {
+          ...o,
+          shipment: next,
+          deliveryStatus: next.internalStatus ?? o.deliveryStatus,
+          updatedAt: new Date().toISOString(),
+        };
+      }),
+    }));
+    updated = count;
+  }
+
+  await appendDeliveryLog({
+    providerId: "elite",
+    requestType: "fallback_sync",
+    success: true,
+    message: `scanned=${targets.length} updated=${updated} delayed=${delayed}`,
+  });
+
+  return { ok: true, scanned: targets.length, updated, delayed };
 }
 
 export function computeDeliveryOverview(
@@ -278,7 +505,11 @@ export function computeDeliveryOverview(
 
   return {
     totalShipments: withShip.length,
-    pending: count("preparing") + count("confirmed") + count("new") + count("pending_confirmation"),
+    pending:
+      count("preparing") +
+      count("confirmed") +
+      count("new") +
+      count("pending_confirmation"),
     inTransit: count("shipped") + count("in_transit"),
     delivered: count("delivered"),
     returned: count("returned"),
@@ -289,142 +520,276 @@ export function computeDeliveryOverview(
   };
 }
 
-/**
- * Apply verified Elite webhook payload to the matching local order.
- * Idempotent via rememberWebhookEventId.
- */
-export async function applyEliteWebhook(payload: {
+export type EliteWebhookPayloadInput = {
   package_id: string;
   delivery_status: number | string;
   event_time?: string;
   notif_type: string;
-}): Promise<{
+  /** Optional — only if Elite includes it */
+  internal_id?: string;
+};
+
+/**
+ * Apply verified Elite webhook payload atomically (idempotent).
+ */
+export async function applyEliteWebhook(payload: EliteWebhookPayloadInput): Promise<{
   ok: boolean;
   orderId?: string;
   duplicate?: boolean;
+  unmatched?: boolean;
   errorCode?: string;
   errorMessage?: string;
 }> {
-  const eventId = `${payload.package_id}|${payload.notif_type}|${payload.delivery_status}|${payload.event_time ?? ""}`;
-  const isNew = await rememberWebhookEventId(eventId);
-  if (!isNew) {
+  const eventKey = webhookEventKey(payload);
+  const store = await readStore();
+  const delivery = normalizeDeliveryState(store.delivery);
+  const baseUrl =
+    resolveEliteSecrets(delivery.providers.elite).baseUrl || undefined;
+
+  const statusName = await resolveEliteStatusName(
+    payload.delivery_status,
+    baseUrl,
+  );
+  const eventAt = parseEliteEventTime(payload.event_time);
+  const now = new Date().toISOString();
+
+  const makeEvent = (
+    processStatus: EliteWebhookProcessStatus,
+    extra?: Partial<EliteWebhookEvent>,
+  ): EliteWebhookEvent => ({
+    id: crypto.randomUUID().slice(0, 12),
+    at: now,
+    packageId: payload.package_id,
+    notifType: payload.notif_type,
+    deliveryStatusId:
+      payload.delivery_status != null
+        ? String(payload.delivery_status)
+        : undefined,
+    deliveryStatusName: statusName,
+    eventTime: payload.event_time,
+    processStatus,
+    eventKey,
+    ...extra,
+  });
+
+  if (delivery.processedWebhookEventIds.includes(eventKey)) {
+    await updateStore((prev) => {
+      const d = normalizeDeliveryState(prev.delivery);
+      return {
+        ...prev,
+        delivery: {
+          ...d,
+          webhookEvents: [
+            makeEvent("duplicate", {
+              message: "Duplicate webhook ignored",
+              orderId: d.webhookEvents.find((e) => e.eventKey === eventKey)
+                ?.orderId,
+            }),
+            ...d.webhookEvents,
+          ].slice(0, MAX_WEBHOOK_EVENTS),
+        },
+      };
+    });
     return { ok: true, duplicate: true };
   }
 
-  const store = await readStore();
-  const order = store.orders.find(
-    (o) =>
-      o.shipment?.providerId === "elite" &&
-      (o.shipment.externalShipmentId === payload.package_id ||
-        o.shipment.trackingNumber === payload.package_id),
+  const order = findOrderForElitePackage(
+    store.orders,
+    payload.package_id,
+    payload.internal_id,
   );
 
   if (!order) {
-    await appendDeliveryLog({
-      providerId: "elite",
-      requestType: "webhook",
-      externalShipmentId: payload.package_id,
-      success: false,
-      errorCode: "UNKNOWN_PACKAGE",
-      message: `Webhook for unknown package_id (notif=${payload.notif_type})`,
+    await updateStore((prev) => {
+      const d = normalizeDeliveryState(prev.delivery);
+      const log: DeliveryIntegrationLog = {
+        id: crypto.randomUUID().slice(0, 10),
+        at: now,
+        providerId: "elite",
+        requestType: "webhook",
+        externalShipmentId: payload.package_id,
+        success: false,
+        errorCode: "UNKNOWN_PACKAGE",
+        message: `Unmatched Elite package (notif=${payload.notif_type})`,
+      };
+      return {
+        ...prev,
+        delivery: {
+          ...d,
+          processedWebhookEventIds: [eventKey, ...d.processedWebhookEventIds].slice(
+            0,
+            MAX_WEBHOOK_IDS,
+          ),
+          integrationLogs: [log, ...d.integrationLogs].slice(0, MAX_LOGS),
+          webhookEvents: [
+            makeEvent("unmatched", {
+              errorCode: "UNKNOWN_PACKAGE",
+              message: "Unmatched Elite package — no local order linked",
+            }),
+            ...d.webhookEvents,
+          ].slice(0, MAX_WEBHOOK_EVENTS),
+        },
+      };
     });
     return {
       ok: true,
+      unmatched: true,
       errorCode: "UNKNOWN_PACKAGE",
       errorMessage: "Package not found locally",
     };
   }
 
-  const { mapEliteStatusId, DEFAULT_ELITE_STATUS_MAP } = await import(
-    "@/lib/delivery/elite/status-map"
-  );
   const statusMap = {
     ...DEFAULT_ELITE_STATUS_MAP,
-    ...(store.delivery?.providers?.elite?.config.statusMap ?? {}),
+    ...(delivery.providers.elite.config.statusMap ?? {}),
   };
 
   let payoutStatus = order.shipment?.payoutStatus;
   let codReceived = order.shipment?.codReceived;
+  let elitePaymentStatus = order.shipment?.elitePaymentStatus ?? "unknown";
   let internalStatus = order.shipment?.internalStatus;
   let externalStatus = order.shipment?.externalStatus;
+  let externalStatusName = order.shipment?.externalStatusName;
+  let paymentCollectionStatus = (
+    order as { paymentCollectionStatus?: string }
+  ).paymentCollectionStatus;
 
-  if (payload.notif_type === "package_paid") {
+  const notif = payload.notif_type;
+  const hasStatus =
+    payload.delivery_status !== undefined &&
+    payload.delivery_status !== null &&
+    String(payload.delivery_status).trim() !== "";
+
+  if (notif === "package_paid") {
     payoutStatus = "paid";
+    elitePaymentStatus = "paid";
     codReceived = order.shipment?.codExpected ?? order.total;
-  } else if (payload.notif_type === "package_unpaid") {
+    paymentCollectionStatus = "paid_to_company";
+  } else if (notif === "package_unpaid") {
     payoutStatus = "pending";
+    elitePaymentStatus = "unpaid";
     codReceived = 0;
-  } else if (payload.notif_type === "ChangeStatus") {
-    externalStatus = String(payload.delivery_status);
-    internalStatus =
-      mapEliteStatusId(externalStatus, statusMap) ?? internalStatus;
+    paymentCollectionStatus = "pending_payout";
   }
 
-  const syncedAt = payload.event_time
-    ? new Date(payload.event_time.replace(" ", "T") + "+01:00").toISOString()
-    : new Date().toISOString();
+  // ChangeStatus and any notif that includes delivery_status
+  if (notif === "ChangeStatus" || hasStatus) {
+    if (hasStatus) {
+      externalStatus = String(payload.delivery_status);
+      externalStatusName = statusName || externalStatusName;
+      const mapped = mapEliteStatusId(externalStatus, statusMap);
+      if (mapped) internalStatus = mapped;
+    }
+  }
 
-  await updateStore((prev) => ({
-    ...prev,
-    orders: prev.orders.map((o) => {
-      if (o.orderId !== order.orderId) return o;
-      const shipment: OrderShipment = {
-        ...o.shipment!,
-        externalStatus,
-        internalStatus,
-        payoutStatus,
-        codReceived,
-        lastSyncAt: syncedAt,
-        lastError: undefined,
-      };
-      const deliveryHistory = [
-        historyEntry({
-          providerId: "elite",
-          externalStatus,
-          internalStatus,
-          rawEventId: eventId,
-          note: `webhook:${payload.notif_type}`,
-          source: "webhook",
-          at: syncedAt,
-        }),
-        ...(o.deliveryHistory ?? []),
-      ].slice(0, 100);
+  const ignored =
+    notif !== "ChangeStatus" &&
+    notif !== "package_paid" &&
+    notif !== "package_unpaid" &&
+    !hasStatus;
 
-      let orderStatus = o.orderStatus;
-      if (internalStatus === "delivered") orderStatus = "delivered";
-      else if (internalStatus === "returned") orderStatus = "returned";
-      else if (internalStatus === "cancelled") orderStatus = "cancelled";
-      else if (
-        (internalStatus === "shipped" || internalStatus === "in_transit") &&
-        (orderStatus === "confirmed" || orderStatus === "preparing")
-      ) {
-        orderStatus = "shipped";
-      }
+  await updateStore((prev) => {
+    const d = normalizeDeliveryState(prev.delivery);
+    const log: DeliveryIntegrationLog = {
+      id: crypto.randomUUID().slice(0, 10),
+      at: now,
+      providerId: "elite",
+      requestType: "webhook",
+      orderId: order.orderId,
+      externalShipmentId: payload.package_id,
+      success: !ignored,
+      errorCode: ignored ? "IGNORED_NOTIF" : undefined,
+      message: ignored
+        ? `Ignored notif_type=${notif}`
+        : `${notif} status=${payload.delivery_status}`,
+    };
 
+    const event = makeEvent(ignored ? "ignored" : "processed", {
+      orderId: order.orderId,
+      resolvedInternalStatus: internalStatus,
+      message: ignored
+        ? `Ignored notif_type=${notif}`
+        : `Applied ${notif}`,
+    });
+
+    if (ignored) {
       return {
-        ...o,
-        shipment,
-        deliveryHistory,
-        deliveryStatus: internalStatus ?? o.deliveryStatus,
-        orderStatus,
-        paymentCollectionStatus:
-          payload.notif_type === "package_paid"
-            ? "paid_to_company"
-            : payload.notif_type === "package_unpaid"
-              ? "pending_payout"
-              : o.paymentCollectionStatus,
-        updatedAt: new Date().toISOString(),
+        ...prev,
+        delivery: {
+          ...d,
+          processedWebhookEventIds: [
+            eventKey,
+            ...d.processedWebhookEventIds,
+          ].slice(0, MAX_WEBHOOK_IDS),
+          integrationLogs: [log, ...d.integrationLogs].slice(0, MAX_LOGS),
+          webhookEvents: [event, ...d.webhookEvents].slice(0, MAX_WEBHOOK_EVENTS),
+        },
       };
-    }),
-  }));
+    }
 
-  await appendDeliveryLog({
-    providerId: "elite",
-    requestType: "webhook",
-    orderId: order.orderId,
-    externalShipmentId: payload.package_id,
-    success: true,
-    message: `${payload.notif_type} status=${payload.delivery_status}`,
+    return {
+      ...prev,
+      delivery: {
+        ...d,
+        processedWebhookEventIds: [eventKey, ...d.processedWebhookEventIds].slice(
+          0,
+          MAX_WEBHOOK_IDS,
+        ),
+        integrationLogs: [log, ...d.integrationLogs].slice(0, MAX_LOGS),
+        webhookEvents: [event, ...d.webhookEvents].slice(0, MAX_WEBHOOK_EVENTS),
+      },
+      orders: prev.orders.map((o) => {
+        if (o.orderId !== order.orderId) return o;
+        const shipment: OrderShipment = {
+          ...o.shipment!,
+          providerId: "elite",
+          externalShipmentId:
+            o.shipment?.externalShipmentId || payload.package_id,
+          trackingNumber: o.shipment?.trackingNumber || payload.package_id,
+          internalId: o.shipment?.internalId || o.orderId,
+          externalStatus,
+          externalStatusName,
+          internalStatus,
+          payoutStatus,
+          codReceived,
+          elitePaymentStatus,
+          eliteLastEventAt: eventAt,
+          lastWebhookAt: now,
+          lastWebhookNotifType: notif,
+          lastSyncAt: now,
+          syncState: "synced",
+          lastError: undefined,
+          eliteLinkedAt: o.shipment?.eliteLinkedAt || now,
+        };
+        const deliveryHistory = [
+          historyEntry({
+            providerId: "elite",
+            externalStatus,
+            internalStatus,
+            rawEventId: eventKey,
+            note: `Elite webhook: ${notif}${statusName ? ` (${statusName})` : ""}`,
+            source: "webhook",
+            at: eventAt,
+          }),
+          ...(o.deliveryHistory ?? []),
+        ].slice(0, 100);
+
+        return {
+          ...o,
+          shipment,
+          deliveryHistory,
+          deliveryStatus: internalStatus ?? o.deliveryStatus,
+          orderStatus: deriveOrderStatus(
+            o.orderStatus,
+            internalStatus,
+          ) as typeof o.orderStatus,
+          paymentCollectionStatus:
+            (paymentCollectionStatus as typeof o.paymentCollectionStatus) ??
+            o.paymentCollectionStatus,
+          updatedAt: now,
+        };
+      }),
+    };
   });
 
   return { ok: true, orderId: order.orderId };

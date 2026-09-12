@@ -77,6 +77,8 @@ export type EliteWebhookPayload = {
   delivery_status: number | string;
   event_time?: string;
   notif_type: string;
+  /** Present only when Elite includes it */
+  internal_id?: string;
 };
 
 export function parseEliteWebhookPayload(
@@ -97,6 +99,10 @@ export function parseEliteWebhookPayload(
       event_time:
         typeof data.event_time === "string" ? data.event_time : undefined,
       notif_type: data.notif_type,
+      internal_id:
+        typeof data.internal_id === "string" && data.internal_id.trim()
+          ? data.internal_id.trim()
+          : undefined,
     };
   } catch {
     return null;
@@ -265,14 +271,28 @@ export class EliteDeliveryProvider implements DeliveryProvider {
     const internalStatus =
       this.mapStatusWithConfig(externalStatus, statusMap) ?? "preparing";
 
+    const { resolveEliteStatusName } = await import(
+      "@/lib/delivery/elite/status-catalog"
+    );
+    const externalStatusName = await resolveEliteStatusName(
+      externalStatus,
+      resolvedBase,
+    );
+
+    const now = new Date().toISOString();
     const shipment: OrderShipment = {
       providerId: "elite",
       externalShipmentId: resolvedId,
       trackingNumber: resolvedId,
+      internalId: order.orderId,
       externalStatus,
+      externalStatusName,
       internalStatus,
-      createdAt: new Date().toISOString(),
-      lastSyncAt: new Date().toISOString(),
+      createdAt: now,
+      eliteLinkedAt: now,
+      lastSyncAt: now,
+      syncState: "synced",
+      elitePaymentStatus: "unknown",
       customerShippingCharge: order.shippingPrice,
       codExpected: order.total,
       payoutStatus: "pending",
@@ -283,8 +303,8 @@ export class EliteDeliveryProvider implements DeliveryProvider {
   }
 
   /**
-   * Elite docs do not expose a dedicated single-shipment status GET.
-   * Status sync is webhook-driven; refresh re-stamps local shipment.
+   * Elite official docs do not expose a single-shipment status GET.
+   * Refresh verifies credentials + remaps last known status via /statuses.
    */
   async refreshShipment(orderId: string): Promise<RefreshShipmentResult> {
     const store = await readStore();
@@ -306,11 +326,42 @@ export class EliteDeliveryProvider implements DeliveryProvider {
       };
     }
 
+    const record = store.delivery?.providers?.elite;
+    const { baseUrl } = resolveEliteSecrets(record);
+    const resolvedBase = baseUrl || ELITE_DEFAULT_BASE_URL;
+
+    // Touch live Elite API (status catalog) so refresh is not a pure local stamp.
+    const { invalidateEliteStatusCatalog, resolveEliteStatusName } =
+      await import("@/lib/delivery/elite/status-catalog");
+    invalidateEliteStatusCatalog();
+    const externalStatusName = await resolveEliteStatusName(
+      order.shipment.externalStatus,
+      resolvedBase,
+    );
+
+    const verify = await this.verifyCredentials();
+    if (!verify.ok) {
+      return {
+        ok: false,
+        errorCode: "ELITE_UNREACHABLE",
+        errorMessage: verify.errorMessage || "تعذر التحقق من Elite",
+        shipment: {
+          ...order.shipment,
+          syncState: "error",
+          lastError: verify.errorMessage,
+        },
+      };
+    }
+
     return {
       ok: true,
       shipment: {
         ...order.shipment,
+        externalStatusName:
+          externalStatusName || order.shipment.externalStatusName,
         lastSyncAt: new Date().toISOString(),
+        syncState: "synced",
+        lastError: undefined,
       },
     };
   }

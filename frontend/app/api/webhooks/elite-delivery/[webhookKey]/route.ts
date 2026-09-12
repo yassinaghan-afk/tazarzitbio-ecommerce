@@ -19,6 +19,7 @@ export const dynamic = "force-dynamic";
  *   https://YOUR_DOMAIN/api/webhooks/elite-delivery/<WEBHOOK_SECRET>
  *
  * Docs: no HMAC — secret URL is the recommended protection.
+ * Returns HTTP 200 quickly after validation + atomic local apply.
  */
 export async function POST(
   req: Request,
@@ -52,12 +53,34 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "Invalid payload" }, { status: 400 });
   }
 
-  // Acknowledge quickly; processing is sync but lightweight (JSON store).
-  const result = await applyEliteWebhook(payload);
-  return NextResponse.json(
-    { ok: true, duplicate: result.duplicate ?? false, orderId: result.orderId },
-    { status: 200 },
-  );
+  // Valid payload → process atomically then ACK 200 (Elite may retry on non-2xx).
+  try {
+    const result = await applyEliteWebhook(payload);
+    return NextResponse.json(
+      {
+        ok: true,
+        duplicate: result.duplicate ?? false,
+        unmatched: result.unmatched ?? false,
+        orderId: result.orderId,
+      },
+      { status: 200 },
+    );
+  } catch (err) {
+    await appendDeliveryLog({
+      providerId: "elite",
+      requestType: "webhook",
+      externalShipmentId: payload.package_id,
+      success: false,
+      errorCode: "WEBHOOK_APPLY_FAILED",
+      message: err instanceof Error ? err.message.slice(0, 180) : "Apply failed",
+    });
+    // Still 200 so Elite does not hammer retries for transient store issues —
+    // event can be re-sent manually / investigated in webhook logs.
+    return NextResponse.json(
+      { ok: false, error: "Processing error logged" },
+      { status: 200 },
+    );
+  }
 }
 
 export async function GET(
@@ -67,7 +90,11 @@ export async function GET(
   const { webhookKey } = await ctx.params;
   const verified = await eliteDeliveryProvider.verifyWebhookWithSecret(
     new Headers(),
-    JSON.stringify({ package_id: "ping", notif_type: "ChangeStatus", delivery_status: 0 }),
+    JSON.stringify({
+      package_id: "ping",
+      notif_type: "ChangeStatus",
+      delivery_status: 0,
+    }),
     webhookKey,
   );
   return NextResponse.json({

@@ -152,12 +152,18 @@ export function OrdersTable({
         alreadyExists?: boolean;
       };
       if (!res.ok || !data.ok) {
-        setDeliveryMsg(data.errorMessage || "تعذر الاتصال بشركة التوصيل");
+        setDeliveryMsg(
+          action === "refresh"
+            ? `✕ ${data.errorMessage || "Sync failed"}`
+            : data.errorMessage || "تعذر الاتصال بشركة التوصيل",
+        );
       } else {
         setDeliveryMsg(
-          data.alreadyExists
-            ? "الشحنة موجودة مسبقاً — لم يتم إنشاء شحنة مكررة"
-            : "تم بنجاح",
+          action === "refresh"
+            ? "✓ Synced successfully"
+            : data.alreadyExists
+              ? "الشحنة موجودة مسبقاً — لم يتم إنشاء شحنة مكررة"
+              : "✓ تم الإرسال وربط طرد Elite",
         );
         await onRefresh();
         const detail = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}`);
@@ -306,10 +312,11 @@ export function OrdersTable({
                 <th className="px-4 py-3 text-start">Phone</th>
                 <th className="px-4 py-3 text-start">Total</th>
                 <th className="px-4 py-3 text-start">Status</th>
-                <th className="px-4 py-3 text-start">Delivery</th>
-                <th className="px-4 py-3 text-start">Courier</th>
-                <th className="px-4 py-3 text-start">Tracking</th>
-                <th className="px-4 py-3 text-start">Agent</th>
+                <th className="px-4 py-3 text-start">Local delivery</th>
+                <th className="px-4 py-3 text-start">Elite status</th>
+                <th className="px-4 py-3 text-start">Payment</th>
+                <th className="px-4 py-3 text-start">Package</th>
+                <th className="px-4 py-3 text-start">Sync</th>
                 <th className="px-4 py-3 text-start">Date</th>
                 <th className="px-4 py-3 text-start">Actions</th>
               </tr>
@@ -317,7 +324,7 @@ export function OrdersTable({
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">
                     {loading ? "Loading orders…" : query || statusFilter !== "all" || deliveryFilter !== "all" ? "No orders match your filters." : "No orders yet."}
                   </td>
                 </tr>
@@ -334,6 +341,28 @@ export function OrdersTable({
                         : dStatus === "confirmed" || dStatus === "preparing"
                           ? "bg-blue-100 text-blue-800"
                           : "bg-zinc-100 text-zinc-700";
+                const sync = o.shipment?.syncState;
+                const syncLabel =
+                  !o.shipment?.externalShipmentId
+                    ? "Not linked"
+                    : sync === "error"
+                      ? "✕ Error"
+                      : sync === "delayed"
+                        ? "⚠ Delayed"
+                        : sync === "synced" || o.shipment?.lastSyncAt
+                          ? "✓ Synced"
+                          : "Pending";
+                const pay =
+                  o.shipment?.elitePaymentStatus === "paid" ||
+                  o.paymentCollectionStatus === "paid_to_company"
+                    ? "Paid"
+                    : o.shipment?.elitePaymentStatus === "unpaid"
+                      ? "Unpaid"
+                      : o.shipment?.payoutStatus === "paid"
+                        ? "Paid"
+                        : o.shipment
+                          ? "Unpaid"
+                          : "—";
                 return (
                 <tr key={o.orderId} className="border-t border-border/50 hover:bg-secondary/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-foreground">
@@ -369,15 +398,16 @@ export function OrdersTable({
                       {dStatus}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {o.shipment?.providerId === "elite" ? "Elite" : o.shipment?.providerId || "—"}
+                  <td className="px-4 py-3 text-xs text-muted-foreground max-w-[140px]">
+                    <span className="font-semibold text-foreground">
+                      {o.shipment?.externalStatusName || o.shipment?.externalStatus || "—"}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs" dir="ltr">
-                    {o.shipment?.trackingNumber || "—"}
+                  <td className="px-4 py-3 text-xs font-semibold">{pay}</td>
+                  <td className="px-4 py-3 font-mono text-[11px]" dir="ltr">
+                    {o.shipment?.externalShipmentId || "—"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {o.assignedAgentName || "—"}
-                  </td>
+                  <td className="px-4 py-3 text-[11px] font-semibold whitespace-nowrap">{syncLabel}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                     {formatDate(o.createdAt)}
                   </td>
@@ -504,34 +534,58 @@ export function OrdersTable({
               )}
 
               <div className="rounded-2xl border border-border/60 bg-secondary/30 p-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-accent">Delivery</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-accent">Elite Delivery</p>
                 <dl className="mt-2 space-y-1 text-sm">
                   <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Company</dt>
-                    <dd className="font-semibold">
-                      {selected.shipment?.providerId === "elite"
-                        ? "Elite Delivery"
-                        : selected.shipment?.providerId || "—"}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Shipment ID</dt>
+                    <dt className="text-muted-foreground">Package ID</dt>
                     <dd className="font-mono text-xs" dir="ltr">
                       {selected.shipment?.externalShipmentId || "—"}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Tracking</dt>
+                    <dt className="text-muted-foreground">Internal ID</dt>
                     <dd className="font-mono text-xs" dir="ltr">
-                      {selected.shipment?.trackingNumber || "—"}
+                      {selected.shipment?.internalId || selected.orderId}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Status</dt>
+                    <dt className="text-muted-foreground">Local status</dt>
                     <dd className="font-semibold">
                       {selected.shipment?.internalStatus ||
                         selected.deliveryStatus ||
                         "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Elite status</dt>
+                    <dd className="text-end text-xs font-semibold">
+                      {selected.shipment?.externalStatusName || "—"}
+                      {selected.shipment?.externalStatus ? (
+                        <span className="ms-1 font-mono text-muted-foreground" dir="ltr">
+                          ({selected.shipment.externalStatus})
+                        </span>
+                      ) : null}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Payment</dt>
+                    <dd className="font-semibold">
+                      {selected.shipment?.elitePaymentStatus === "paid" ||
+                      selected.paymentCollectionStatus === "paid_to_company"
+                        ? "Paid"
+                        : selected.shipment?.elitePaymentStatus === "unpaid"
+                          ? "Unpaid"
+                          : selected.shipment
+                            ? "Unpaid / pending"
+                            : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Last Elite event</dt>
+                    <dd className="text-xs">
+                      {selected.shipment?.eliteLastEventAt
+                        ? formatDate(selected.shipment.eliteLastEventAt)
+                        : "—"}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
@@ -543,22 +597,34 @@ export function OrdersTable({
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Customer shipping</dt>
-                    <dd>{formatMAD(selected.shippingPrice)}</dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">Courier cost</dt>
-                    <dd>
-                      {typeof selected.shipment?.courierShippingCost === "number"
-                        ? formatMAD(selected.shipment.courierShippingCost)
-                        : "—"}
+                    <dt className="text-muted-foreground">Sync state</dt>
+                    <dd className="text-xs font-semibold">
+                      {!selected.shipment?.externalShipmentId
+                        ? "Not linked"
+                        : selected.shipment.syncState || "—"}
                     </dd>
                   </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-muted-foreground">COD payout</dt>
-                    <dd>{selected.shipment?.payoutStatus || "—"}</dd>
-                  </div>
                 </dl>
+                {selected.deliveryHistory && selected.deliveryHistory.length > 0 && (
+                  <div className="mt-3 border-t border-border/40 pt-3">
+                    <p className="text-[11px] font-bold uppercase text-muted-foreground">
+                      Status history
+                    </p>
+                    <ul className="mt-2 max-h-36 space-y-1 overflow-y-auto text-xs">
+                      {selected.deliveryHistory.slice(0, 25).map((h) => (
+                        <li key={h.id} className="border-b border-border/30 py-1">
+                          <span className="font-semibold">
+                            {h.internalStatus || h.externalStatus || "update"}
+                          </span>
+                          {h.note ? ` — ${h.note}` : ""}
+                          <span className="block text-muted-foreground">
+                            {h.source} · {formatDate(h.at)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
                     size="sm"
@@ -576,7 +642,7 @@ export function OrdersTable({
                     disabled={busyId === selected.orderId || !selected.shipment?.externalShipmentId}
                     onClick={() => void deliveryAction(selected.orderId, "refresh")}
                   >
-                    تحديث الحالة / إعادة المحاولة
+                    Sync with Elite
                   </Button>
                   {selected.shipment?.trackingUrl && (
                     <Button size="sm" variant="outline" className="rounded-full" asChild>
@@ -587,7 +653,7 @@ export function OrdersTable({
                   )}
                 </div>
                 {deliveryMsg && (
-                  <p className="mt-2 text-xs font-semibold text-amber-800" role="status">
+                  <p className="mt-2 text-xs font-semibold text-amber-800 dark:text-amber-300" role="status">
                     {deliveryMsg}
                   </p>
                 )}

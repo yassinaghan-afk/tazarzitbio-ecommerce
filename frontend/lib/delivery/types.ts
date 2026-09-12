@@ -47,18 +47,42 @@ export interface DeliveryProviderRecord {
   secrets: DeliveryProviderSecrets;
 }
 
+export type ShipmentSyncState =
+  | "synced"
+  | "delayed"
+  | "error"
+  | "not_linked"
+  | "pending";
+
+/** Elite COD/payment collection state — separate from delivery status */
+export type ElitePaymentStatus = "paid" | "unpaid" | "unknown";
+
 export interface OrderShipment {
   providerId: DeliveryProviderId;
-  /** External shipment / parcel id from courier */
+  /** External shipment / parcel id from courier (Elite package_id) */
   externalShipmentId?: string;
+  /** Our order id sent as Elite internal_id */
+  internalId?: string;
   trackingNumber?: string;
   trackingUrl?: string;
-  /** Raw courier status string (unmapped) */
+  /** Raw Elite delivery_status ID as string */
   externalStatus?: string;
+  /** Official Elite status name from GET /statuses */
+  externalStatusName?: string;
   /** Mapped internal delivery status */
   internalStatus?: DeliveryStatus;
+  /** Elite payment collection (package_paid / package_unpaid) */
+  elitePaymentStatus?: ElitePaymentStatus;
   createdAt?: string;
+  /** When package_id was first linked locally */
+  eliteLinkedAt?: string;
+  /** Last Elite webhook/event timestamp */
+  eliteLastEventAt?: string;
+  /** Last successful local↔Elite sync */
   lastSyncAt?: string;
+  lastWebhookAt?: string;
+  lastWebhookNotifType?: string;
+  syncState?: ShipmentSyncState;
   /** Customer-facing shipping charge already on the order (reference) */
   customerShippingCharge?: number;
   /** Actual fee charged by courier — from API when available */
@@ -95,6 +119,31 @@ export interface DeliveryIntegrationLog {
   errorCode?: string;
   /** Safe message — never includes tokens */
   message?: string;
+}
+
+export type EliteWebhookProcessStatus =
+  | "processed"
+  | "duplicate"
+  | "ignored"
+  | "failed"
+  | "unmatched";
+
+/** Structured webhook/event log for Admin Delivery → Webhooks */
+export interface EliteWebhookEvent {
+  id: string;
+  at: string;
+  packageId: string;
+  notifType: string;
+  deliveryStatusId?: string;
+  deliveryStatusName?: string;
+  eventTime?: string;
+  orderId?: string;
+  processStatus: EliteWebhookProcessStatus;
+  resolvedInternalStatus?: DeliveryStatus;
+  errorCode?: string;
+  message?: string;
+  /** Idempotency key used for dedupe */
+  eventKey: string;
 }
 
 export interface CreateShipmentInput {
@@ -189,6 +238,8 @@ export const DEFAULT_DELIVERY_STATE = {
   /** Dedup webhook event ids */
   processedWebhookEventIds: [] as string[],
   integrationLogs: [] as DeliveryIntegrationLog[],
+  /** Structured Elite webhook events (newest first) */
+  webhookEvents: [] as EliteWebhookEvent[],
 };
 
 export type DeliveryState = typeof DEFAULT_DELIVERY_STATE;
@@ -212,5 +263,6 @@ export function normalizeDeliveryState(raw: unknown): DeliveryState {
       ? d.processedWebhookEventIds
       : [],
     integrationLogs: Array.isArray(d.integrationLogs) ? d.integrationLogs : [],
+    webhookEvents: Array.isArray(d.webhookEvents) ? d.webhookEvents : [],
   };
 }

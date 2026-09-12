@@ -96,11 +96,42 @@ export async function GET(req: NextRequest) {
   }
 
   if (view === "logs") {
-    if (!roleHasPermission(session.role, "audit:read")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!roleHasPermission(session.role, "audit:read") && session.role !== "admin") {
+      if (!roleHasPermission(session.role, "orders:read")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
     return NextResponse.json({
       logs: delivery.integrationLogs.slice(0, 100),
+    });
+  }
+
+  if (view === "webhooks") {
+    if (!roleHasPermission(session.role, "orders:read")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.json({
+      events: delivery.webhookEvents.slice(0, 150),
+      webhookPathHint:
+        "/api/webhooks/elite-delivery/<ELITE_DELIVERY_WEBHOOK_SECRET>",
+    });
+  }
+
+  if (view === "statuses") {
+    if (!roleHasPermission(session.role, "orders:read")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const { getEliteStatusCatalog } = await import(
+      "@/lib/delivery/elite/status-catalog"
+    );
+    const { resolveEliteSecrets } = await import("@/lib/delivery/secrets");
+    const resolved = resolveEliteSecrets(delivery.providers.elite);
+    const catalog = await getEliteStatusCatalog(
+      resolved.baseUrl || "https://elitedelivery.ma",
+    );
+    return NextResponse.json({
+      count: catalog.size,
+      statuses: [...catalog.values()],
     });
   }
 
@@ -207,6 +238,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  if (body.action === "fallback_sync") {
+    const { runEliteFallbackSync } = await import("@/lib/delivery/service");
+    const result = await runEliteFallbackSync();
+    return NextResponse.json(result);
+  }
+
   const orderId = (body.orderId || "").trim();
   if (!orderId) {
     return NextResponse.json({ error: "orderId required" }, { status: 400 });
@@ -221,7 +258,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status });
   }
 
-  if (body.action === "refresh") {
+  if (body.action === "refresh" || body.action === "sync") {
     const result = await refreshOrderDelivery(orderId, body.providerId || "elite");
     const status = result.ok ? 200 : 400;
     return NextResponse.json(result, { status });

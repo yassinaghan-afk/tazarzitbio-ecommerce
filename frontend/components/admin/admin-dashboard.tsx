@@ -33,6 +33,7 @@ import {
 import { BannersManager } from "@/components/admin/banners-manager";
 import { DeliveryOverviewPanel } from "@/components/admin/delivery-overview";
 import { EliteDeliverySettingsForm } from "@/components/admin/elite-delivery-settings";
+import { EliteWebhookLogsPanel } from "@/components/admin/elite-webhook-logs";
 import { HomepageEditor } from "@/components/admin/homepage-editor";
 import { LandingPagesManager } from "@/components/admin/landing-pages-manager";
 import { OpsAdminPanel } from "@/components/admin/ops-admin-panel";
@@ -369,6 +370,7 @@ function DeliverySection({ locale }: { locale: "en" | "ar" }) {
       </div>
       <EliteDeliverySettingsForm />
       <DeliveryOverviewPanel />
+      <EliteWebhookLogsPanel locale={locale} />
     </div>
   );
 }
