@@ -21,12 +21,14 @@ function LpPanel({
   width,
   height,
   priority = false,
+  quality = 85,
 }: {
   src: string;
   alt: string;
   width: number;
   height: number;
   priority?: boolean;
+  quality?: number;
 }) {
   return (
     <div className="mx-auto w-full max-w-lg">
@@ -36,7 +38,8 @@ function LpPanel({
         width={width}
         height={height}
         priority={priority}
-        sizes="(max-width: 512px) 100vw, 512px"
+        quality={quality}
+        sizes="(max-width: 640px) 100vw, 640px"
         className="h-auto w-full"
       />
     </div>
@@ -81,6 +84,7 @@ export function RoyalLandingPage() {
           width={HERO_IMAGE.width}
           height={HERO_IMAGE.height}
           priority
+          quality={95}
         />
       </section>
 

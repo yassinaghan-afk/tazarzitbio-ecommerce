@@ -20,10 +20,10 @@ export const AMLOU_ROYAL_BENEFITS_IMAGE =
 /** Ordered creative panels for /royal landing (1 = hero). Artboard 10 excluded. */
 export const AMLOU_ROYAL_LP_IMAGES = [
   {
-    src: "/images/royal/01-hero.webp",
+    src: "/images/royal/01-hero.jpg",
     alt: "استمتع بالطاقة الحقيقية مع أملو ملكي اللذيذ والصحي",
-    width: 373,
-    height: 595,
+    width: 637,
+    height: 1024,
   },
   {
     src: "/images/royal/02-problem.webp",
