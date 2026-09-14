@@ -107,7 +107,7 @@ export async function finalizeUpsellAlerts(
   order: OrderRecord,
 ): Promise<NotifyOrderResult> {
   const base = await notifyOrderCreated(order);
-  let current = base.order;
+  const current = base.order;
 
   const upsellLines = current.products.filter((p) => p.isUpsell);
   if (upsellLines.length === 0) {
@@ -223,7 +223,6 @@ export async function sendMetaPurchaseForOrder(
 /** @deprecated Use notifyOrderCreated / finalizeUpsellAlerts / sendMetaPurchaseForOrder */
 export async function exportFinalizedOrder(
   order: OrderRecord,
-  _meta?: FinalizeExportMeta,
 ): Promise<{ order: OrderRecord; ok: boolean; purchaseEventId: string }> {
   const notified = await finalizeUpsellAlerts(order);
   return {
