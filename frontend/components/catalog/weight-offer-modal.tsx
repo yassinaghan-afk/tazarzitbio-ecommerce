@@ -23,6 +23,10 @@ interface WeightOfferModalProps {
   onClose: () => void;
   /** Default: order → checkout drawer */
   mode?: Mode;
+  /** When set, bypasses cart/checkout and returns the chosen offer */
+  onConfirmOffer?: (offer: PublicProductOffer) => void;
+  /** Override primary CTA label */
+  confirmLabel?: string;
 }
 
 export function WeightOfferModal({
@@ -30,9 +34,11 @@ export function WeightOfferModal({
   open,
   onClose,
   mode = "order",
+  onConfirmOffer,
+  confirmLabel,
 }: WeightOfferModalProps) {
   const { t } = useTranslation();
-  const { orderNow, addToCart } = useCommerce();
+  const commerce = useCommerce();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,14 +65,24 @@ export function WeightOfferModal({
 
   function confirm() {
     if (!product || !selected) return;
+    if (onConfirmOffer) {
+      onConfirmOffer(selected);
+      onClose();
+      return;
+    }
     const payload = buildAddToCartPayload(product, selected);
     if (mode === "cart") {
-      addToCart({ ...payload, openDrawer: "cart" });
+      commerce.addToCart({ ...payload, openDrawer: "cart" });
     } else {
-      orderNow(payload);
+      commerce.orderNow(payload);
     }
     onClose();
   }
+
+  const primaryLabel =
+    confirmLabel ??
+    (mode === "cart" ? t("weightModal.addToCart") : t("weightModal.continue"));
+  const showCartIcon = Boolean(onConfirmOffer) || mode === "cart";
 
   return (
     <AnimatePresence>
@@ -204,14 +220,12 @@ export function WeightOfferModal({
                 className="min-h-12 w-full gap-2 rounded-full text-base font-extrabold shadow-gold"
                 onClick={confirm}
               >
-                {mode === "cart" ? (
+                {showCartIcon ? (
                   <ShoppingBag className="size-5" />
                 ) : (
                   <Zap className="size-5" />
                 )}
-                {mode === "cart"
-                  ? t("weightModal.addToCart")
-                  : t("weightModal.continue")}
+                {primaryLabel}
                 <span className="ms-1 tabular-nums opacity-90">
                   · {selected.price} {t("common.currency")}
                 </span>

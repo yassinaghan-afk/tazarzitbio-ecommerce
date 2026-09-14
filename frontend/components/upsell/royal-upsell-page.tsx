@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Check, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";
 
+import { WeightOfferModal } from "@/components/catalog/weight-offer-modal";
 import { Button } from "@/components/ui/button";
 import type { PlacedOrder } from "@/lib/checkout/types";
 import { getMetaBrowserIds } from "@/lib/meta/browser";
 import type { UpsellOrderResponse } from "@/lib/orders/types";
 import { UPSELL_DISCOUNT_PERCENT } from "@/lib/orders/upsell-pricing";
-import type { PublicProduct } from "@/lib/products/types";
+import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
 import { getListingProducts } from "@/lib/products/listing";
 import {
   clearUpsellSelection,
@@ -57,6 +58,7 @@ export function RoyalUpsellPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const [weightProduct, setWeightProduct] = useState<PublicProduct | null>(null);
 
   useEffect(() => {
     const placed = readPlacedOrder();
@@ -173,17 +175,9 @@ export function RoyalUpsellPage() {
     }));
   }
 
-  function toggleProduct(product: PublicProduct) {
+  function addProductWithOffer(product: PublicProduct, offer: PublicProductOffer) {
     if (!order || busy) return;
     setError("");
-    const offer = cheapestOffer(product);
-    if (!offer) return;
-
-    if (isSelected(product.id)) {
-      persistSelection(selection.filter((s) => s.productId !== product.id));
-      return;
-    }
-
     const unitPrice = offer.price;
     const weight = productSize(product, offer.id);
     const quantity = getQty(product.id);
@@ -199,13 +193,34 @@ export function RoyalUpsellPage() {
       slug: product.slug,
       ...(weight ? { weight } : {}),
     };
-    persistSelection([...selection, next]);
+    // Replace existing line for same product if any
+    const without = selection.filter((s) => s.productId !== product.id);
+    persistSelection([...without, next]);
     trackUpsellAdd({
       orderId: order.id,
       productId: product.id,
       quantity,
       value: unitPrice * quantity,
     });
+  }
+
+  function toggleProduct(product: PublicProduct) {
+    if (!order || busy) return;
+    setError("");
+
+    if (isSelected(product.id)) {
+      persistSelection(selection.filter((s) => s.productId !== product.id));
+      return;
+    }
+
+    if (product.offers.length > 1) {
+      setWeightProduct(product);
+      return;
+    }
+
+    const offer = cheapestOffer(product);
+    if (!offer) return;
+    addProductWithOffer(product, offer);
   }
 
   async function callUpsell(
@@ -321,6 +336,17 @@ export function RoyalUpsellPage() {
 
   return (
     <div className="min-h-[70vh] bg-[#faf6ef] pb-36 text-[#1a2744]" dir="rtl">
+      <WeightOfferModal
+        product={weightProduct}
+        open={Boolean(weightProduct)}
+        onClose={() => setWeightProduct(null)}
+        confirmLabel="أضف إلى الطلب"
+        onConfirmOffer={(offer) => {
+          if (!weightProduct) return;
+          addProductWithOffer(weightProduct, offer);
+          setWeightProduct(null);
+        }}
+      />
       <div className="mx-auto w-full max-w-lg px-3 pt-6 sm:px-4">
         <div className="rounded-3xl border border-[#eadfce] bg-gradient-to-b from-[#fff8eb] to-white p-5 text-center shadow-[0_16px_40px_-28px_rgba(26,39,68,0.4)]">
           <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#1a2744] text-amber-300">
@@ -353,9 +379,14 @@ export function RoyalUpsellPage() {
           {!loading &&
             offerProducts.map((product) => {
               const selected = isSelected(product.id);
-              const offer = cheapestOffer(product);
-              const price = offer?.price ?? product.price;
-              const size = productSize(product, offer?.id);
+              const selectedLine = selection.find((s) => s.productId === product.id);
+              const offer =
+                (selectedLine
+                  ? product.offers.find((o) => o.id === selectedLine.offerId)
+                  : null) ?? cheapestOffer(product);
+              const price = selectedLine?.unitPrice ?? offer?.price ?? product.price;
+              const size =
+                selectedLine?.weight || productSize(product, offer?.id);
               const qty = getQty(product.id);
               return (
                 <article
@@ -388,10 +419,23 @@ export function RoyalUpsellPage() {
                         {product.nameAr}
                       </h2>
                       {size ? (
-                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">{size}</p>
+                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
+                          {size}
+                          {product.offers.length > 1 && !selected
+                            ? " · اضغط للإضافة واختيار الوزن"
+                            : ""}
+                        </p>
+                      ) : product.offers.length > 1 && !selected ? (
+                        <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
+                          أوزان متعددة — اضغط للإضافة واختيار الوزن
+                        </p>
                       ) : null}
                       <p className="mt-1.5 text-lg font-black tabular-nums text-[#1a2744]">
-                        {formatDh(price)}
+                        {selected
+                          ? formatDh(price)
+                          : product.offers.length > 1
+                            ? `ابتداءً من ${formatDh(price)}`
+                            : formatDh(price)}
                       </p>
                     </div>
                   </div>
