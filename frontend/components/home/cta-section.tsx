@@ -74,13 +74,13 @@ export function CtaSection() {
             className="flex flex-wrap justify-center gap-4"
           >
             <Button variant="gold" size="xl" className="min-h-12 gap-2 shadow-gold" asChild>
-              <Link href="/products">
+              <Link href="/#discover-products">
                 <ShoppingBag className="size-5" />
                 {t("cta.orderNow")}
               </Link>
             </Button>
             <Button variant="light" size="xl" className="min-h-12 gap-2" asChild>
-              <Link href="/products">
+              <Link href="/#discover-products">
                 {t("cta.browse")}
                 <ArrowLeft className="size-5" />
               </Link>

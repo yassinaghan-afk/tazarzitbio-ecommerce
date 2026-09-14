@@ -146,16 +146,16 @@ const DEFAULT_STORE: PersistedStore = {
 function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
   if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_HOME_SECTIONS;
   const known = new Set(DEFAULT_HOME_SECTIONS.map((s) => s.id));
-  const seen = new Set<string>();
-  const sections = (raw as HomeSectionConfig[]).filter((s) => {
-    if (!s || !known.has(s.id) || seen.has(s.id)) return false;
-    seen.add(s.id);
-    return true;
-  });
-  for (const def of DEFAULT_HOME_SECTIONS) {
-    if (!seen.has(def.id)) sections.push(def);
+  const byId = new Map<string, HomeSectionConfig>();
+  for (const s of raw as HomeSectionConfig[]) {
+    if (!s || !known.has(s.id) || byId.has(s.id)) continue;
+    byId.set(s.id, { id: s.id, isVisible: Boolean(s.isVisible) });
   }
-  return sections;
+  // Keep canonical homepage order from defaults; only visibility comes from store.
+  return DEFAULT_HOME_SECTIONS.map((def) => ({
+    id: def.id,
+    isVisible: byId.get(def.id)?.isVisible ?? def.isVisible,
+  }));
 }
 
 async function ensureDir() {

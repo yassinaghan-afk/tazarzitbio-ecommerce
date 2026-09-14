@@ -25,12 +25,16 @@ export function HomeProductsSection() {
   );
 
   return (
-    <Section id="discover-products" spacing="lg" className="texture-grain">
+    <Section
+      id="discover-products"
+      spacing="lg"
+      className="texture-grain scroll-mt-[var(--header-height)] pt-[calc(var(--header-height)+1.25rem)] md:pt-[calc(var(--header-height)+2rem)]"
+    >
       <Container>
         <SectionHeader
           label="TazarzitBio"
-          title="اكتشف منتجاتنا"
-          description="منتجات طبيعية مختارة بعناية من TazarzitBio"
+          title="جميع منتجاتنا وأسعارها"
+          description="اختر المنتج ثم اضغط اطلب الآن لاختيار الوزن والسعر المناسب"
           align="center"
         />
 

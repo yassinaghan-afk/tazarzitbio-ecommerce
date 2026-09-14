@@ -34,6 +34,8 @@ function packDescKey(id: string): TranslationKey {
 
 export function FamilyPackSection() {
   const { t } = useTranslation();
+  if (familyPacks.length === 0) return null;
+
   const { orderNow } = useCommerce();
   const hospitalityPoints = getFamilyHospitality(t).map((point, i) => ({
     ...point,

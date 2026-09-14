@@ -198,17 +198,17 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
 };
 
 export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
-  { id: "hero", isVisible: true },
-  { id: "trust-badges", isVisible: true },
-  { id: "story", isVisible: true },
-  { id: "showcases", isVisible: true },
-  { id: "best-sellers", isVisible: true },
   { id: "discover-products", isVisible: true },
+  { id: "best-sellers", isVisible: true },
+  { id: "showcases", isVisible: true },
   { id: "reviews", isVisible: true },
+  { id: "story", isVisible: true },
   { id: "ingredients", isVisible: true },
   { id: "lifestyle", isVisible: true },
   { id: "faq", isVisible: true },
   { id: "cta", isVisible: true },
+  { id: "trust-badges", isVisible: false },
+  { id: "hero", isVisible: false },
 ];
 
 /* ------------------------------ Media library ----------------------------- */

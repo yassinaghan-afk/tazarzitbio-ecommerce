@@ -1,4 +1,5 @@
 import type { CmsProductRecord } from "@/lib/admin/product-types";
+import { FAMILY_PACK_SLUG } from "@/lib/brand";
 import type { PricingOverrides } from "@/lib/products/admin-storage";
 import { buildCatalog } from "@/lib/products/catalog-base";
 import { buildPricingEconomics } from "@/lib/products/pricing";
@@ -133,6 +134,13 @@ export function buildMergedCatalog(state: CmsCatalogState): Product[] {
     if (seenBaseIds.has(product.id)) continue;
     seenBaseIds.add(product.id);
 
+    if (
+      product.slug === FAMILY_PACK_SLUG ||
+      product.category === "bundles"
+    ) {
+      continue;
+    }
+
     const override = overridesById.get(product.id);
     if (hidden.has(product.id) || override?.isVisible === false) continue;
 
@@ -141,6 +149,12 @@ export function buildMergedCatalog(state: CmsCatalogState): Product[] {
 
   for (const record of custom) {
     if (!record.isVisible) continue;
+    if (
+      record.slug === FAMILY_PACK_SLUG ||
+      record.category === "bundles"
+    ) {
+      continue;
+    }
     merged.push(cmsRecordToProduct(record));
   }
 

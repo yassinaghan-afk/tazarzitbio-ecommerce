@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShoppingBag, Zap } from "lucide-react";
+import { useState } from "react";
 
+import { WeightOfferModal } from "@/components/catalog/weight-offer-modal";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,125 +38,166 @@ export function CatalogProductCard({
 }: CatalogProductCardProps) {
   const { t, locale } = useTranslation();
   const { orderNow, addToCart } = useCommerce();
+  const [weightOpen, setWeightOpen] = useState(false);
+  const [weightMode, setWeightMode] = useState<"order" | "cart">("order");
   const startingOffer = getStartingOffer(product);
   const fromPrice = startingOffer.price;
   const productHref = `/products/${product.slug}`;
   const hasVariants = product.offers.length > 1;
   const orderOnlyCard = !showAddToCart;
 
+  const openWeightPicker = (mode: "order" | "cart") => {
+    if (product.offers.length <= 1) {
+      const payload = buildAddToCartPayload(product, startingOffer);
+      if (mode === "cart") {
+        addToCart({ ...payload, openDrawer: "cart" });
+      } else {
+        orderNow(payload);
+      }
+      return;
+    }
+    setWeightMode(mode);
+    setWeightOpen(true);
+  };
+
   const handleOrderNow = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    orderNow(buildAddToCartPayload(product, startingOffer));
+    openWeightPicker("order");
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(
-      buildAddToCartPayload(product, startingOffer, { openDrawer: "cart" }),
-    );
+    openWeightPicker("cart");
   };
 
   return (
-    <motion.article
-      {...cardHoverProps}
-      className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md",
-        className,
-      )}
-    >
-      <Link
-        href={productHref}
-        className="relative block aspect-square overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+    <>
+      <WeightOfferModal
+        product={product}
+        open={weightOpen}
+        onClose={() => setWeightOpen(false)}
+        mode={weightMode}
+      />
+
+      <motion.article
+        {...cardHoverProps}
+        className={cn(
+          "group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md",
+          className,
+        )}
       >
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,hsl(45_80%_55%/0.18)_0%,transparent_55%)]"
-        />
-        <Image
-          src={product.image}
-          alt={product.nameAr}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-          className="object-contain object-center p-4 transition-transform duration-500 group-hover:scale-[1.02]"
-          quality={88}
-        />
-        <div className="absolute start-3 top-3 z-[2] flex flex-wrap gap-1.5">
-          {product.badges.slice(0, 2).map((b) => (
-            <Badge key={b} variant={b === "bestseller" ? "premium" : "gold"}>
-              {getBadgeLabel(b, locale)}
-            </Badge>
-          ))}
-        </div>
-      </Link>
-
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <div className="flex items-center justify-between gap-2">
-          <StarRating rating={product.rating} showValue />
-          {product.weight && (
-            <span className="text-2xs text-muted-foreground">{product.weight}</span>
-          )}
-        </div>
-
-        <Link href={productHref} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
-            {product.nameAr}
-          </h3>
-          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-            {product.shortDescription}
-          </p>
+        <Link
+          href={productHref}
+          className="relative block aspect-square overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,hsl(45_80%_55%/0.18)_0%,transparent_55%)]"
+          />
+          <Image
+            src={product.image}
+            alt={product.nameAr}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
+            className="object-contain object-center p-4 transition-transform duration-500 group-hover:scale-[1.02]"
+            quality={88}
+          />
+          <div className="absolute start-3 top-3 z-[2] flex flex-wrap gap-1.5">
+            {product.badges.slice(0, 2).map((b) => (
+              <Badge key={b} variant={b === "bestseller" ? "premium" : "gold"}>
+                {getBadgeLabel(b, locale)}
+              </Badge>
+            ))}
+          </div>
         </Link>
 
-        <div className="flex flex-wrap items-baseline gap-2">
-          {hasVariants && (
-            <span className="text-sm text-muted-foreground">{t("common.from")}</span>
-          )}
-          <span className="text-xl font-extrabold tabular-nums text-accent">
-            {fromPrice}
-            <span className="ms-1 text-sm font-semibold">{t("common.currency")}</span>
-          </span>
-        </div>
+        <div className="flex flex-1 flex-col gap-3 p-5">
+          <div className="flex items-center justify-between gap-2">
+            <StarRating rating={product.rating} showValue />
+            {product.weight && (
+              <span className="text-2xs text-muted-foreground">
+                {product.weight}
+              </span>
+            )}
+          </div>
 
-        <div
-          className={cn(
-            "mt-auto flex flex-col gap-2.5",
-            !orderOnlyCard && "sm:flex-row",
-          )}
-        >
-          <Button
-            variant="gold"
-            size="lg"
-            className={cn(MOBILE_CTA, "gap-2 shadow-gold", orderOnlyCard && "sm:w-full")}
-            onClick={handleOrderNow}
+          <Link
+            href={productHref}
+            className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <Zap className="size-4" />
-            {t("catalog.orderNow")}
-          </Button>
+            <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
+              {product.nameAr}
+            </h3>
+            <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+              {product.shortDescription}
+            </p>
+          </Link>
+
+          <div className="flex flex-wrap items-baseline gap-2">
+            {hasVariants && (
+              <span className="text-sm text-muted-foreground">
+                {t("common.from")}
+              </span>
+            )}
+            <span className="text-xl font-extrabold tabular-nums text-accent">
+              {fromPrice}
+              <span className="ms-1 text-sm font-semibold">
+                {t("common.currency")}
+              </span>
+            </span>
+            {hasVariants && (
+              <span className="w-full text-xs text-muted-foreground">
+                {t("weightModal.cardHint")}
+              </span>
+            )}
+          </div>
+
+          <div
+            className={cn(
+              "mt-auto flex flex-col gap-2.5",
+              !orderOnlyCard && "sm:flex-row",
+            )}
+          >
+            <Button
+              variant="gold"
+              size="lg"
+              className={cn(
+                MOBILE_CTA,
+                "gap-2 shadow-gold",
+                orderOnlyCard && "sm:w-full",
+              )}
+              onClick={handleOrderNow}
+            >
+              <Zap className="size-4" />
+              {t("catalog.orderNow")}
+            </Button>
+            {showAddToCart && (
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(MOBILE_CTA, "gap-2")}
+                onClick={handleAddToCart}
+              >
+                <ShoppingBag className="size-4" />
+                {t("catalog.addToCart")}
+              </Button>
+            )}
+          </div>
           {showAddToCart && (
             <Button
-              variant="outline"
-              size="lg"
-              className={cn(MOBILE_CTA, "gap-2")}
-              onClick={handleAddToCart}
+              variant="ghost"
+              size="sm"
+              className="hidden w-full text-muted-foreground sm:inline-flex"
+              asChild
+              onClick={(e) => e.stopPropagation()}
             >
-              <ShoppingBag className="size-4" />
-              {t("catalog.addToCart")}
+              <Link href={productHref}>{t("catalog.viewDetails")}</Link>
             </Button>
           )}
         </div>
-        {showAddToCart && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden w-full text-muted-foreground sm:inline-flex"
-            asChild
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Link href={productHref}>{t("catalog.viewDetails")}</Link>
-          </Button>
-        )}
-      </div>
-    </motion.article>
+      </motion.article>
+    </>
   );
 }

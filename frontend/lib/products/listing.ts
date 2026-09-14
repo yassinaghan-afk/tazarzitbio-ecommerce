@@ -42,6 +42,7 @@ export function getListingProducts(
       !isExpandedVariantRow(p) &&
       !isLandingOnlyProduct(p) &&
       !isRemovedProduct(p) &&
+      p.category !== "bundles" &&
       !exclude.has(p.slug),
   );
 }

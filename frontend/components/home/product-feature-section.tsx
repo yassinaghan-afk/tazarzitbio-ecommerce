@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Zap } from "lucide-react";
+import { useMemo, useState } from "react";
 
+import { WeightOfferModal } from "@/components/catalog/weight-offer-modal";
 import { Container, Section } from "@/components/layout/container";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +18,7 @@ import {
   getStartingOffer,
 } from "@/lib/cart/product-payload";
 import { getPublicProductBySlug } from "@/lib/products/catalog";
+import type { PublicProduct } from "@/lib/products/types";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
@@ -51,16 +54,26 @@ export function ProductFeatureSection({
   const router = useRouter();
   const { t } = useTranslation();
   const { orderNow } = useCommerce();
+  const [weightOpen, setWeightOpen] = useState(false);
   const productHref = `/products/${id}`;
   const savings = comparePrice ? comparePrice - price : 0;
+  const catalogProduct = useMemo(
+    () => getPublicProductBySlug(id) as PublicProduct | undefined,
+    [id],
+  );
 
   const handleOrderNow = () => {
-    const product = getPublicProductBySlug(id);
-    if (!product) {
+    if (!catalogProduct) {
       router.push(productHref);
       return;
     }
-    orderNow(buildAddToCartPayload(product, getStartingOffer(product)));
+    if (catalogProduct.offers.length <= 1) {
+      orderNow(
+        buildAddToCartPayload(catalogProduct, getStartingOffer(catalogProduct)),
+      );
+      return;
+    }
+    setWeightOpen(true);
   };
 
   const copy = (
@@ -178,31 +191,40 @@ export function ProductFeatureSection({
   );
 
   return (
-    <Section id={id} spacing="lg" className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,hsl(40_60%_50%/0.06)_0%,transparent_50%)]"
+    <>
+      <WeightOfferModal
+        product={catalogProduct ?? null}
+        open={weightOpen}
+        onClose={() => setWeightOpen(false)}
+        mode="order"
       />
-      <Container className="relative">
+      <Section id={id} spacing="lg" className="relative overflow-hidden">
         <div
-          className={cn(
-            "grid items-center gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-20",
-            imageFirst && "lg:[&>*:first-child]:order-2 lg:[&>*:last-child]:order-1",
-          )}
-        >
-          {imageFirst ? (
-            <>
-              {visual}
-              {copy}
-            </>
-          ) : (
-            <>
-              {copy}
-              {visual}
-            </>
-          )}
-        </div>
-      </Container>
-    </Section>
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,hsl(40_60%_50%/0.06)_0%,transparent_50%)]"
+        />
+        <Container className="relative">
+          <div
+            className={cn(
+              "grid items-center gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-20",
+              imageFirst &&
+                "lg:[&>*:first-child]:order-2 lg:[&>*:last-child]:order-1",
+            )}
+          >
+            {imageFirst ? (
+              <>
+                {visual}
+                {copy}
+              </>
+            ) : (
+              <>
+                {copy}
+                {visual}
+              </>
+            )}
+          </div>
+        </Container>
+      </Section>
+    </>
   );
 }

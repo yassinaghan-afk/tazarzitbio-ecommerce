@@ -124,38 +124,17 @@ export const bestSellers = [
   },
 ];
 
-export const familyPacks = [
-  {
-    id: "premium-family-pack",
-    slug: "premium-family-pack",
-    title: "باقة العائلة — قيمة ممتازة",
-    description: "تشكيلة 250غ/250مل — أملو، مكسرات، وأركان بسعر أوفر",
-    price: 499,
-    variant: "gold" as const,
-    isPopular: true,
-    highlight: "توفير عائلي",
-    items: [
-      { name: "أملو لوز 250غ", emoji: "🌰" },
-      { name: "أملو فستق 250غ", emoji: "🥜" },
-      { name: "مكسرات بالعسل", emoji: "🍯" },
-      { name: "زيت أركان 250مل", emoji: "✨" },
-    ],
-  },
-  {
-    id: "family-breakfast",
-    slug: "premium-family-pack",
-    title: "باقة فطور العائلة",
-    description: "أحجام 500غ و500مل — للعائلة الكبيرة",
-    price: 899,
-    variant: "olive" as const,
-    highlight: "قيمة شهرية",
-    items: [
-      { name: "أملو لوز 500غ", emoji: "🫙" },
-      { name: "أملو فستق 500غ", emoji: "🥜" },
-      { name: "زيت أركان 500مل", emoji: "✨" },
-    ],
-  },
-];
+export const familyPacks: {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  price: number;
+  variant: "gold" | "olive";
+  isPopular?: boolean;
+  highlight: string;
+  items: { name: string; emoji: string }[];
+}[] = [];
 
 export const reviews = HOMEPAGE_REVIEWS_DARIJA;
 
