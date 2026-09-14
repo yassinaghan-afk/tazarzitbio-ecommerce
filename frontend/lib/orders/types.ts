@@ -58,6 +58,12 @@ export interface OrderRecord {
   /** Idempotency: order already written to Google Sheets */
   sheetsExported?: boolean;
   sheetsExportedAt?: string;
+  /** Idempotency: Telegram alert already sent for the initial order */
+  telegramNotified?: boolean;
+  telegramNotifiedAt?: string;
+  /** Idempotency: Meta CAPI Purchase already sent (thank-you only) */
+  metaPurchaseSent?: boolean;
+  metaPurchaseSentAt?: string;
 
   /* ---- Ops extensions (optional for backward compatibility) ---- */
   confirmationStatus?: import("@/lib/admin/ops-types").ConfirmationStatus;

@@ -24,7 +24,6 @@ import {
   type UpsellSelection,
 } from "@/lib/upsell/session";
 import {
-  trackPurchase,
   trackUpsellAdd,
   trackUpsellComplete,
   trackUpsellSkip,
@@ -259,23 +258,6 @@ export function RoyalUpsellPage() {
     return data;
   }
 
-  function firePurchase(next: PlacedOrder, eventId?: string) {
-    trackPurchase({
-      orderId: next.id,
-      products: next.items.map((i) => ({
-        productId: i.productId || i.slug || i.nameAr,
-        slug: i.slug || "",
-        name: i.nameAr,
-        price: i.unitPrice,
-        quantity: i.quantity,
-      })),
-      subtotal: next.subtotal,
-      shipping: next.shippingFee,
-      total: next.total,
-      eventId,
-    });
-  }
-
   function goThankYou(updated: PlacedOrder) {
     const path = updated.thankYouPath ?? order?.thankYouPath ?? "/thank-you";
     if (order?.id) clearUpsellSelection(order.id);
@@ -303,7 +285,7 @@ export function RoyalUpsellPage() {
           upsellTotal: upsellSubtotal,
         });
       }
-      firePurchase(next, data.meta?.purchaseEventId);
+      // Meta / Purchase pixels fire only on thank-you.
       goThankYou(next);
     } catch {
       setBusy(false);

@@ -7,9 +7,8 @@ import type {
   UpsellOrderResponse,
 } from "@/lib/orders/types";
 import {
-  exportFinalizedOrder,
+  finalizeUpsellAlerts,
   purchaseEventId,
-  requestExportMeta,
 } from "@/lib/orders/finalize-export";
 import {
   buildUpsellLine,
@@ -38,27 +37,15 @@ function sanitizeOrderForClient(order: OrderRecord): OrderRecord {
   return order;
 }
 
-async function respondFinalize(
-  order: OrderRecord,
-  req: Request,
-  bodyMeta?: { fbp?: string; fbc?: string; eventSourceUrl?: string },
-) {
-  const exported = await exportFinalizedOrder(
-    order,
-    requestExportMeta(req, bodyMeta),
-  );
+async function respondFinalize(order: OrderRecord) {
+  // Retry/append Sheets + Telegram only. Meta Purchase fires on thank-you.
+  const exported = await finalizeUpsellAlerts(order);
   const payload: UpsellOrderResponse = {
     order: sanitizeOrderForClient(exported.order),
     upsellCompleted: true,
-    exportOk: exported.ok,
-    meta: { purchaseEventId: exported.purchaseEventId },
+    exportOk: true,
+    meta: { purchaseEventId: purchaseEventId(exported.order.orderId) },
   };
-  if (!exported.ok) {
-    return NextResponse.json(
-      { ...payload, error: "export_failed" },
-      { status: 502 },
-    );
-  }
   return NextResponse.json(payload);
 }
 
@@ -95,20 +82,17 @@ export async function POST(req: Request, context: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  // Idempotent finalize / Sheets retry
+  // Idempotent finalize
   if (existing.upsellCompleted) {
-    if (existing.sheetsExported) {
-      return NextResponse.json({
-        order: sanitizeOrderForClient(existing),
-        upsellCompleted: true,
-        exportOk: true,
-        meta: { purchaseEventId: purchaseEventId(existing.orderId) },
-      } satisfies UpsellOrderResponse);
-    }
-    return respondFinalize(existing, req, body.meta);
+    return NextResponse.json({
+      order: sanitizeOrderForClient(existing),
+      upsellCompleted: true,
+      exportOk: true,
+      meta: { purchaseEventId: purchaseEventId(existing.orderId) },
+    } satisfies UpsellOrderResponse);
   }
 
-  // Skip: keep original lines, finalize + export
+  // Skip: keep original lines, finalize alerts retry
   if (action === "skip") {
     const updated = await updateStore((prev) => {
       const orders = prev.orders.map((o) =>
@@ -117,7 +101,7 @@ export async function POST(req: Request, context: RouteContext) {
       return { ...prev, orders };
     });
     const order = updated.orders.find((o) => o.orderId === orderId)!;
-    return respondFinalize(order, req, body.meta);
+    return respondFinalize(order);
   }
 
   // sync or complete-with-items: replace upsell lines idempotently
@@ -176,5 +160,5 @@ export async function POST(req: Request, context: RouteContext) {
     } satisfies UpsellOrderResponse);
   }
 
-  return respondFinalize(order, req, body.meta);
+  return respondFinalize(order);
 }

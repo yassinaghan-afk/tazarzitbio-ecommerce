@@ -17,6 +17,7 @@ import { useCatalogProducts } from "@/hooks/use-catalog";
 import { Container, Section } from "@/components/layout/container";
 import { ThankYouVerification } from "@/components/thank-you/thank-you-verification";
 import { Button } from "@/components/ui/button";
+import { useThankYouPurchase } from "@/hooks/use-thank-you-purchase";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
@@ -40,8 +41,8 @@ export default function ThankYouPage() {
     setHydrated(true);
   }, []);
 
-  // Purchase is tracked only after upsell finalize (skip/complete + Sheets).
-  // Do not fire Purchase on thank-you open/refresh.
+  // Meta Purchase (Pixel + CAPI) only on thank-you.
+  useThankYouPurchase(order);
 
   const handleCustomerUpdate = (customer: CheckoutFormData) => {
     setOrder((prev) => {

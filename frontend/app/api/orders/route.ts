@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 
 import type { CreateOrderInput, CreateOrderResponse, OrderRecord } from "@/lib/orders/types";
-import { purchaseEventId } from "@/lib/orders/finalize-export";
+import {
+  notifyOrderCreated,
+  purchaseEventId,
+} from "@/lib/orders/finalize-export";
 import { resolveAmlouRoyalShippingFromLines } from "@/lib/products/amlou-royal";
 import { readStore, updateStore } from "@/lib/server/store";
 import { recordCouponUsage, validateCoupon } from "@/lib/server/promotions";
@@ -29,8 +32,8 @@ interface OrderBody extends CreateOrderInput {
 }
 
 /**
- * Creates a draft order in store only.
- * Google Sheets / Telegram / Meta Purchase happen on upsell finalize (skip|complete).
+ * Creates the order, then instantly alerts Telegram + Google Sheets.
+ * Meta Purchase (Pixel + CAPI) waits until the thank-you page.
  */
 export async function POST(req: Request) {
   let input: OrderBody | null = null;
@@ -121,6 +124,8 @@ export async function POST(req: Request) {
     upsellToken,
     upsellCompleted: false,
     sheetsExported: false,
+    telegramNotified: false,
+    metaPurchaseSent: false,
   };
 
   await updateStore((prev) => ({
@@ -136,13 +141,25 @@ export async function POST(req: Request) {
     }
   }
 
-  // Stable event id for later finalize (Pixel + CAPI). Not fired here.
-  const eventId = purchaseEventId(order.orderId);
+  // Instant ops alerts — never block checkout if Sheets/Telegram fail.
+  let notifiedOrder = order;
+  try {
+    const notified = await notifyOrderCreated(order);
+    notifiedOrder = notified.order;
+  } catch (err) {
+    console.error("order notify error", {
+      orderId: order.orderId,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  // Stable event id for thank-you Pixel + CAPI. Not fired here.
+  const eventId = purchaseEventId(notifiedOrder.orderId);
 
   const res: CreateOrderResponse & {
     meta?: { purchaseEventId: string; upsellToken?: string };
   } = {
-    order,
+    order: notifiedOrder,
     meta: { purchaseEventId: eventId, upsellToken },
   };
   return NextResponse.json(res);

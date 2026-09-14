@@ -374,7 +374,7 @@ export function RoyalOrderModal({
         }),
       );
 
-      // Purchase / Sheets fire only after upsell finalize (skip or continue).
+      // Sheets + Telegram fire on order create; Meta Purchase on thank-you.
 
       onClose();
       router.push(withCurrentSearch("/upsell"));

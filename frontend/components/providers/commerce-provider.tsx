@@ -366,7 +366,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           /* ignore */
         }
 
-        // Purchase / Sheets fire only after upsell finalize (skip or continue).
+        // Sheets + Telegram fire on order create; Meta Purchase on thank-you.
 
         clearCart();
         setCoupon(null);

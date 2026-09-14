@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Home, Package, Truck } from "lucide-react";
 
+import { useThankYouPurchase } from "@/hooks/use-thank-you-purchase";
 import type { PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import { formatRoyalDh, withCurrentSearch } from "@/lib/royal/order-helpers";
@@ -24,8 +25,8 @@ export function RoyalThankYouClient() {
     setHydrated(true);
   }, []);
 
-  // Purchase/order_created is tracked only after upsell finalize succeeds.
-  // Do not fire conversion events on thank-you open/refresh.
+  // Meta Purchase (Pixel + CAPI) only after thank-you is reached.
+  useThankYouPurchase(order);
 
   return (
     <div className="min-h-[70vh] bg-[#faf6ef] px-3 py-10 text-[#1a2744]" dir="rtl">

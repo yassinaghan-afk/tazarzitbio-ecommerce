@@ -273,7 +273,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         }),
       );
 
-      // Purchase / Sheets fire only after upsell finalize (skip or continue).
+      // Sheets + Telegram fire on order create; Meta Purchase on thank-you.
 
       router.push(withCurrentSearch("/upsell"));
     } catch {
