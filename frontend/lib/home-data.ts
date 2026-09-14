@@ -115,7 +115,7 @@ export const bestSellers = [
   {
     id: "argan-oil",
     name: "زيت أركان نقي",
-    price: 299,
+    price: 249,
     weight: "من 250 مل",
     imageSrc: `${IMG}/argan-oil.png`,
     imageAlt: "زيت أركان مغربي تازارزيت بيو",

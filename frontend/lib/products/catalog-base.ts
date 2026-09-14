@@ -66,8 +66,8 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
   ];
 
   const arganOffers = [
-    offer("argan-250", "OIL-ARG-250", "250 مل", "250 مل", { costPrice: 172, salePrice: 299 }, undefined, overrides),
-    offer("argan-500", "OIL-ARG-500", "500 مل", "500 مل", { costPrice: 322, salePrice: 549 }, undefined, overrides),
+    offer("argan-250", "OIL-ARG-250", "250 مل", "250 مل", { costPrice: 172, salePrice: 249 }, undefined, overrides),
+    offer("argan-500", "OIL-ARG-500", "500 مل", "500 مل", { costPrice: 322, salePrice: 469 }, undefined, overrides),
   ];
 
   const nutsOffers = [
