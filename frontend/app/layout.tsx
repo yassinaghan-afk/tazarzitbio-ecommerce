@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 
+import { getRequestLocale, localeHtmlAttrs } from "@/lib/seo/locale";
+
 import "./globals.css";
 
 const tajawal = Tajawal({
@@ -65,16 +67,14 @@ export const metadata: Metadata = {
  * Public pages use (storefront)/layout.tsx.
  * Admin pages use admin/layout.tsx.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getRequestLocale();
+  const { lang, dir } = localeHtmlAttrs(locale);
+
   return (
-    <html
-      lang="ar"
-      dir="rtl"
-      className={tajawal.variable}
-      suppressHydrationWarning
-    >
+    <html lang={lang} dir={dir} className={tajawal.variable} suppressHydrationWarning>
       <body className="min-h-screen max-w-full overflow-x-hidden font-sans selection:bg-accent/20">
         {children}
       </body>

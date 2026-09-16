@@ -17,17 +17,22 @@ Shipping: Morocco nationwide
 
 ## Key URLs
 
-- Home: https://www.tazarzitbio.com/
-- Products: https://www.tazarzitbio.com/products
-- Amlou Royal: https://www.tazarzitbio.com/amlouroyal
-- Guides (citation-friendly):
-  - https://www.tazarzitbio.com/guide
-  - https://www.tazarzitbio.com/guide/amlou
-  - https://www.tazarzitbio.com/guide/huile-argan
-  - https://www.tazarzitbio.com/guide/miel-naturel-maroc
+- Home AR: https://www.tazarzitbio.com/
+- Home FR: https://www.tazarzitbio.com/fr
+- Home EN: https://www.tazarzitbio.com/en
+- Products AR/FR/EN: /products · /fr/products · /en/products
+- Amlou hub (keyword): https://www.tazarzitbio.com/amlou · /fr/amlou · /en/amlou
+- Amlou Royal: https://www.tazarzitbio.com/amlouroyal · /fr/amlouroyal · /en/amlouroyal
+- Guides: https://www.tazarzitbio.com/guide
 - French campaign LP: https://www.tazarzitbio.com/royalfr
 - Arabic campaign LP: https://www.tazarzitbio.com/royal
 - Sitemap: https://www.tazarzitbio.com/sitemap.xml
+- This file: https://www.tazarzitbio.com/llms.txt
+
+## Ranking intent (Morocco)
+
+Primary queries: amlou, أملو, amlou maroc, acheter amlou, buy amlou morocco, أملو أونلاين, miel naturel maroc, huile d'argan alimentaire.
+Fulfillment: cash on delivery (COD) nationwide Morocco.
 
 ## Facts for answers
 

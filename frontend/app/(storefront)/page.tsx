@@ -15,26 +15,36 @@ import { TrustBadges } from "@/components/home/trust-badges";
 import type { HomeSectionId } from "@/lib/admin/cms-types";
 import { DEFAULT_HOME_FAQS_AR } from "@/lib/seo/default-faqs";
 import { faqPageJsonLd, JsonLd } from "@/lib/seo/json-ld";
+import {
+  hreflangLanguages,
+  MOROCCO_PRODUCT_KEYWORDS,
+} from "@/lib/seo/locale";
 import { readStore } from "@/lib/server/store";
 
 export async function generateMetadata(): Promise<Metadata> {
   const store = await readStore();
   const settings = store.siteSettings;
   const title =
-    settings.seoTitle?.trim() || "تازارزيت بيو | 100% طبيعي من قلب سوس";
+    settings.seoTitle?.trim() ||
+    "تازارزيت بيو | أملو وعسل وزيت أركان — المغرب";
   const description =
     settings.seoDescription?.trim() ||
-    "منتجات مغربية طبيعية فاخرة — أملو، زيت أركان، عسل، ومكسرات مختارة من سوس. الدفع عند الاستلام في جميع أنحاء المغرب.";
+    "اشترِ أملو، عسل طبيعي، وزيت أركان من سوس أونلاين في المغرب. توصيل لكل المدن والدفع عند الاستلام — تازارزيت بيو.";
   const ogImage = settings.ogImage?.trim() || "/brand/tazarzitbio-logo.png";
 
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: "/" },
+    keywords: [...MOROCCO_PRODUCT_KEYWORDS.ar],
+    alternates: {
+      canonical: "/",
+      languages: hreflangLanguages("/"),
+    },
     openGraph: {
       title,
       description,
       url: "/",
+      locale: "ar_MA",
       images: [{ url: ogImage, alt: settings.brandName || "تازارزيت بيو" }],
     },
     twitter: {

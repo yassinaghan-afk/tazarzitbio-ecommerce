@@ -50,16 +50,35 @@ function applyDocumentLanguage(locale: Language) {
   document.documentElement.dir = dir;
 }
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Language>(DEFAULT_LANGUAGE);
-  const [ready, setReady] = useState(false);
+export function LanguageProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  /** When set (e.g. /fr or /en SEO routes), SSR + first paint use this locale. */
+  initialLocale?: Language;
+}) {
+  const bootLocale = initialLocale ?? DEFAULT_LANGUAGE;
+  const [locale, setLocaleState] = useState<Language>(bootLocale);
+  const [ready, setReady] = useState(Boolean(initialLocale));
 
   useEffect(() => {
+    if (initialLocale) {
+      setLocaleState(initialLocale);
+      applyDocumentLanguage(initialLocale);
+      try {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, initialLocale);
+      } catch {
+        /* ignore */
+      }
+      setReady(true);
+      return;
+    }
     const stored = readStoredLanguage();
     setLocaleState(stored);
     applyDocumentLanguage(stored);
     setReady(true);
-  }, []);
+  }, [initialLocale]);
 
   const setLocale = useCallback((next: Language) => {
     setLocaleState(next);
@@ -71,7 +90,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     applyDocumentLanguage(next);
   }, []);
 
-  const effectiveLocale = ready ? locale : DEFAULT_LANGUAGE;
+  const effectiveLocale = ready || initialLocale ? locale : DEFAULT_LANGUAGE;
   const dir = languageDir(effectiveLocale);
 
   const t = useCallback(

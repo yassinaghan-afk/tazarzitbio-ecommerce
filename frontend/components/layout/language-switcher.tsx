@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Globe } from "lucide-react";
 
 import { useTranslation } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/translations";
 import { LANGUAGES, type Language } from "@/lib/i18n/types";
+import { localizedPath, stripLocalePrefix } from "@/lib/seo/locale";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<Language, string> = {
@@ -20,10 +22,22 @@ const LANG_NAME_KEYS: Record<Language, TranslationKey> = {
   en: "lang.en",
 };
 
+function shouldNavigateForLocale(barePath: string): boolean {
+  if (barePath === "/") return true;
+  return (
+    barePath === "/products" ||
+    barePath.startsWith("/products/") ||
+    barePath === "/amlouroyal" ||
+    barePath === "/amlou"
+  );
+}
+
 export function LanguageSwitcher() {
   const { locale, setLocale, t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname() || "/";
+  const router = useRouter();
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +54,16 @@ export function LanguageSwitcher() {
       document.removeEventListener("keydown", onEscape);
     };
   }, [open]);
+
+  const selectLocale = (code: Language) => {
+    setLocale(code);
+    setOpen(false);
+    const bare = stripLocalePrefix(pathname);
+    if (shouldNavigateForLocale(bare)) {
+      const next = localizedPath(code, bare);
+      if (next !== pathname) router.push(next);
+    }
+  };
 
   return (
     <div ref={rootRef} className="relative">
@@ -80,10 +104,7 @@ export function LanguageSwitcher() {
             <li key={code} role="option" aria-selected={locale === code}>
               <button
                 type="button"
-                onClick={() => {
-                  setLocale(code);
-                  setOpen(false);
-                }}
+                onClick={() => selectLocale(code)}
                 className={cn(
                   "flex w-full items-center justify-between gap-3 px-3 py-2 text-start text-xs font-semibold transition-colors",
                   locale === code

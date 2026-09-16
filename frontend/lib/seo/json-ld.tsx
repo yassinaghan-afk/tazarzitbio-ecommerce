@@ -1,9 +1,11 @@
 import type { SiteSettings } from "@/lib/admin/cms-types";
+import {
+  localizeProductName,
+  localizeProductShortDescription,
+} from "@/lib/i18n/product-locale";
+import type { Language } from "@/lib/i18n/types";
 import type { PublicProduct } from "@/lib/products/types";
-
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.tazarzitbio.com"
-).replace(/\/$/, "");
+import { SITE_URL } from "@/lib/seo/locale";
 
 export function absoluteUrl(path: string) {
   if (path.startsWith("http")) return path;
@@ -98,7 +100,13 @@ export function breadcrumbJsonLd(
   };
 }
 
-export function productJsonLd(product: PublicProduct, path: string) {
+export function productJsonLd(
+  product: PublicProduct,
+  path: string,
+  locale: Language = "ar",
+) {
+  const name = localizeProductName(product, locale);
+  const description = localizeProductShortDescription(product, locale);
   const offers = product.offers.map((offer) => ({
     "@type": "Offer",
     url: absoluteUrl(path),
@@ -107,6 +115,10 @@ export function productJsonLd(product: PublicProduct, path: string) {
     availability: "https://schema.org/InStock",
     itemCondition: "https://schema.org/NewCondition",
     name: offer.label,
+    areaServed: {
+      "@type": "Country",
+      name: "Morocco",
+    },
   }));
 
   const reviews = product.reviews.slice(0, 5).map((review) => ({
@@ -128,8 +140,9 @@ export function productJsonLd(product: PublicProduct, path: string) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: product.nameAr,
-    description: product.shortDescription,
+    name,
+    description,
+    inLanguage: locale === "ar" ? "ar-MA" : locale === "fr" ? "fr-MA" : "en",
     image: product.images?.length
       ? product.images.map((src) => absoluteUrl(src))
       : [absoluteUrl(product.image)],

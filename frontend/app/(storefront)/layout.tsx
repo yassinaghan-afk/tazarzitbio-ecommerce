@@ -7,6 +7,7 @@ import {
   organizationJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/json-ld";
+import { getRequestLocale } from "@/lib/seo/locale";
 
 /**
  * Public storefront layout — header, announcement, cart, footer.
@@ -17,8 +18,9 @@ export default async function StorefrontLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { readStore } = await import("@/lib/server/store");
   const store = await readStore();
+  const locale = await getRequestLocale();
   return (
-    <CommerceShell>
+    <CommerceShell initialLocale={locale}>
       <JsonLd data={organizationJsonLd(store.siteSettings)} />
       <JsonLd data={websiteJsonLd()} />
       <SiteHeader cmsNav={store.navigation.header} />

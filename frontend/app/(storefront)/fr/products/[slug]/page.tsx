@@ -18,10 +18,10 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  return localizedProductMetadata(slug, "ar");
+  return localizedProductMetadata(slug, "fr");
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function FrProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  return <LocalizedProductPage slug={slug} locale="ar" />;
+  return <LocalizedProductPage slug={slug} locale="fr" />;
 }
