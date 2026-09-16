@@ -56,8 +56,8 @@ export function SiteFooter({
           },
         ];
 
-  const whatsappDigits = (settings?.whatsapp ?? "212600000000").replace(/\D/g, "");
-  const phone = settings?.phone || "+212 600 000 000";
+  const whatsappDigits = (settings?.whatsapp ?? "212642370050").replace(/\D/g, "");
+  const phone = settings?.phone || "+212 642 370 050";
   const brandName = settings?.brandName || "Tazarzit Bio";
 
   const socials = [

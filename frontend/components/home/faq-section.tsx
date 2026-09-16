@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export function FaqSection({
   cmsFaqs,
-  whatsappDigits = "212600000000",
+  whatsappDigits = "212642370050",
 }: {
   cmsFaqs?: FaqRecord[];
   whatsappDigits?: string;
@@ -29,7 +29,7 @@ export function FaqSection({
         }))
       : getFaqs(t);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const digits = whatsappDigits.replace(/\D/g, "") || "212600000000";
+  const digits = whatsappDigits.replace(/\D/g, "") || "212642370050";
   const waHref = `https://wa.me/${digits}?text=${encodeURIComponent(t("whatsapp.prefill"))}`;
 
   return (

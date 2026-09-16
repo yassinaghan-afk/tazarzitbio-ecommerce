@@ -15,9 +15,6 @@ export function FloatingWhatsApp({
 }) {
   const { t } = useTranslation();
   const digits = whatsappDigits.replace(/\D/g, "");
-  if (!digits || digits === "212600000000") {
-    // Still show with placeholder so ops notice; prefer real CMS number
-  }
   if (!digits) return null;
 
   const href = `https://wa.me/${digits}?text=${encodeURIComponent(t("whatsapp.prefill"))}`;
