@@ -250,7 +250,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
             {
               nameAr: AMLOU_ROYAL_NAME_AR,
               offerLabel,
-              quantity: offer.bottles,
+              quantity: 1,
               unitPrice: offer.price,
               slug: AMLOU_ROYAL_SLUG,
               productId: AMLOU_ROYAL_ID,

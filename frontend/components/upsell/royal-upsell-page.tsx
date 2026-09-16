@@ -187,6 +187,12 @@ export function RoyalUpsellPage() {
 
   const originalSubtotal = useMemo(() => {
     if (!order) return 0;
+    // Prefer server subtotal: Royal packs store unitPrice as the pack total while
+    // session items may also set quantity = bottle count (display), which would
+    // double-count if we multiply again (e.g. 399 DH × 2 pots → 798 DH).
+    if (typeof order.subtotal === "number" && Number.isFinite(order.subtotal)) {
+      return order.subtotal;
+    }
     return order.items
       .filter((i) => !i.isUpsell)
       .reduce((s, i) => s + i.unitPrice * i.quantity, 0);
