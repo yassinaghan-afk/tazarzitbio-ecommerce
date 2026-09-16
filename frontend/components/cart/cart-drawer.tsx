@@ -11,9 +11,13 @@ import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeLineName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 
 export function CartDrawer() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const {
     items,
     shipping,
@@ -67,7 +71,17 @@ export function CartDrawer() {
       ) : (
         <div className="space-y-6">
           <ul className="space-y-4">
-            {items.map((item) => (
+            {items.map((item) => {
+              const displayName = localizeLineName(
+                item.slug,
+                item.nameAr,
+                locale,
+              );
+              const displayOffer = localizeWeightLabel(
+                item.offerLabel,
+                locale,
+              );
+              return (
               <li
                 key={item.lineId}
                 className="flex gap-3 rounded-2xl border border-border/60 bg-background/50 p-3"
@@ -79,7 +93,7 @@ export function CartDrawer() {
                 >
                   <Image
                     src={item.image}
-                    alt={item.nameAr}
+                    alt={displayName}
                     fill
                     sizes="80px"
                     className="object-contain p-1.5"
@@ -92,9 +106,9 @@ export function CartDrawer() {
                       onClick={closeCart}
                       className="line-clamp-2 text-sm font-bold text-foreground hover:text-accent"
                     >
-                      {item.nameAr}
+                      {displayName}
                     </Link>
-                    <p className="text-xs text-muted-foreground">{item.offerLabel}</p>
+                    <p className="text-xs text-muted-foreground">{displayOffer}</p>
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-0.5">
@@ -137,7 +151,8 @@ export function CartDrawer() {
                   <Trash2 className="size-4" />
                 </Button>
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-foreground/80">

@@ -12,6 +12,12 @@ import {
   getStartingOffer,
 } from "@/lib/cart/product-payload";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeOfferHint,
+  localizeOfferLabel,
+  localizeProductName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
 import {
   frenchOfferHint,
@@ -47,10 +53,12 @@ export function WeightOfferModal({
   confirmLabel,
   frenchUi = false,
 }: WeightOfferModalProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const commerce = useCommerce();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const fr = royalFrCopy;
+  const useFrCampaign = frenchUi;
+  const displayLocale = useFrCampaign ? "fr" : locale;
 
   useEffect(() => {
     if (!open || !product) return;
@@ -96,13 +104,14 @@ export function WeightOfferModal({
   const showCartIcon = Boolean(onConfirmOffer) || mode === "cart";
 
   const titleName = product
-    ? frenchUi
+    ? useFrCampaign
       ? frenchProductName(product)
-      : product.nameAr
+      : localizeProductName(product, displayLocale)
     : "";
-  const currency = frenchUi ? fr.currency : t("common.currency");
+  const currency = useFrCampaign ? fr.currency : t("common.currency");
   const priceText = (n: number) =>
-    frenchUi ? formatRoyalFrDh(n) : `${n} ${currency}`;
+    useFrCampaign ? formatRoyalFrDh(n) : `${n} ${currency}`;
+  const isLtr = useFrCampaign || displayLocale !== "ar";
 
   return (
     <AnimatePresence>
@@ -110,7 +119,9 @@ export function WeightOfferModal({
         <>
           <motion.button
             type="button"
-            aria-label={frenchUi ? fr.weightClose : t("weightModal.close")}
+            aria-label={
+              useFrCampaign ? fr.weightClose : t("weightModal.close")
+            }
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -122,8 +133,8 @@ export function WeightOfferModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="weight-modal-title"
-            dir={frenchUi ? "ltr" : undefined}
-            lang={frenchUi ? "fr" : undefined}
+            dir={isLtr ? "ltr" : undefined}
+            lang={useFrCampaign ? "fr" : displayLocale}
             initial={{ opacity: 0, y: 40, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 28, scale: 0.97 }}
@@ -138,7 +149,7 @@ export function WeightOfferModal({
               <div className="relative flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                    {frenchUi ? fr.weightKicker : t("weightModal.kicker")}
+                    {useFrCampaign ? fr.weightKicker : t("weightModal.kicker")}
                   </p>
                   <h2
                     id="weight-modal-title"
@@ -147,7 +158,9 @@ export function WeightOfferModal({
                     {titleName}
                   </h2>
                   <p className="mt-1 text-sm text-white/70">
-                    {frenchUi ? fr.weightSubtitle : t("weightModal.subtitle")}
+                    {useFrCampaign
+                      ? fr.weightSubtitle
+                      : t("weightModal.subtitle")}
                   </p>
                 </div>
                 <Button
@@ -155,7 +168,9 @@ export function WeightOfferModal({
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  aria-label={frenchUi ? fr.weightClose : t("weightModal.close")}
+                  aria-label={
+                    useFrCampaign ? fr.weightClose : t("weightModal.close")
+                  }
                   className="shrink-0 rounded-full text-white hover:bg-white/15 hover:text-white"
                 >
                   <X className="size-5" />
@@ -174,15 +189,17 @@ export function WeightOfferModal({
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-white/60">
-                    {frenchUi ? fr.weightSelected : t("weightModal.selected")}
+                    {useFrCampaign
+                      ? fr.weightSelected
+                      : t("weightModal.selected")}
                   </p>
                   <p className="truncate text-sm font-bold">
-                    {frenchUi
+                    {useFrCampaign
                       ? frenchOfferLabel(selected)
-                      : selected.label}
+                      : localizeOfferLabel(selected, displayLocale)}
                   </p>
                   <p className="mt-0.5 text-lg font-extrabold tabular-nums text-accent">
-                    {frenchUi ? (
+                    {useFrCampaign ? (
                       formatRoyalFrDh(selected.price)
                     ) : (
                       <>
@@ -200,12 +217,15 @@ export function WeightOfferModal({
             <div className="max-h-[min(46dvh,360px)] space-y-2.5 overflow-y-auto overscroll-contain px-4 py-4">
               {product.offers.map((offer) => {
                 const isSelected = offer.id === selected.id;
-                const weightLabel = frenchUi
+                const weightLabel = useFrCampaign
                   ? toFrenchWeightLabel(offer.weight || offer.label)
-                  : offer.weight || offer.label;
-                const hint = frenchUi
+                  : localizeWeightLabel(
+                      offer.weight || offer.label,
+                      displayLocale,
+                    );
+                const hint = useFrCampaign
                   ? frenchOfferHint(offer.hint)
-                  : offer.hint;
+                  : localizeOfferHint(offer.hint, displayLocale);
                 return (
                   <button
                     key={offer.id}
@@ -227,7 +247,9 @@ export function WeightOfferModal({
                           : "border-[#d6c8b2] bg-transparent",
                       )}
                     >
-                      {isSelected && <Check className="size-3.5" strokeWidth={3} />}
+                      {isSelected && (
+                        <Check className="size-3.5" strokeWidth={3} />
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-extrabold text-foreground">
@@ -241,7 +263,7 @@ export function WeightOfferModal({
                     </span>
                     <span className="shrink-0 text-end">
                       <span className="block text-base font-extrabold tabular-nums text-accent">
-                        {frenchUi ? (
+                        {useFrCampaign ? (
                           formatRoyalFrDh(offer.price)
                         ) : (
                           <>
@@ -277,7 +299,7 @@ export function WeightOfferModal({
                 </span>
               </Button>
               <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
-                {frenchUi ? fr.weightCod : t("common.cod")}
+                {useFrCampaign ? fr.weightCod : t("common.cod")}
               </p>
             </div>
           </motion.div>

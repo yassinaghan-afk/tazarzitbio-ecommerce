@@ -9,6 +9,10 @@ import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { buildAddToCartPayload } from "@/lib/cart/product-payload";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeProductName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
 import { cn } from "@/lib/utils";
 
@@ -28,12 +32,13 @@ export function HoneyUpsellCard({
   className,
   ctaMode = "addToOrder",
 }: HoneyUpsellCardProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { addToCart, orderNow } = useCommerce();
   const productHref = `/products/${product.slug}`;
   const [selectedOfferId, setSelectedOfferId] = useState(
     () => product.offers[0]?.id ?? "",
   );
+  const displayName = localizeProductName(product, locale);
 
   const selectedOffer: PublicProductOffer = useMemo(() => {
     return (
@@ -84,7 +89,7 @@ export function HoneyUpsellCard({
         >
           <Image
             src={product.image}
-            alt={product.nameAr}
+            alt={displayName}
             fill
             sizes={compact ? "64px" : "96px"}
             className="object-contain p-1.5"
@@ -100,7 +105,7 @@ export function HoneyUpsellCard({
                   compact ? "text-sm" : "text-base",
                 )}
               >
-                {product.nameAr}
+                {displayName}
               </h3>
             </Link>
             <p className="mt-0.5 flex items-baseline gap-1.5">
@@ -125,7 +130,7 @@ export function HoneyUpsellCard({
                       : "border-border/80 bg-background/80 text-muted-foreground hover:border-accent/40",
                   )}
                 >
-                  {offer.label}
+                  {localizeWeightLabel(offer.weight || offer.label, locale)}
                 </button>
               ))}
             </div>

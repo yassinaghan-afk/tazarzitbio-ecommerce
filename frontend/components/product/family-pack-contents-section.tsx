@@ -11,6 +11,10 @@ import {
   type FamilyPackContentItem,
 } from "@/lib/products/family-pack-contents";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeLineName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 import type { TranslationKey } from "@/lib/i18n/translations";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
@@ -44,9 +48,13 @@ function PackItemVisual({ item }: { item: FamilyPackContentItem }) {
 
 function PackContentCard({
   item,
+  name,
+  size,
   benefit,
 }: {
   item: FamilyPackContentItem;
+  name: string;
+  size: string;
   benefit: string;
 }) {
   return (
@@ -70,15 +78,12 @@ function PackContentCard({
       <div className="flex flex-1 flex-col gap-2 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-base font-extrabold leading-snug text-foreground sm:text-lg">
-            {item.nameAr}
+            {name}
           </h3>
           <span className="shrink-0 rounded-full border border-foreground/15 bg-foreground px-2.5 py-1 text-2xs font-bold tabular-nums text-primary-foreground">
-            {item.size}
+            {size}
           </span>
         </div>
-        <p className="text-2xs font-medium uppercase tracking-wider text-accent/90">
-          {item.nameEn}
-        </p>
         <p className="text-sm leading-relaxed text-muted-foreground">{benefit}</p>
       </div>
     </motion.article>
@@ -86,7 +91,7 @@ function PackContentCard({
 }
 
 export function FamilyPackContentsSection() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   return (
     <Section
@@ -132,6 +137,8 @@ export function FamilyPackContentsSection() {
             <PackContentCard
               key={item.id}
               item={item}
+              name={localizeLineName(item.id, item.nameAr, locale)}
+              size={localizeWeightLabel(item.size, locale)}
               benefit={t(benefitKey(item.id))}
             />
           ))}

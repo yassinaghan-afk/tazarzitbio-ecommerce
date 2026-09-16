@@ -32,6 +32,16 @@ import { fadeUp } from "@/lib/animations";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products";
 import { getBadgeLabel } from "@/lib/i18n/badges";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeOfferHint,
+  localizeOfferLabel,
+  localizeProductDescription,
+  localizeProductFaq,
+  localizeProductList,
+  localizeProductName,
+  localizeProductShortDescription,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 import { getRelatedProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/tracking/events";
@@ -86,15 +96,40 @@ export function ProductPageClient({
     trackViewContent({
       productId: product.id,
       slug: product.slug,
-      name: product.nameAr,
+      name: localizeProductName(product, locale),
       price: selectedOffer.price,
       quantity: 1,
     });
-  }, [product, selectedOffer]);
+  }, [product, selectedOffer, locale]);
 
   if (!product || !selectedOffer) {
     return null;
   }
+
+  const displayName = localizeProductName(product, locale);
+  const displayShort = localizeProductShortDescription(product, locale);
+  const displayDescription = localizeProductDescription(product, locale);
+  const displayIngredients = localizeProductList(
+    product.ingredients,
+    product.slug,
+    locale,
+    "ingredients",
+  );
+  const displayBenefits = localizeProductList(
+    product.benefits,
+    product.slug,
+    locale,
+    "benefits",
+  );
+  const displayUsage = localizeProductList(
+    product.usageSuggestions,
+    product.slug,
+    locale,
+    "usageSuggestions",
+  );
+  const displayFaq = localizeProductFaq(product.faq, product.slug, locale);
+  const selectedWeight = localizeWeightLabel(selectedOffer.weight, locale);
+  const selectedHint = localizeOfferHint(selectedOffer.hint, locale);
 
   const related = getRelatedProducts(
     product.relatedSlugs.filter((s) => s !== product.slug),
@@ -114,13 +149,13 @@ export function ProductPageClient({
               {t("product.products")}
             </Link>
             <span className="mx-2">{t("common.breadcrumbSep")}</span>
-            <span className="text-foreground">{product.nameAr}</span>
+            <span className="text-foreground">{displayName}</span>
           </nav>
 
           <div className="flex min-w-0 max-w-full flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-14">
             <ProductImageGallery
               images={product.images}
-              alt={product.nameAr}
+              alt={displayName}
               className="order-1 min-w-0 w-full max-w-full shrink-0 lg:col-start-1 lg:row-span-2 lg:sticky lg:top-[calc(var(--site-top-offset)+1rem)] lg:self-start"
             />
 
@@ -144,10 +179,10 @@ export function ProductPageClient({
 
               <div>
                 <h1 className="text-display text-3xl text-foreground sm:text-4xl">
-                  {product.nameAr}
+                  {displayName}
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  {product.shortDescription}
+                  {displayShort}
                 </p>
               </div>
 
@@ -171,7 +206,7 @@ export function ProductPageClient({
               className="order-3 flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-2"
             >
               <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
-                <div className="flex items-baseline gap-3">
+                <div className="flex flex-wrap items-baseline gap-3">
                   <span className="text-4xl font-extrabold tabular-nums text-accent">
                     {selectedOffer.price}
                   </span>
@@ -179,12 +214,12 @@ export function ProductPageClient({
                     {t("common.currency")}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {selectedOffer.weight}
+                    {selectedWeight}
                   </span>
                 </div>
-                {selectedOffer.hint && (
+                {selectedHint && (
                   <p className="mt-1 text-sm font-medium text-foreground/80">
-                    {selectedOffer.hint}
+                    {selectedHint}
                   </p>
                 )}
               </div>
@@ -207,10 +242,12 @@ export function ProductPageClient({
                             : "border-border bg-card/50 hover:border-accent/30",
                         )}
                       >
-                        <p className="font-bold text-foreground">{offer.label}</p>
-                        {offer.hint && (
+                        <p className="font-bold text-foreground">
+                          {localizeOfferLabel(offer, locale)}
+                        </p>
+                        {localizeOfferHint(offer.hint, locale) && (
                           <p className="mt-0.5 text-xs text-muted-foreground">
-                            {offer.hint}
+                            {localizeOfferHint(offer.hint, locale)}
                           </p>
                         )}
                         <p className="mt-2 text-sm font-extrabold text-accent">
@@ -242,7 +279,7 @@ export function ProductPageClient({
             {t("product.about")}
           </h2>
           <p className="text-base leading-[1.85] text-muted-foreground">
-            {product.description}
+            {displayDescription}
           </p>
         </Container>
       </Section>
@@ -255,7 +292,7 @@ export function ProductPageClient({
                 {t("product.ingredientsTitle")}
               </h2>
               <ul className="space-y-2">
-                {product.ingredients.map((item) => (
+                {displayIngredients.map((item) => (
                   <li
                     key={item}
                     className="flex items-center gap-2 text-sm text-foreground/85"
@@ -274,7 +311,7 @@ export function ProductPageClient({
                 {t("product.whyUs")}
               </h2>
               <ul className="space-y-2">
-                {product.benefits.map((item) => (
+                {displayBenefits.map((item) => (
                   <li
                     key={item}
                     className="flex items-start gap-2 text-sm text-foreground/85"
@@ -290,7 +327,7 @@ export function ProductPageClient({
                 {t("product.usageTitle")}
               </h2>
               <ul className="space-y-2">
-                {product.usageSuggestions.map((item) => (
+                {displayUsage.map((item) => (
                   <li
                     key={item}
                     className="text-sm leading-relaxed text-muted-foreground"
@@ -348,7 +385,7 @@ export function ProductPageClient({
                 rating={review.rating}
                 date={review.date}
                 content={review.content}
-                product={product.nameAr}
+                product={displayName}
               />
             ))}
           </div>
@@ -361,7 +398,7 @@ export function ProductPageClient({
             {t("product.faqTitle")}
           </h2>
           <div className="space-y-2">
-            {product.faq.map((item, i) => (
+            {displayFaq.map((item, i) => (
               <div
                 key={item.q}
                 className="overflow-hidden rounded-2xl border border-border/70 bg-card"
@@ -409,12 +446,12 @@ export function ProductPageClient({
         <div className="mx-auto w-full max-w-lg min-w-0 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">{product.nameAr}</p>
+              <p className="truncate text-sm font-bold">{displayName}</p>
               <p className="text-lg font-extrabold tabular-nums text-accent">
                 {selectedOffer.price * quantity} {t("common.currency")}
               </p>
               <p className="text-xs text-muted-foreground">
-                {selectedOffer.label}
+                {localizeOfferLabel(selectedOffer, locale)}
                 {quantity > 1 ? ` × ${quantity}` : ""}
               </p>
             </div>

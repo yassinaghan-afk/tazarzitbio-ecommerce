@@ -8,6 +8,11 @@ import { ChevronDown, MessageCircle, ShieldCheck, Star } from "lucide-react";
 import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import type { LpBlock } from "@/lib/admin/cms-types";
+import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeProductName,
+  localizeProductShortDescription,
+} from "@/lib/i18n/product-locale";
 import type { Product } from "@/lib/products/types";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +61,7 @@ function CtaButton({ block, whatsapp }: { block: LpBlock; whatsapp?: string }) {
 }
 
 function Countdown({ to }: { to: string }) {
+  const { t } = useTranslation();
   const target = useMemo(() => new Date(to).getTime(), [to]);
   const [now, setNow] = useState(() => Date.now());
 
@@ -71,10 +77,10 @@ function Countdown({ to }: { to: string }) {
   const seconds = Math.floor((diff % 60_000) / 1000);
 
   const cells = [
-    { v: days, l: "أيام" },
-    { v: hours, l: "ساعات" },
-    { v: minutes, l: "دقائق" },
-    { v: seconds, l: "ثواني" },
+    { v: days, l: t("countdown.days") },
+    { v: hours, l: t("countdown.hours") },
+    { v: minutes, l: t("countdown.minutes") },
+    { v: seconds, l: t("countdown.seconds") },
   ];
 
   return (
@@ -96,6 +102,7 @@ function Countdown({ to }: { to: string }) {
 
 function OfferBlock({ block, product }: { block: LpBlock; product?: Product }) {
   const { orderNow } = useCommerce();
+  const { t, locale } = useTranslation();
   if (!product) {
     return (
       <BlockShell block={block} className="text-center">
@@ -105,13 +112,15 @@ function OfferBlock({ block, product }: { block: LpBlock; product?: Product }) {
     );
   }
   const offer = product.offers[0];
+  const displayName = localizeProductName(product, locale);
+  const displayShort = localizeProductShortDescription(product, locale);
   return (
     <BlockShell block={block}>
       <div className="grid items-center gap-8 rounded-3xl border border-accent/20 bg-card p-6 shadow-warm-lg sm:grid-cols-2 sm:p-8">
         <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary/40">
           <Image
             src={block.imageUrl || product.image}
-            alt={product.nameAr}
+            alt={displayName}
             fill
             className="object-cover"
             sizes="(max-width: 640px) 100vw, 50vw"
@@ -119,15 +128,15 @@ function OfferBlock({ block, product }: { block: LpBlock; product?: Product }) {
         </div>
         <div className="space-y-4 text-center sm:text-start">
           <h2 className="text-2xl font-extrabold text-foreground">
-            {block.title || product.nameAr}
+            {block.title || displayName}
           </h2>
-          {(block.text || product.shortDescription) && (
+          {(block.text || displayShort) && (
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {block.text || product.shortDescription}
+              {block.text || displayShort}
             </p>
           )}
           <p className="text-3xl font-extrabold text-accent tabular-nums">
-            {product.price} د.م.
+            {product.price} {t("common.currency")}
           </p>
           <Button
             variant="gold"
@@ -147,7 +156,7 @@ function OfferBlock({ block, product }: { block: LpBlock; product?: Product }) {
               })
             }
           >
-            {block.ctaText || "اطلب الآن — الدفع عند الاستلام"}
+            {block.ctaText || t("product.orderNow")}
           </Button>
         </div>
       </div>

@@ -245,6 +245,11 @@ export const extraAr: Record<string, string> = {
 
   "badge.offer.bestseller": "الأكثر مبيعاً",
   "badge.offer.family": "عرض عائلي",
+
+  "countdown.days": "أيام",
+  "countdown.hours": "ساعات",
+  "countdown.minutes": "دقائق",
+  "countdown.seconds": "ثواني",
 };
 
 export const extraFr: Record<string, string> = {
@@ -505,6 +510,11 @@ export const extraFr: Record<string, string> = {
 
   "badge.offer.bestseller": "Best-seller",
   "badge.offer.family": "Offre famille",
+
+  "countdown.days": "Jours",
+  "countdown.hours": "Heures",
+  "countdown.minutes": "Min",
+  "countdown.seconds": "Sec",
 };
 
 export const extraEn: Record<string, string> = {
@@ -763,4 +773,9 @@ export const extraEn: Record<string, string> = {
 
   "badge.offer.bestseller": "Bestseller",
   "badge.offer.family": "Family offer",
+
+  "countdown.days": "Days",
+  "countdown.hours": "Hours",
+  "countdown.minutes": "Min",
+  "countdown.seconds": "Sec",
 };

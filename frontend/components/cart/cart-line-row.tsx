@@ -8,6 +8,10 @@ import { useCommerce } from "@/components/providers/commerce-provider";
 import { Button } from "@/components/ui/button";
 import type { CartLineItem } from "@/lib/cart/types";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeLineName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 
 interface CartLineRowProps {
   item: CartLineItem;
@@ -22,9 +26,11 @@ export function CartLineRow({
   showRemove = true,
   linkToProduct = false,
 }: CartLineRowProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { updateQuantity, removeItem } = useCommerce();
   const imageSize = compact ? "h-12 w-12" : "h-16 w-16";
+  const displayName = localizeLineName(item.slug, item.nameAr, locale);
+  const displayOffer = localizeWeightLabel(item.offerLabel, locale);
 
   const imageBlock = (
     <div
@@ -32,7 +38,7 @@ export function CartLineRow({
     >
       <Image
         src={item.image}
-        alt={item.nameAr}
+        alt={displayName}
         fill
         sizes={compact ? "48px" : "64px"}
         className="object-contain p-1"
@@ -56,15 +62,15 @@ export function CartLineRow({
             href={`/products/${item.slug}`}
             className="line-clamp-2 text-sm font-bold text-foreground hover:text-accent"
           >
-            {item.nameAr}
+            {displayName}
           </Link>
         ) : (
           <p className="line-clamp-2 text-sm font-semibold text-foreground">
-            {item.nameAr}
+            {displayName}
           </p>
         )}
-        {!item.nameAr.includes(item.offerLabel) && (
-          <p className="text-xs text-muted-foreground">{item.offerLabel}</p>
+        {!displayName.includes(displayOffer) && (
+          <p className="text-xs text-muted-foreground">{displayOffer}</p>
         )}
 
         <div className="mt-2 flex items-center justify-between gap-2">

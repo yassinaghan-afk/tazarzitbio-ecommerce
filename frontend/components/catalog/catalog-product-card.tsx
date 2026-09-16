@@ -19,6 +19,11 @@ import {
 import type { PublicProduct } from "@/lib/products";
 import { getBadgeLabel } from "@/lib/i18n/badges";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeProductName,
+  localizeProductShortDescription,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 import { cn } from "@/lib/utils";
 
 interface CatalogProductCardProps {
@@ -45,6 +50,11 @@ export function CatalogProductCard({
   const productHref = `/products/${product.slug}`;
   const hasVariants = product.offers.length > 1;
   const orderOnlyCard = !showAddToCart;
+  const displayName = localizeProductName(product, locale);
+  const displayShort = localizeProductShortDescription(product, locale);
+  const displayWeight = product.weight
+    ? localizeWeightLabel(product.weight, locale)
+    : "";
 
   const openWeightPicker = (mode: "order" | "cart") => {
     if (product.offers.length <= 1) {
@@ -98,7 +108,7 @@ export function CatalogProductCard({
           />
           <Image
             src={product.image}
-            alt={product.nameAr}
+            alt={displayName}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
             className="object-contain object-center p-4 transition-transform duration-500 group-hover:scale-[1.02]"
@@ -116,9 +126,9 @@ export function CatalogProductCard({
         <div className="flex flex-1 flex-col gap-3 p-5">
           <div className="flex items-center justify-between gap-2">
             <StarRating rating={product.rating} showValue />
-            {product.weight && (
+            {displayWeight && (
               <span className="text-2xs text-muted-foreground">
-                {product.weight}
+                {displayWeight}
               </span>
             )}
           </div>
@@ -128,10 +138,10 @@ export function CatalogProductCard({
             className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-accent">
-              {product.nameAr}
+              {displayName}
             </h3>
             <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {product.shortDescription}
+              {displayShort}
             </p>
           </Link>
 

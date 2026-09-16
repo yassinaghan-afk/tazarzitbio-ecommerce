@@ -22,9 +22,13 @@ import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import type { CheckoutFormData, PlacedOrder } from "@/lib/checkout/types";
 import { LAST_ORDER_STORAGE_KEY } from "@/lib/checkout/types";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import {
+  localizeLineName,
+  localizeWeightLabel,
+} from "@/lib/i18n/product-locale";
 
 export default function ThankYouPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const allProducts = useCatalogProducts();
   const [hydrated, setHydrated] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
@@ -120,22 +124,33 @@ export default function ThankYouPage() {
                     {order.id}
                   </p>
                   <ul className="mt-4 space-y-3 border-t border-border/50 pt-4">
-                    {order.items.map((item, i) => (
+                    {order.items.map((item, i) => {
+                      const displayName = localizeLineName(
+                        item.slug,
+                        item.nameAr,
+                        locale,
+                      );
+                      const displayOffer = localizeWeightLabel(
+                        item.offerLabel,
+                        locale,
+                      );
+                      return (
                       <li
                         key={`${item.nameAr}-${i}`}
                         className="flex justify-between gap-4 text-sm"
                       >
                         <span className="text-foreground">
-                          {item.nameAr} × {item.quantity}
+                          {displayName} × {item.quantity}
                           <span className="mt-0.5 block text-xs text-muted-foreground">
-                            {item.offerLabel}
+                            {displayOffer}
                           </span>
                         </span>
                         <span className="shrink-0 font-bold tabular-nums text-accent">
                           {item.unitPrice * item.quantity} {t("common.currency")}
                         </span>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                   <div className="mt-4 space-y-2 border-t border-border/50 pt-4 text-sm">
                     <div className="flex justify-between gap-4">
@@ -146,12 +161,9 @@ export default function ThankYouPage() {
                     </div>
                     <div className="flex justify-between gap-4">
                       <span className="text-muted-foreground">
-                        <span className="block">
-                          {order.shippingLabelFr ?? "Livraison gratuite"}
-                        </span>
-                        <span className="mt-0.5 block text-2xs">
-                          {order.shippingLabelAr ?? t("common.shipping")}
-                        </span>
+                        {locale === "ar"
+                          ? (order.shippingLabelAr ?? t("common.shipping"))
+                          : (order.shippingLabelFr ?? t("common.shipping"))}
                       </span>
                       <span
                         className={
