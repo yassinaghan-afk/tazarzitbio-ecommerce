@@ -163,7 +163,9 @@ export default function ThankYouPage() {
                       <span className="text-muted-foreground">
                         {locale === "ar"
                           ? (order.shippingLabelAr ?? t("common.shipping"))
-                          : (order.shippingLabelFr ?? t("common.shipping"))}
+                          : locale === "fr"
+                            ? (order.shippingLabelFr ?? t("common.shipping"))
+                            : t("common.shipping")}
                       </span>
                       <span
                         className={

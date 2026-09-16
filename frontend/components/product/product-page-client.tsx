@@ -42,6 +42,7 @@ import {
   localizeProductShortDescription,
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
+import { localizeReviewFields } from "@/lib/i18n/review-locale";
 import { getRelatedProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/tracking/events";
@@ -380,17 +381,20 @@ export function ProductPageClient({
             {t("product.reviewsSub")}
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {product.reviews.map((review) => (
+            {product.reviews.map((review) => {
+              const localized = localizeReviewFields(review, locale);
+              return (
               <ReviewCard
                 key={review.id}
                 author={review.author}
-                city={review.city}
+                city={localized.city}
                 rating={review.rating}
-                date={review.date}
-                content={review.content}
+                date={localized.date}
+                content={localized.content}
                 product={displayName}
               />
-            ))}
+              );
+            })}
           </div>
         </Container>
       </Section>

@@ -8,14 +8,14 @@ import { pickNavLabel } from "@/components/layout/site-header";
 import type { NavigationSettings, SiteSettings } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
 
-/** Product category names — default fallback (Arabic, per catalog) */
-const defaultShopLinks = [
-  "أملو",
-  "أملو بالفستق",
-  "زيت أركان",
-  "عسل طبيعي",
-  "مكسرات بالعسل",
-];
+/** Product category names — default fallback by locale */
+const defaultShopLinkKeys = [
+  "footer.shop.amlou",
+  "footer.shop.pistachio",
+  "footer.shop.argan",
+  "footer.shop.honey",
+  "footer.shop.nuts",
+] as const;
 
 export function SiteFooter({
   cmsNavigation,
@@ -32,7 +32,10 @@ export function SiteFooter({
   const shopLinks =
     cmsShop.length > 0
       ? cmsShop.map((l) => ({ label: pickNavLabel(l, locale), href: l.href }))
-      : defaultShopLinks.map((name) => ({ label: name, href: "/products" }));
+      : defaultShopLinkKeys.map((key) => ({
+          label: t(key),
+          href: "/products",
+        }));
 
   const infoLinks =
     cmsInfo.length > 0

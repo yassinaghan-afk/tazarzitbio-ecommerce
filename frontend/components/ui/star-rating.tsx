@@ -1,4 +1,8 @@
+"use client";
+
 import { Star } from "lucide-react";
+
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 interface StarRatingProps {
@@ -16,12 +20,13 @@ export function StarRating({
   showValue = false,
   className,
 }: StarRatingProps) {
+  const { t } = useTranslation();
   const iconSize = size === "sm" ? "size-3.5" : "size-4";
 
   return (
     <div
       className={cn("flex items-center gap-1.5", className)}
-      aria-label={`${rating} من ${max}`}
+      aria-label={t("rating.of", { rating, max })}
     >
       <div className="flex">
         {Array.from({ length: max }).map((_, i) => (

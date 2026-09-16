@@ -20,11 +20,12 @@ const FR_HINTS: Record<string, string> = {
 
 /** Convert Arabic weight/volume units to French (g / ml / kg). */
 export function toFrenchWeightLabel(raw: string): string {
+  // Replace كغ before غ — otherwise "كغ" becomes "ك g".
   return raw
     .replace(/\u00a0/g, " ")
-    .replace(/\s*غ\s*/g, " g")
-    .replace(/\s*مل\s*/g, " ml")
     .replace(/\s*كغ\s*/g, " kg")
+    .replace(/\s*مل\s*/g, " ml")
+    .replace(/\s*غ\s*/g, " g")
     .replace(/\s*—\s*/g, " — ")
     .replace(/\s+/g, " ")
     .trim();

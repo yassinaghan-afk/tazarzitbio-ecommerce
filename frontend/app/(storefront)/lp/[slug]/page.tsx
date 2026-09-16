@@ -61,7 +61,7 @@ export default async function LandingPageRoute({
   const blocks = page.blocks ?? [];
 
   return (
-    <div dir="rtl">
+    <div>
       {!page.isEnabled && (
         <div className="bg-amber-100 px-4 py-2 text-center text-sm font-bold text-amber-800">
           Draft preview — this page is not public yet

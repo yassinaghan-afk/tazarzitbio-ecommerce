@@ -10,6 +10,7 @@ import { Container, Section } from "@/components/layout/container";
 import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
+import { useTranslation } from "@/lib/i18n/language-provider";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { getListingProducts, sortListingForHome } from "@/lib/products/listing";
 
@@ -18,6 +19,7 @@ import { getListingProducts, sortListingForHome } from "@/lib/products/listing";
  * (`useCatalogProducts` → `/api/catalog` → `getListingProducts` → `CatalogProductCard`).
  */
 export function HomeProductsSection() {
+  const { t } = useTranslation();
   const allProducts = useCatalogProducts();
   const products = useMemo(
     () => sortListingForHome(getListingProducts(allProducts)),
@@ -33,8 +35,8 @@ export function HomeProductsSection() {
       <Container>
         <SectionHeader
           label="TazarzitBio"
-          title="جميع منتجاتنا وأسعارها"
-          description="اختر المنتج ثم اضغط اطلب الآن لاختيار الوزن والسعر المناسب"
+          title={t("discover.title")}
+          description={t("discover.desc")}
           align="center"
         />
 
@@ -54,7 +56,7 @@ export function HomeProductsSection() {
 
         {products.length === 0 && (
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            لا توجد منتجات متاحة حالياً.
+            {t("discover.empty")}
           </p>
         )}
 
@@ -66,7 +68,7 @@ export function HomeProductsSection() {
             asChild
           >
             <Link href="/products">
-              عرض جميع المنتجات
+              {t("discover.viewAll")}
               <ArrowLeft className="size-4" aria-hidden />
             </Link>
           </Button>

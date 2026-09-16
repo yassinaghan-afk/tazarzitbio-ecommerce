@@ -206,6 +206,7 @@ export function LpBlocksRenderer({
   product?: Product;
   whatsapp?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       {blocks
@@ -446,7 +447,7 @@ export function LpBlocksRenderer({
                   <div className="mx-auto max-w-xl rounded-3xl border border-accent/25 bg-accent/5 p-8">
                     <ShieldCheck className="mx-auto size-10 text-accent" />
                     <h2 className="mt-3 text-xl font-extrabold">
-                      {block.title || "ضمان الجودة"}
+                      {block.title || t("product.trustSectionTitle")}
                     </h2>
                     {block.text && (
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

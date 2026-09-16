@@ -866,16 +866,35 @@ const HINTS: Record<string, L10n> = {
     fr: "Meilleure valeur",
     en: "Best value",
   },
+  "قنينة واحدة": {
+    ar: "قنينة واحدة",
+    fr: "1 pot",
+    en: "1 jar",
+  },
+  قنينتين: {
+    ar: "قنينتين",
+    fr: "2 pots",
+    en: "2 jars",
+  },
+  "3 قنينات": {
+    ar: "3 قنينات",
+    fr: "3 pots",
+    en: "3 jars",
+  },
 };
 
-/** Convert Arabic weight/volume units for FR/EN. */
+/** Convert Arabic weight/volume units and known offer labels for FR/EN. */
 export function localizeWeightLabel(raw: string, locale: Language): string {
+  if (!raw) return raw;
+  const labeled = HINTS[raw];
+  if (labeled) return pick(labeled, locale);
   if (locale === "ar") return raw;
+  // Replace multi-char units (كغ) before single غ — otherwise "كغ" becomes "ك g".
   return raw
     .replace(/\u00a0/g, " ")
-    .replace(/\s*غ\s*/g, " g")
-    .replace(/\s*مل\s*/g, " ml")
     .replace(/\s*كغ\s*/g, " kg")
+    .replace(/\s*مل\s*/g, " ml")
+    .replace(/\s*غ\s*/g, " g")
     .replace(/\s*—\s*/g, " — ")
     .replace(/\s+/g, " ")
     .trim();

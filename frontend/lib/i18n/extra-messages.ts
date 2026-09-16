@@ -250,6 +250,21 @@ export const extraAr: Record<string, string> = {
   "countdown.hours": "ساعات",
   "countdown.minutes": "دقائق",
   "countdown.seconds": "ثواني",
+
+  "discover.title": "جميع منتجاتنا وأسعارها",
+  "discover.desc":
+    "اختر المنتج ثم اضغط اطلب الآن لاختيار الوزن والسعر المناسب",
+  "discover.empty": "لا توجد منتجات متاحة حالياً.",
+  "discover.viewAll": "عرض جميع المنتجات",
+
+  "footer.shop.amlou": "أملو",
+  "footer.shop.pistachio": "أملو بالفستق",
+  "footer.shop.argan": "زيت أركان",
+  "footer.shop.honey": "عسل طبيعي",
+  "footer.shop.nuts": "مكسرات بالعسل",
+
+  "checkout.submitError": "تعذر إرسال الطلب. حاول مرة أخرى.",
+  "rating.of": "{rating} من {max}",
 };
 
 export const extraFr: Record<string, string> = {
@@ -515,6 +530,21 @@ export const extraFr: Record<string, string> = {
   "countdown.hours": "Heures",
   "countdown.minutes": "Min",
   "countdown.seconds": "Sec",
+
+  "discover.title": "Tous nos produits et prix",
+  "discover.desc":
+    "Choisissez un produit puis appuyez sur Commander pour sélectionner le poids et le prix",
+  "discover.empty": "Aucun produit disponible pour le moment.",
+  "discover.viewAll": "Voir tous les produits",
+
+  "footer.shop.amlou": "Amlou",
+  "footer.shop.pistachio": "Amlou pistache",
+  "footer.shop.argan": "Huile d'argan",
+  "footer.shop.honey": "Miel naturel",
+  "footer.shop.nuts": "Fruits secs au miel",
+
+  "checkout.submitError": "Impossible d'envoyer la commande. Réessayez.",
+  "rating.of": "{rating} sur {max}",
 };
 
 export const extraEn: Record<string, string> = {
@@ -778,4 +808,19 @@ export const extraEn: Record<string, string> = {
   "countdown.hours": "Hours",
   "countdown.minutes": "Min",
   "countdown.seconds": "Sec",
+
+  "discover.title": "All our products and prices",
+  "discover.desc":
+    "Pick a product then tap Order now to choose the weight and price",
+  "discover.empty": "No products available right now.",
+  "discover.viewAll": "View all products",
+
+  "footer.shop.amlou": "Amlou",
+  "footer.shop.pistachio": "Pistachio amlou",
+  "footer.shop.argan": "Argan oil",
+  "footer.shop.honey": "Natural honey",
+  "footer.shop.nuts": "Nuts with honey",
+
+  "checkout.submitError": "Could not submit the order. Please try again.",
+  "rating.of": "{rating} out of {max}",
 };

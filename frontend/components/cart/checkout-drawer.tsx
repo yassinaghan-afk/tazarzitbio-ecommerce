@@ -58,7 +58,7 @@ const COUPON_LABELS = {
 } as const;
 
 function CouponField() {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const { coupon, applyCoupon, removeCoupon } = useCommerce();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -88,7 +88,9 @@ function CouponField() {
         <span className="font-semibold text-emerald-700">
           {labels.applied}: <span className="font-mono">{coupon.code}</span>
           {coupon.discount > 0 && (
-            <span className="ms-2 tabular-nums">-{coupon.discount} MAD</span>
+            <span className="ms-2 tabular-nums">
+              -{coupon.discount} {t("common.currency")}
+            </span>
           )}
         </span>
         <button
@@ -190,7 +192,7 @@ export function CheckoutDrawer() {
       setErrors({});
       setStep("review");
     } else if (!result.errors) {
-      setSubmitError("تعذر إرسال الطلب. حاول مرة أخرى.");
+      setSubmitError(t("checkout.submitError"));
     }
     setSubmitting(false);
   };

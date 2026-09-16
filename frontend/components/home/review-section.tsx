@@ -10,6 +10,7 @@ import type { ReviewRecord } from "@/lib/admin/cms-types";
 import { reviews as defaultReviews } from "@/lib/home-data";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import { getMoroccanCitiesLabel } from "@/lib/i18n/home-content";
+import { localizeReviewFields } from "@/lib/i18n/review-locale";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 
 export function ReviewSection({ cmsReviews }: { cmsReviews?: ReviewRecord[] }) {
@@ -67,18 +68,21 @@ export function ReviewSection({ cmsReviews }: { cmsReviews?: ReviewRecord[] }) {
           viewport={VIEWPORT}
           className="grid gap-5 md:grid-cols-2"
         >
-          {reviews.map((review) => (
+          {reviews.map((review) => {
+            const localized = localizeReviewFields(review, locale);
+            return (
             <motion.div key={review.id} variants={staggerItem}>
               <ReviewCard
                 author={review.author}
-                city={review.city}
+                city={localized.city}
                 rating={review.rating}
-                date={review.date}
-                content={review.content}
-                product={review.product}
+                date={localized.date}
+                content={localized.content}
+                product={localized.product}
               />
             </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
 
         <motion.div
