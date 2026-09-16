@@ -10,6 +10,7 @@ import {
 import { toPublicProduct } from "@/lib/products/catalog";
 import { getMergedCatalog } from "@/lib/products/cms-catalog";
 import { getListingProducts } from "@/lib/products/listing";
+import { AMLOU_CITIES, amlouCityPath } from "@/lib/seo/amlou-cities";
 import { SITE_URL, SEO_LOCALES, localizedPath } from "@/lib/seo/locale";
 
 function entry(
@@ -40,17 +41,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/amlou", priority: 0.95, freq: "weekly" as const },
     { path: "/guide", priority: 0.75, freq: "monthly" as const },
     { path: "/guide/amlou", priority: 0.8, freq: "monthly" as const },
-    {
-      path: "/guide/amlou-casablanca",
-      priority: 0.78,
-      freq: "monthly" as const,
-    },
-    {
-      path: "/guide/amlou-marrakech",
-      priority: 0.78,
-      freq: "monthly" as const,
-    },
-    { path: "/guide/amlou-agadir", priority: 0.78, freq: "monthly" as const },
     { path: "/guide/huile-argan", priority: 0.75, freq: "monthly" as const },
     {
       path: "/guide/miel-naturel-maroc",
@@ -90,6 +80,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  const cityEntries: MetadataRoute.Sitemap = [];
+  for (const city of AMLOU_CITIES) {
+    const path = amlouCityPath(city.slug);
+    for (const locale of SEO_LOCALES) {
+      cityEntries.push(entry(path, locale, 0.72, "monthly", now));
+    }
+  }
+
   let landingEntries: MetadataRoute.Sitemap = [];
   try {
     const { readStore } = await import("@/lib/server/store");
@@ -106,5 +104,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     landingEntries = [];
   }
 
-  return [...staticEntries, ...productEntries, ...landingEntries];
+  return [
+    ...staticEntries,
+    ...productEntries,
+    ...cityEntries,
+    ...landingEntries,
+  ];
 }

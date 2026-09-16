@@ -23,6 +23,9 @@ export function GuideArticle({
   faqs,
   ctaHref = "/products",
   ctaLabel = "تسوق منتجات تازارزيت بيو",
+  crumbs,
+  secondaryHref = "/guide",
+  secondaryLabel = "كل الأدلة",
 }: {
   path: string;
   title: string;
@@ -32,16 +35,21 @@ export function GuideArticle({
   faqs: GuideFaq[];
   ctaHref?: string;
   ctaLabel?: string;
+  crumbs?: { name: string; path: string }[];
+  secondaryHref?: string;
+  secondaryLabel?: string;
 }) {
+  const breadcrumb =
+    crumbs ??
+    ([
+      { name: "الرئيسية", path: "/" },
+      { name: "أدلة", path: "/guide" },
+      { name: title, path },
+    ] as const);
+
   return (
     <>
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "الرئيسية", path: "/" },
-          { name: "أدلة", path: "/guide" },
-          { name: title, path },
-        ])}
-      />
+      <JsonLd data={breadcrumbJsonLd([...breadcrumb])} />
       {faqs.length > 0 ? <JsonLd data={faqPageJsonLd(faqs)} /> : null}
 
       <Section spacing="lg" className="relative overflow-hidden">
@@ -106,10 +114,10 @@ export function GuideArticle({
               {ctaLabel}
             </Link>
             <Link
-              href="/guide"
+              href={secondaryHref}
               className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent"
             >
-              كل الأدلة
+              {secondaryLabel}
             </Link>
           </div>
         </Container>
