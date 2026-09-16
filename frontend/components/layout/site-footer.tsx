@@ -7,6 +7,8 @@ import { Container } from "@/components/layout/container";
 import { pickNavLabel } from "@/components/layout/site-header";
 import type { NavigationSettings, SiteSettings } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import { localizedPath } from "@/lib/seo/locale";
+import { TOURIST_HUB_PATH } from "@/lib/seo/tourist-hub";
 
 /** Product category names — default fallback by locale */
 const defaultShopLinkKeys = [
@@ -61,7 +63,7 @@ export function SiteFooter({
                 : locale === "en"
                   ? "For tourists"
                   : "للسيّاح",
-            href: "/authentic-moroccan-products",
+            href: localizedPath(locale, TOURIST_HUB_PATH),
           },
         ];
 
