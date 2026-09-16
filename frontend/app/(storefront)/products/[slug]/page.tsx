@@ -6,7 +6,13 @@ import { FAMILY_PACK_SLUG } from "@/lib/brand";
 import { toPublicProduct } from "@/lib/products/catalog";
 import { getMergedCatalog, getMergedProductBySlug } from "@/lib/products/cms-catalog";
 import { getProductShopPath } from "@/lib/products/amlou-royal";
-import { JsonLd, productJsonLd } from "@/lib/seo/json-ld";
+import {
+  breadcrumbJsonLd,
+  faqPageJsonLd,
+  JsonLd,
+  productJsonLd,
+} from "@/lib/seo/json-ld";
+import { getCmsProductSeo } from "@/lib/seo/product-seo";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -29,17 +35,29 @@ export async function generateMetadata({
   const product = await getMergedProductBySlug(slug);
   if (!product) return { title: "منتج غير موجود" };
 
+  const { seoTitle, seoDescription } = await getCmsProductSeo(slug);
+  const title = seoTitle || product.nameAr;
+  const description = seoDescription || product.shortDescription;
   const path = getProductShopPath(slug);
+
   return {
-    title: product.nameAr,
-    description: product.shortDescription,
+    title,
+    description,
     alternates: {
       canonical: path,
     },
     openGraph: {
-      title: product.nameAr,
-      description: product.shortDescription,
+      type: "website",
+      title,
+      description,
+      url: path,
       images: [{ url: product.image, alt: product.nameAr }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [product.image],
     },
   };
 }
@@ -58,6 +76,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <>
       <JsonLd data={productJsonLd(publicProduct, path)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "الرئيسية", path: "/" },
+          { name: "المنتجات", path: "/products" },
+          { name: product.nameAr, path },
+        ])}
+      />
+      {publicProduct.faq.length > 0 ? (
+        <JsonLd data={faqPageJsonLd(publicProduct.faq)} />
+      ) : null}
       <ProductPageClient slug={slug} initialProduct={publicProduct} />
     </>
   );

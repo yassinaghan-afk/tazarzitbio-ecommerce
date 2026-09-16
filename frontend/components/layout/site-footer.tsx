@@ -45,6 +45,15 @@ export function SiteFooter({
           { label: t("footer.delivery"), href: "/products" },
           { label: t("footer.returns"), href: "/products" },
           { label: t("nav.faq"), href: "/#faq" },
+          {
+            label:
+              locale === "fr"
+                ? "Guides"
+                : locale === "en"
+                  ? "Guides"
+                  : "أدلة",
+            href: "/guide",
+          },
         ];
 
   const whatsappDigits = (settings?.whatsapp ?? "212600000000").replace(/\D/g, "");

@@ -19,7 +19,7 @@ export default async function StorefrontLayout({
   const store = await readStore();
   return (
     <CommerceShell>
-      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={organizationJsonLd(store.siteSettings)} />
       <JsonLd data={websiteJsonLd()} />
       <SiteHeader cmsNav={store.navigation.header} />
       <AnnouncementBar />

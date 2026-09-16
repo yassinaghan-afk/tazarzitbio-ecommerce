@@ -7,6 +7,15 @@ export const metadata: Metadata = {
   title: "منتجاتنا",
   description:
     "أملو، عسل، زيت أركان ومكسرات مختارة بعناية من سوس — جودة طبيعية، توصيل سريع، والدفع عند الاستلام.",
+  alternates: {
+    canonical: "/products",
+  },
+  openGraph: {
+    title: "منتجات تازارزيت بيو",
+    description:
+      "أملو، عسل، زيت أركان ومكسرات مختارة بعناية من سوس — الدفع عند الاستلام.",
+    url: "/products",
+  },
 };
 
 export default function ProductsPage() {

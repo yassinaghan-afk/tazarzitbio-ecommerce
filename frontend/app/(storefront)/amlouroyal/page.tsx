@@ -9,7 +9,13 @@ import {
   AMLOU_ROYAL_SLUG,
 } from "@/lib/products/amlou-royal";
 import { getMergedProductBySlug } from "@/lib/products/cms-catalog";
-import { JsonLd, productJsonLd } from "@/lib/seo/json-ld";
+import {
+  breadcrumbJsonLd,
+  faqPageJsonLd,
+  JsonLd,
+  productJsonLd,
+} from "@/lib/seo/json-ld";
+import { getCmsProductSeo } from "@/lib/seo/product-seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const product = await getMergedProductBySlug(AMLOU_ROYAL_SLUG);
@@ -17,17 +23,27 @@ export async function generateMetadata(): Promise<Metadata> {
     return { title: "أملو ملكي | تازارزيت بيو" };
   }
 
+  const { seoTitle, seoDescription } = await getCmsProductSeo(AMLOU_ROYAL_SLUG);
+  const title = seoTitle || `${product.nameAr} | تازارزيت بيو`;
+  const description = seoDescription || product.shortDescription;
+
   return {
-    title: `${product.nameAr} | تازارزيت بيو`,
-    description: product.shortDescription,
+    title,
+    description,
     alternates: {
       canonical: AMLOU_ROYAL_SHOP_CANONICAL,
     },
     openGraph: {
-      title: product.nameAr,
-      description: product.shortDescription,
+      title,
+      description,
       url: AMLOU_ROYAL_SHOP_CANONICAL,
       images: [{ url: product.image, alt: product.nameAr }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [product.image],
     },
   };
 }
@@ -41,6 +57,16 @@ export default async function AmlouRoyalProductPage() {
   return (
     <>
       <JsonLd data={productJsonLd(publicProduct, AMLOU_ROYAL_SHOP_PATH)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "الرئيسية", path: "/" },
+          { name: "المنتجات", path: "/products" },
+          { name: product.nameAr, path: AMLOU_ROYAL_SHOP_PATH },
+        ])}
+      />
+      {publicProduct.faq.length > 0 ? (
+        <JsonLd data={faqPageJsonLd(publicProduct.faq)} />
+      ) : null}
       <ProductPageClient
         slug={AMLOU_ROYAL_SLUG}
         initialProduct={publicProduct}

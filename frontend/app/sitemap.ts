@@ -50,6 +50,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    {
+      url: `${SITE_URL}/guide`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${SITE_URL}/guide/amlou`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/guide/huile-argan`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${SITE_URL}/guide/miel-naturel-maroc`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
   ];
 
   const productEntries: MetadataRoute.Sitemap = listing
@@ -61,5 +85,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     }));
 
-  return [...staticEntries, ...productEntries];
+  let landingEntries: MetadataRoute.Sitemap = [];
+  try {
+    const { readStore } = await import("@/lib/server/store");
+    const store = await readStore();
+    landingEntries = (store.landingPages ?? [])
+      .filter((page) => page.isEnabled)
+      .map((page) => ({
+        url: `${SITE_URL}/lp/${page.slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.65,
+      }));
+  } catch {
+    landingEntries = [];
+  }
+
+  return [...staticEntries, ...productEntries, ...landingEntries];
 }
