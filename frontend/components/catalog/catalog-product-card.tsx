@@ -35,7 +35,7 @@ interface CatalogProductCardProps {
 }
 
 const MOBILE_CTA =
-  "min-h-12 h-12 w-full text-base font-bold rounded-xl sm:min-h-11 sm:h-11 sm:flex-1";
+  "min-h-11 h-11 w-full shrink-0 text-sm font-bold rounded-xl sm:min-h-11";
 
 export function CatalogProductCard({
   product,
@@ -114,13 +114,23 @@ export function CatalogProductCard({
             className="object-contain object-center p-3 transition-transform duration-500 group-hover:scale-[1.02] sm:p-4"
             quality={88}
           />
-          <div className="absolute start-3 top-3 z-[2] flex flex-wrap gap-1.5">
-            {product.badges.slice(0, 2).map((b) => (
-              <Badge key={b} variant={b === "bestseller" ? "premium" : "gold"}>
-                {getBadgeLabel(b, locale)}
-              </Badge>
-            ))}
-          </div>
+          {product.badges.length > 0 && (
+            <div className="absolute inset-x-2 top-2 z-[2] flex flex-col items-start gap-1.5 sm:inset-x-3 sm:top-3">
+              {product.badges.slice(0, 2).map((b) => (
+                <Badge
+                  key={b}
+                  variant="outline"
+                  className={cn(
+                    "max-w-full border-border/80 bg-white/95 px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-sm backdrop-blur-sm sm:text-xs",
+                    b === "bestseller" &&
+                      "border-accent/40 bg-accent text-foreground",
+                  )}
+                >
+                  <span className="truncate">{getBadgeLabel(b, locale)}</span>
+                </Badge>
+              ))}
+            </div>
+          )}
         </Link>
 
         <div className="flex flex-1 flex-col gap-3 p-5">
@@ -164,24 +174,15 @@ export function CatalogProductCard({
             )}
           </div>
 
-          <div
-            className={cn(
-              "mt-auto flex flex-col gap-2.5",
-              !orderOnlyCard && "sm:flex-row",
-            )}
-          >
+          <div className="mt-auto flex flex-col gap-2">
             <Button
               variant="gold"
               size="lg"
-              className={cn(
-                MOBILE_CTA,
-                "gap-2 shadow-gold",
-                orderOnlyCard && "sm:w-full",
-              )}
+              className={cn(MOBILE_CTA, "gap-2 shadow-gold")}
               onClick={handleOrderNow}
             >
-              <Zap className="size-4" />
-              {t("catalog.orderNow")}
+              <Zap className="size-4 shrink-0" />
+              <span className="truncate">{t("catalog.orderNow")}</span>
             </Button>
             {showAddToCart && (
               <Button
@@ -190,22 +191,22 @@ export function CatalogProductCard({
                 className={cn(MOBILE_CTA, "gap-2")}
                 onClick={handleAddToCart}
               >
-                <ShoppingBag className="size-4" />
-                {t("catalog.addToCart")}
+                <ShoppingBag className="size-4 shrink-0" />
+                <span className="truncate">{t("catalog.addToCart")}</span>
+              </Button>
+            )}
+            {showAddToCart && !orderOnlyCard && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-full text-muted-foreground"
+                asChild
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Link href={productHref}>{t("catalog.viewDetails")}</Link>
               </Button>
             )}
           </div>
-          {showAddToCart && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden w-full text-muted-foreground sm:inline-flex"
-              asChild
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Link href={productHref}>{t("catalog.viewDetails")}</Link>
-            </Button>
-          )}
         </div>
       </motion.article>
     </>
