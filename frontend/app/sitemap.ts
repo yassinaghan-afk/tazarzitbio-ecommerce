@@ -40,6 +40,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/amlou", priority: 0.95, freq: "weekly" as const },
     { path: "/guide", priority: 0.75, freq: "monthly" as const },
     { path: "/guide/amlou", priority: 0.8, freq: "monthly" as const },
+    {
+      path: "/guide/amlou-casablanca",
+      priority: 0.78,
+      freq: "monthly" as const,
+    },
+    {
+      path: "/guide/amlou-marrakech",
+      priority: 0.78,
+      freq: "monthly" as const,
+    },
+    { path: "/guide/amlou-agadir", priority: 0.78, freq: "monthly" as const },
     { path: "/guide/huile-argan", priority: 0.75, freq: "monthly" as const },
     {
       path: "/guide/miel-naturel-maroc",

@@ -158,6 +158,8 @@ function normalizeSiteSettings(raw?: SiteSettings | null): SiteSettings {
   }
   return merged;
 }
+
+function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
   if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_HOME_SECTIONS;
   const known = new Set(DEFAULT_HOME_SECTIONS.map((s) => s.id));
   const byId = new Map<string, HomeSectionConfig>();
