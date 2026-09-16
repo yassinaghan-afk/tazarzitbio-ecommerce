@@ -131,6 +131,7 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
     weightAr: "500 غ",
     subtitleAr: "عناية وتجربة أولى",
     price: 249,
+    originalPrice: 299,
     shippingFee: 0,
     freeShipping: true,
   },

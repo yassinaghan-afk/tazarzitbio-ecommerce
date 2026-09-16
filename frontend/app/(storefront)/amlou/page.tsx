@@ -1,64 +1,29 @@
 import type { Metadata } from "next";
-
-import { GuideArticle } from "@/components/seo/guide-article";
-import {
-  hreflangLanguages,
-  MOROCCO_PRODUCT_KEYWORDS,
-} from "@/lib/seo/locale";
+import { AmlouHubPage } from "@/lib/seo/amlou-hub-page";
+import { absoluteUrl } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "أملو المغرب | شراء أملو طبيعي أونلاين — تازارزيت بيو",
+  title: "أملو طبيعي من سوس — شراء أونلاين في المغرب | تازارزيت بيو",
   description:
-    "اشترِ أملو طبيعي من سوس في المغرب: أملو باللوز وأملو ملكي. توصيل لكل المدن والدفع عند الاستلام من تازارزيت بيو.",
-  keywords: [...MOROCCO_PRODUCT_KEYWORDS.ar],
+    "شراء أملو تقليدي وأملو ملكي أونلاين في المغرب. مكونات طبيعية من سوس، توصيل لكل المدن، والدفع عند الاستلام.",
   alternates: {
-    canonical: "/amlou",
-    languages: hreflangLanguages("/amlou"),
+    canonical: absoluteUrl("/amlou"),
+    languages: {
+      "ar-MA": absoluteUrl("/amlou"),
+      "fr-MA": absoluteUrl("/fr/amlou"),
+      "en-MA": absoluteUrl("/en/amlou"),
+      "x-default": absoluteUrl("/amlou"),
+    },
   },
   openGraph: {
-    title: "أملو المغرب | تازارزيت بيو",
+    title: "أملو طبيعي من سوس — تازارزيت بيو",
     description:
-      "أملو طبيعي من سوس — شراء أونلاين مع الدفع عند الاستلام في جميع أنحاء المغرب.",
-    url: "/amlou",
+      "أملو تقليدي وأملو ملكي من سوس مع توصيل داخل المغرب والدفع عند الاستلام.",
+    url: absoluteUrl("/amlou"),
     locale: "ar_MA",
   },
 };
 
-export default function AmlouHubArPage() {
-  return (
-    <GuideArticle
-      path="/amlou"
-      label="أملو · المغرب"
-      title="أملو طبيعي من سوس — شراء أونلاين في المغرب"
-      intro="تبحث عن أملو؟ تازارزيت بيو تقدّم أملو تقليدي وأملو ملكي من منطقة سوس، بمكونات طبيعية وتوصيل داخل المغرب مع الدفع عند الاستلام."
-      ctaHref="/amlouroyal"
-      ctaLabel="اطلب أملو ملكي الآن"
-      sections={[
-        {
-          heading: "لماذا أملو تازارزيت بيو؟",
-          paragraphs: [
-            "الأملو منتج مغربي أصيل من سوس. نحضّره بمكونات واضحة: لوز ومكسرات وزيت أركان وعسل حسب الوصفة — بدون مواد حافظة صناعية.",
-            "يمكنك الطلب أونلاين واختيار الحجم المناسب، ثم الدفع نقداً عند الاستلام بعد تأكيد الطلب هاتفياً.",
-          ],
-        },
-        {
-          heading: "أنواع الأملو المتوفرة",
-          paragraphs: [
-            "أملو باللوز للمائدة اليومية، وأملو ملكي كخليط فاخر من المكسرات وزيت الأركان لمن يبحث عن تجربة أغنى.",
-            "كل المنتجات موجهة للسوق المغربي مع تغطية المدن عبر شركاء التوصيل.",
-          ],
-        },
-      ]}
-      faqs={[
-        {
-          q: "أين أشتري أملو أونلاين في المغرب؟",
-          a: "من متجر تازارزيت بيو — صفحة أملو ملكي أو قائمة المنتجات — مع الدفع عند الاستلام.",
-        },
-        {
-          q: "هل التوصيل لكل المدن؟",
-          a: "نعم، نغطي المدن المغربية عبر خدمة التوصيل بعد تأكيد العنوان.",
-        },
-      ]}
-    />
-  );
+export default function Page() {
+  return <AmlouHubPage locale="ar" />;
 }

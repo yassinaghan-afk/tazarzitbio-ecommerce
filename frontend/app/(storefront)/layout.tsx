@@ -1,5 +1,6 @@
 import { CommerceShell } from "@/components/commerce/commerce-shell";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
+import { FloatingWhatsApp } from "@/components/layout/floating-whatsapp";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import {
@@ -32,6 +33,7 @@ export default async function StorefrontLayout({
         cmsNavigation={store.navigation}
         settings={store.siteSettings}
       />
+      <FloatingWhatsApp whatsappDigits={store.siteSettings.whatsapp} />
     </CommerceShell>
   );
 }

@@ -17,6 +17,8 @@ import {
 
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card";
 import { Container, Section } from "@/components/layout/container";
+import { ConversionTrustStrip } from "@/components/product/conversion-trust-strip";
+import { DeliveryCitiesBlock } from "@/components/product/delivery-cities-block";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductPurchaseActions } from "@/components/product/product-purchase-actions";
 import { QuantitySelector } from "@/components/product/quantity-selector";
@@ -44,6 +46,7 @@ import {
 } from "@/lib/i18n/product-locale";
 import { localizeReviewFields } from "@/lib/i18n/review-locale";
 import { getRelatedProducts } from "@/lib/products";
+import { AMLOU_ROYAL_SLUG } from "@/lib/products/amlou-royal";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/tracking/events";
 
@@ -217,6 +220,24 @@ export function ProductPageClient({
                   <span className="text-lg font-semibold text-accent">
                     {t("common.currency")}
                   </span>
+                  {selectedOffer.compareAtPrice != null &&
+                    selectedOffer.compareAtPrice > selectedOffer.price && (
+                      <>
+                        <span className="text-base text-muted-foreground line-through tabular-nums">
+                          {selectedOffer.compareAtPrice} {t("common.currency")}
+                        </span>
+                        <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-bold text-accent">
+                          {t("convert.savePercent", {
+                            percent: Math.round(
+                              ((selectedOffer.compareAtPrice -
+                                selectedOffer.price) /
+                                selectedOffer.compareAtPrice) *
+                                100,
+                            ),
+                          })}
+                        </span>
+                      </>
+                    )}
                   <span className="text-sm text-muted-foreground">
                     {selectedWeight}
                   </span>
@@ -226,7 +247,14 @@ export function ProductPageClient({
                     {selectedHint}
                   </p>
                 )}
+                {product.slug === AMLOU_ROYAL_SLUG && (
+                  <p className="mt-3 text-xs font-semibold text-accent">
+                    {t("convert.scarcity")}
+                  </p>
+                )}
               </div>
+
+              <ConversionTrustStrip />
 
               {showSizePicker && (
                 <div className="space-y-3">
@@ -254,8 +282,16 @@ export function ProductPageClient({
                             {localizeOfferHint(offer.hint, locale)}
                           </p>
                         )}
-                        <p className="mt-2 text-sm font-extrabold text-accent">
-                          {offer.price} {t("common.currency")}
+                        <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-extrabold text-accent">
+                          <span>
+                            {offer.price} {t("common.currency")}
+                          </span>
+                          {offer.compareAtPrice != null &&
+                            offer.compareAtPrice > offer.price && (
+                              <span className="text-xs font-medium text-muted-foreground line-through">
+                                {offer.compareAtPrice}
+                              </span>
+                            )}
                         </p>
                       </button>
                     ))}
@@ -312,7 +348,7 @@ export function ProductPageClient({
             </div>
             <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
               <h2 className="text-display mb-4 text-xl text-foreground">
-                {t("product.whyUs")}
+                {t("convert.healthTitle")}
               </h2>
               <ul className="space-y-2">
                 {displayBenefits.map((item) => (
@@ -328,7 +364,7 @@ export function ProductPageClient({
             </div>
             <div className="rounded-2xl border border-border/60 bg-card/50 p-6">
               <h2 className="text-display mb-4 text-xl text-foreground">
-                {t("product.usageTitle")}
+                {t("convert.howTitle")}
               </h2>
               <ul className="space-y-2">
                 {displayUsage.map((item) => (
@@ -346,6 +382,12 @@ export function ProductPageClient({
       </Section>
 
       <Section spacing="md" bg="alt">
+        <Container className="max-w-3xl">
+          <DeliveryCitiesBlock />
+        </Container>
+      </Section>
+
+      <Section spacing="md">
         <Container>
           <div className="mb-8 flex items-center gap-3">
             <ShieldCheck className="size-8 text-accent" />
@@ -372,7 +414,7 @@ export function ProductPageClient({
         </Container>
       </Section>
 
-      <Section spacing="md">
+      <Section spacing="md" bg="alt">
         <Container>
           <h2 className="text-display mb-2 text-2xl text-foreground">
             {t("product.reviewsTitle")}

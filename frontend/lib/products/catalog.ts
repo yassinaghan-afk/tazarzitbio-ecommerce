@@ -1,4 +1,5 @@
 import { loadPricingOverrides } from "./admin-storage";
+import { AMLOU_ROYAL_OFFERS, AMLOU_ROYAL_SLUG } from "./amlou-royal";
 import { buildCatalog, baseCatalog } from "./catalog-base";
 import type { PricingOverrides } from "./admin-storage";
 import { isExpandedVariantRow } from "./listing";
@@ -15,18 +16,29 @@ export function getProducts(): Product[] {
   return baseCatalog;
 }
 
-export function toPublicOffer(offer: Product["offers"][number]): PublicProductOffer {
+export function toPublicOffer(
+  offer: Product["offers"][number],
+  productSlug?: string,
+): PublicProductOffer {
+  const royalCompare =
+    productSlug === AMLOU_ROYAL_SLUG
+      ? AMLOU_ROYAL_OFFERS.find((o) => o.id === offer.id)?.originalPrice
+      : undefined;
+
   return {
     id: offer.id,
     label: offer.label,
     weight: offer.weight,
     hint: offer.hint,
     price: offer.economics.salePrice,
+    ...(royalCompare != null && royalCompare > offer.economics.salePrice
+      ? { compareAtPrice: royalCompare }
+      : {}),
   };
 }
 
 export function toPublicProduct(product: Product): PublicProduct {
-  const offers = product.offers.map(toPublicOffer);
+  const offers = product.offers.map((o) => toPublicOffer(o, product.slug));
   return {
     ...product,
     price: Math.min(...offers.map((o) => o.price)),

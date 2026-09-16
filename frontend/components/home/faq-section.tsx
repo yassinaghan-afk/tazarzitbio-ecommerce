@@ -13,7 +13,13 @@ import { getFaqs } from "@/lib/i18n/home-content";
 import { accordionContent, VIEWPORT } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
-export function FaqSection({ cmsFaqs }: { cmsFaqs?: FaqRecord[] }) {
+export function FaqSection({
+  cmsFaqs,
+  whatsappDigits = "212600000000",
+}: {
+  cmsFaqs?: FaqRecord[];
+  whatsappDigits?: string;
+}) {
   const { t, locale } = useTranslation();
   const faqs =
     cmsFaqs && cmsFaqs.length > 0
@@ -23,6 +29,8 @@ export function FaqSection({ cmsFaqs }: { cmsFaqs?: FaqRecord[] }) {
         }))
       : getFaqs(t);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const digits = whatsappDigits.replace(/\D/g, "") || "212600000000";
+  const waHref = `https://wa.me/${digits}?text=${encodeURIComponent(t("whatsapp.prefill"))}`;
 
   return (
     <Section id="faq" spacing="lg">
@@ -97,9 +105,11 @@ export function FaqSection({ cmsFaqs }: { cmsFaqs?: FaqRecord[] }) {
           <MessageCircle className="size-8 text-accent" />
           <p className="font-semibold text-foreground">{t("faq.notFound")}</p>
           <p className="text-sm text-muted-foreground">{t("faq.contact")}</p>
-          <Button variant="gold" className="min-h-11 gap-2">
-            <MessageCircle className="size-4" />
-            {t("faq.whatsapp")}
+          <Button variant="gold" className="min-h-11 gap-2" asChild>
+            <a href={waHref} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="size-4" />
+              {t("faq.whatsapp")}
+            </a>
           </Button>
         </motion.div>
       </Container>

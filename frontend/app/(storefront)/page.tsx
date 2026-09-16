@@ -79,7 +79,7 @@ export default async function HomePage() {
     reviews: <ReviewSection cmsReviews={cmsReviews} />,
     ingredients: <IngredientsSection />,
     lifestyle: <LifestyleSection />,
-    faq: <FaqSection cmsFaqs={cmsFaqs} />,
+    faq: <FaqSection cmsFaqs={cmsFaqs} whatsappDigits={store.siteSettings.whatsapp} />,
     cta: <CtaSection />,
   };
 

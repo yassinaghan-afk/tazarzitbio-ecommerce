@@ -27,6 +27,8 @@ export interface PublicProductOffer {
   weight: string;
   hint?: string;
   price: number;
+  /** Compare-at / strikethrough price when on promo */
+  compareAtPrice?: number;
 }
 
 export interface ProductFaq {
