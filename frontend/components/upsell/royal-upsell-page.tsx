@@ -8,6 +8,8 @@ import { Check, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";
 import { WeightOfferModal } from "@/components/catalog/weight-offer-modal";
 import { Button } from "@/components/ui/button";
 import type { PlacedOrder } from "@/lib/checkout/types";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { LANGUAGE_STORAGE_KEY, type Language } from "@/lib/i18n/types";
 import { getMetaBrowserIds } from "@/lib/meta/browser";
 import type { UpsellOrderResponse } from "@/lib/orders/types";
 import { UPSELL_DISCOUNT_PERCENT } from "@/lib/orders/upsell-pricing";
@@ -29,9 +31,15 @@ import {
   trackUpsellSkip,
   trackUpsellView,
 } from "@/lib/tracking/events";
+import { AMLOU_ROYAL_FR_THANK_YOU, formatRoyalFrDh, royalFrCopy } from "@/lib/royal/fr-copy";
+import {
+  frenchOfferLabel,
+  frenchProductName,
+  toFrenchWeightLabel,
+} from "@/lib/royal/fr-catalog";
 import { cn } from "@/lib/utils";
 
-function formatDh(n: number): string {
+function formatDhAr(n: number): string {
   return `${n} درهم`;
 }
 
@@ -48,6 +56,7 @@ function productSize(product: PublicProduct, offerId?: string): string {
 
 export function RoyalUpsellPage() {
   const router = useRouter();
+  const { setLocale } = useLanguage();
   const [order, setOrder] = useState<PlacedOrder | null>(null);
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [selection, setSelection] = useState<UpsellSelection[]>([]);
@@ -58,6 +67,12 @@ export function RoyalUpsellPage() {
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
   const [weightProduct, setWeightProduct] = useState<PublicProduct | null>(null);
+  const [localeFr, setLocaleFr] = useState(false);
+
+  const isFr =
+    localeFr || order?.thankYouPath === AMLOU_ROYAL_FR_THANK_YOU;
+  const t = royalFrCopy;
+  const money = (n: number) => (isFr ? formatRoyalFrDh(n) : formatDhAr(n));
 
   useEffect(() => {
     const placed = readPlacedOrder();
@@ -69,6 +84,8 @@ export function RoyalUpsellPage() {
       router.replace(withSearch(placed.thankYouPath ?? "/thank-you"));
       return;
     }
+    const fr = placed.thankYouPath === AMLOU_ROYAL_FR_THANK_YOU;
+    setLocaleFr(fr);
     setOrder(placed);
     setSelection(readUpsellSelection(placed.id));
     setHydrated(true);
@@ -80,9 +97,38 @@ export function RoyalUpsellPage() {
         const data = (await res.json()) as { products: PublicProduct[] };
         setProducts(getListingProducts(data.products ?? []));
       })
-      .catch(() => setError("تعذر تحميل المنتجات. يمكنك التخطي وإتمام الطلب."))
+      .catch(() =>
+        setError(
+          fr
+            ? t.upsellCatalogError
+            : "تعذر تحميل المنتجات. يمكنك التخطي وإتمام الطلب.",
+        ),
+      )
       .finally(() => setLoading(false));
   }, [router]);
+
+  useEffect(() => {
+    if (!isFr) return;
+    const prevLang = document.documentElement.lang;
+    const prevDir = document.documentElement.dir;
+    let previousLocale: Language = "ar";
+    try {
+      const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+      if (stored === "ar" || stored === "fr" || stored === "en") {
+        previousLocale = stored;
+      }
+    } catch {
+      /* ignore */
+    }
+    document.documentElement.lang = "fr";
+    document.documentElement.dir = "ltr";
+    setLocale("fr");
+    return () => {
+      document.documentElement.lang = prevLang;
+      document.documentElement.dir = prevDir;
+      setLocale(previousLocale);
+    };
+  }, [isFr, setLocale]);
 
   // Keep selection unit prices aligned with catalog (never apply a fake discount).
   useEffect(() => {
@@ -96,15 +142,27 @@ export function RoyalUpsellPage() {
         product.offers.find((o) => o.id === line.offerId) ?? cheapestOffer(product);
       if (!offer) return line;
       const unitPrice = offer.price;
-      const weight = productSize(product, offer.id);
-      if (line.unitPrice === unitPrice && line.weight === weight) return line;
+      const weightRaw = productSize(product, offer.id);
+      const weight =
+        isFr && weightRaw ? toFrenchWeightLabel(weightRaw) : weightRaw;
+      const offerLabel = isFr ? frenchOfferLabel(offer) : offer.label;
+      const nameAr = isFr ? frenchProductName(product) : product.nameAr;
+      if (
+        line.unitPrice === unitPrice &&
+        line.weight === weight &&
+        line.offerLabel === offerLabel &&
+        line.nameAr === nameAr
+      ) {
+        return line;
+      }
       changed = true;
       return {
         ...line,
         unitPrice,
         listUnitPrice: unitPrice,
         offerId: offer.id,
-        offerLabel: offer.label,
+        offerLabel,
+        nameAr,
         ...(weight ? { weight } : { weight: undefined }),
       };
     });
@@ -112,7 +170,7 @@ export function RoyalUpsellPage() {
       setSelection(next);
       writeUpsellSelection(order.id, next);
     }
-  }, [products, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- sync once catalog arrives
+  }, [products, order?.id, isFr]); // eslint-disable-line react-hooks/exhaustive-deps -- sync once catalog arrives
 
   const originalProductIds = useMemo(() => {
     const ids = new Set<string>();
@@ -180,17 +238,22 @@ export function RoyalUpsellPage() {
     const unitPrice = offer.price;
     const weight = productSize(product, offer.id);
     const quantity = getQty(product.id);
+    const displayName = isFr ? frenchProductName(product) : product.nameAr;
+    const displayLabel = isFr
+      ? frenchOfferLabel(offer)
+      : offer.label;
+    const displayWeight = isFr && weight ? toFrenchWeightLabel(weight) : weight;
     const next: UpsellSelection = {
       productId: product.id,
       offerId: offer.id,
       quantity,
-      nameAr: product.nameAr,
+      nameAr: displayName,
       image: product.image,
       unitPrice,
       listUnitPrice: unitPrice,
-      offerLabel: offer.label,
+      offerLabel: displayLabel,
       slug: product.slug,
-      ...(weight ? { weight } : {}),
+      ...(displayWeight ? { weight: displayWeight } : {}),
     };
     // Replace existing line for same product if any
     const without = selection.filter((s) => s.productId !== product.id);
@@ -290,7 +353,9 @@ export function RoyalUpsellPage() {
     } catch {
       setBusy(false);
       setError(
-        "ما قدرناش نأكدو الطلب دابا. حاول مرة أخرى — طلبك محفوظ وما غاديش يتسجل مرتين.",
+        isFr
+          ? t.upsellConfirmError
+          : "ما قدرناش نأكدو الطلب دابا. حاول مرة أخرى — طلبك محفوظ وما غاديش يتسجل مرتين.",
       );
     }
   }
@@ -311,18 +376,23 @@ export function RoyalUpsellPage() {
   if (!hydrated) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center bg-[#faf6ef] text-sm text-neutral-500">
-        كنحمّلو عرضك الخاص...
+        {isFr ? t.upsellLoading : "كنحمّلو عرضك الخاص..."}
       </div>
     );
   }
 
   return (
-    <div className="min-h-[70vh] bg-[#faf6ef] pb-36 text-[#1a2744]" dir="rtl">
+    <div
+      className="min-h-[70vh] bg-[#faf6ef] pb-36 text-[#1a2744]"
+      dir={isFr ? "ltr" : "rtl"}
+      lang={isFr ? "fr" : undefined}
+    >
       <WeightOfferModal
         product={weightProduct}
         open={Boolean(weightProduct)}
         onClose={() => setWeightProduct(null)}
-        confirmLabel="أضف إلى الطلب"
+        confirmLabel={isFr ? t.upsellAddToOrder : "أضف إلى الطلب"}
+        frenchUi={isFr}
         onConfirmOffer={(offer) => {
           if (!weightProduct) return;
           addProductWithOffer(weightProduct, offer);
@@ -335,13 +405,15 @@ export function RoyalUpsellPage() {
             <Sparkles className="size-6" aria-hidden />
           </div>
           <h1 className="mt-3 text-xl font-extrabold leading-snug sm:text-2xl">
-            عرض خاص قبل إتمام طلبك 👑
+            {isFr ? t.upsellTitle : "عرض خاص قبل إتمام طلبك 👑"}
           </h1>
           <p className="mt-2 text-sm font-bold text-[#8a6a3a]">
-            أضف منتجات أخرى إلى طلبك واستفد من -{UPSELL_DISCOUNT_PERCENT}%
+            {isFr
+              ? t.upsellSubtitle
+              : `أضف منتجات أخرى إلى طلبك واستفد من -${UPSELL_DISCOUNT_PERCENT}%`}
           </p>
           <p className="mt-1 text-sm font-extrabold text-emerald-700">
-            بدون مصاريف توصيل إضافية
+            {isFr ? t.upsellNoExtraShip : "بدون مصاريف توصيل إضافية"}
           </p>
         </div>
 
@@ -356,7 +428,9 @@ export function RoyalUpsellPage() {
 
         <div className="mt-5 space-y-3">
           {loading && (
-            <p className="text-center text-sm text-neutral-500">كنحمّلو المنتجات...</p>
+            <p className="text-center text-sm text-neutral-500">
+              {isFr ? t.upsellLoadingProducts : "كنحمّلو المنتجات..."}
+            </p>
           )}
           {!loading &&
             offerProducts.map((product) => {
@@ -384,40 +458,48 @@ export function RoyalUpsellPage() {
                     <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-[#f3ebe0]">
                       <Image
                         src={product.image}
-                        alt={product.nameAr}
+                        alt={isFr ? frenchProductName(product) : product.nameAr}
                         fill
                         sizes="96px"
                         className="object-cover"
                       />
-                      <span
-                        className="absolute start-1.5 top-1.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(220,38,38,0.55)] ring-1 ring-white/40"
-                        aria-hidden
-                      >
-                        -{UPSELL_DISCOUNT_PERCENT}%
-                      </span>
+                      {!isFr && (
+                        <span
+                          className="absolute start-1.5 top-1.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black tracking-wide text-white shadow-[0_0_12px_rgba(220,38,38,0.55)] ring-1 ring-white/40"
+                          aria-hidden
+                        >
+                          -{UPSELL_DISCOUNT_PERCENT}%
+                        </span>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h2 className="text-sm font-extrabold leading-snug">
-                        {product.nameAr}
+                        {isFr ? frenchProductName(product) : product.nameAr}
                       </h2>
                       {size ? (
                         <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
-                          {size}
+                          {isFr ? toFrenchWeightLabel(size) : size}
                           {product.offers.length > 1 && !selected
-                            ? " · اضغط للإضافة واختيار الوزن"
+                            ? isFr
+                              ? t.upsellTapWeight
+                              : " · اضغط للإضافة واختيار الوزن"
                             : ""}
                         </p>
                       ) : product.offers.length > 1 && !selected ? (
                         <p className="mt-0.5 text-xs font-bold text-[#8a6a3a]">
-                          أوزان متعددة — اضغط للإضافة واختيار الوزن
+                          {isFr
+                            ? t.upsellMultiWeight
+                            : "أوزان متعددة — اضغط للإضافة واختيار الوزن"}
                         </p>
                       ) : null}
                       <p className="mt-1.5 text-lg font-black tabular-nums text-[#1a2744]">
                         {selected
-                          ? formatDh(price)
+                          ? money(price)
                           : product.offers.length > 1
-                            ? `ابتداءً من ${formatDh(price)}`
-                            : formatDh(price)}
+                            ? isFr
+                              ? t.upsellFrom(money(price))
+                              : `ابتداءً من ${money(price)}`
+                            : money(price)}
                       </p>
                     </div>
                   </div>
@@ -426,7 +508,7 @@ export function RoyalUpsellPage() {
                     <div className="flex items-center gap-1 rounded-full border border-[#eadfce] bg-[#faf6ef] px-1 shadow-sm">
                       <button
                         type="button"
-                        aria-label="إنقاص الكمية"
+                        aria-label={isFr ? t.upsellDecQty : "إنقاص الكمية"}
                         disabled={busy || qty <= 1}
                         className="flex size-9 items-center justify-center disabled:opacity-40"
                         onClick={() => changeQty(product.id, -1)}
@@ -438,7 +520,7 @@ export function RoyalUpsellPage() {
                       </span>
                       <button
                         type="button"
-                        aria-label="زيادة الكمية"
+                        aria-label={isFr ? t.upsellIncQty : "زيادة الكمية"}
                         disabled={busy || qty >= 20}
                         className="flex size-9 items-center justify-center disabled:opacity-40"
                         onClick={() => changeQty(product.id, 1)}
@@ -459,9 +541,11 @@ export function RoyalUpsellPage() {
                     >
                       {selected ? (
                         <>
-                          تمت الإضافة
+                          {isFr ? t.upsellAdded : "تمت الإضافة"}
                           <Check className="size-4" aria-hidden />
                         </>
+                      ) : isFr ? (
+                        t.upsellAdd
                       ) : (
                         "إضافة"
                       )}
@@ -473,34 +557,48 @@ export function RoyalUpsellPage() {
         </div>
 
         <aside className="mt-6 rounded-2xl border border-[#eadfce] bg-white p-4 text-sm shadow-sm">
-          <h3 className="font-extrabold">طلبك الحالي</h3>
+          <h3 className="font-extrabold">
+            {isFr ? t.upsellCurrentOrder : "طلبك الحالي"}
+          </h3>
           <div className="mt-2 space-y-1.5 text-xs">
             <div className="flex justify-between gap-3">
-              <span className="text-neutral-500">المنتجات الأصلية</span>
-              <span className="font-bold tabular-nums">{formatDh(originalSubtotal)}</span>
+              <span className="text-neutral-500">
+                {isFr ? t.upsellOriginalItems : "المنتجات الأصلية"}
+              </span>
+              <span className="font-bold tabular-nums">{money(originalSubtotal)}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-neutral-500">إضافاتك</span>
-              <span className="font-bold tabular-nums">{formatDh(upsellSubtotal)}</span>
+              <span className="text-neutral-500">
+                {isFr ? t.upsellExtras : "إضافاتك"}
+              </span>
+              <span className="font-bold tabular-nums">{money(upsellSubtotal)}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-neutral-500">التوصيل</span>
+              <span className="text-neutral-500">
+                {isFr ? t.labelShipping : "التوصيل"}
+              </span>
               <span
                 className={cn(
                   "font-bold",
                   shippingFee === 0 ? "text-emerald-600" : "tabular-nums",
                 )}
               >
-                {shippingFee === 0 ? "مجاناً" : formatDh(shippingFee)}
+                {shippingFee === 0
+                  ? isFr
+                    ? t.free
+                    : "مجاناً"
+                  : money(shippingFee)}
               </span>
             </div>
             <div className="flex justify-between gap-3 border-t border-[#eadfce] pt-2 text-sm font-extrabold">
-              <span>المجموع النهائي</span>
-              <span className="tabular-nums text-red-600">{formatDh(finalTotal)}</span>
+              <span>{isFr ? t.upsellFinalTotal : "المجموع النهائي"}</span>
+              <span className="tabular-nums text-red-600">{money(finalTotal)}</span>
             </div>
           </div>
           <p className="mt-2 text-[11px] font-semibold text-emerald-700">
-            التوصيل يُحسب مرة واحدة فقط — ما كاينش توصيل إضافي على الإضافات.
+            {isFr
+              ? t.upsellShipOnce
+              : "التوصيل يُحسب مرة واحدة فقط — ما كاينش توصيل إضافي على الإضافات."}
           </p>
         </aside>
       </div>
@@ -519,12 +617,12 @@ export function RoyalUpsellPage() {
             )}
           >
             {busy ? (
-              "جاري تأكيد الطلب..."
+              isFr ? t.upsellConfirming : "جاري تأكيد الطلب..."
             ) : (
               <span className="inline-flex items-center gap-2">
                 <ShoppingCart className="size-5" aria-hidden />
-                متابعة وإتمام الطلب
-                <span className="tabular-nums opacity-90">· {formatDh(finalTotal)}</span>
+                {isFr ? t.upsellContinue : "متابعة وإتمام الطلب"}
+                <span className="tabular-nums opacity-90">· {money(finalTotal)}</span>
               </span>
             )}
           </Button>
@@ -534,7 +632,7 @@ export function RoyalUpsellPage() {
             onClick={() => void onSkip()}
             className="flex min-h-12 w-full items-center justify-center rounded-full bg-red-600 px-4 text-sm font-extrabold text-white shadow-md hover:bg-red-700 disabled:opacity-70"
           >
-            تخطي وإتمام الطلب
+            {isFr ? t.upsellSkip : "تخطي وإتمام الطلب"}
           </button>
         </div>
       </div>

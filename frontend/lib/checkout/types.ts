@@ -33,7 +33,7 @@ export interface PlacedOrder {
   /** When true, /upsell redirects to thank-you */
   upsellCompleted?: boolean;
   /** Thank-you destination after upsell */
-  thankYouPath?: "/thank-you" | "/royal/thank-you";
+  thankYouPath?: "/thank-you" | "/royal/thank-you" | "/royalfr/thank-you";
 }
 
 export const LAST_ORDER_STORAGE_KEY = "tazarzit-last-order";
