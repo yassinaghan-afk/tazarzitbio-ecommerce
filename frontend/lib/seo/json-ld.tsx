@@ -5,6 +5,7 @@ import {
 } from "@/lib/i18n/product-locale";
 import type { Language } from "@/lib/i18n/types";
 import type { PublicProduct } from "@/lib/products/types";
+import { BUSINESS_LOCATION } from "@/lib/seo/business-location";
 import { SITE_URL } from "@/lib/seo/locale";
 
 export function absoluteUrl(path: string) {
@@ -17,15 +18,18 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
     settings?.instagram,
     settings?.facebook,
     settings?.tiktok,
+    BUSINESS_LOCATION.mapsUrl,
   ].filter((url): url is string => Boolean(url?.trim()));
 
   const phone = settings?.phone?.trim();
   const email = settings?.email?.trim();
   const whatsapp = settings?.whatsapp?.replace(/\D/g, "");
+  const addressText =
+    settings?.address?.trim() || BUSINESS_LOCATION.addressDisplayFr;
 
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "LocalBusiness", "FoodEstablishment"],
     name: settings?.brandName?.trim() || "Tazarzit Bio",
     alternateName: "تازارزيت بيو",
     url: SITE_URL,
@@ -37,6 +41,20 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
       "@type": "Country",
       name: settings?.country?.trim() || "Morocco",
     },
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: BUSINESS_LOCATION.streetAddress,
+      addressLocality: BUSINESS_LOCATION.addressLocality,
+      addressRegion: BUSINESS_LOCATION.addressRegion,
+      postalCode: BUSINESS_LOCATION.postalCode,
+      addressCountry: BUSINESS_LOCATION.addressCountry,
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: BUSINESS_LOCATION.latitude,
+      longitude: BUSINESS_LOCATION.longitude,
+    },
+    hasMap: BUSINESS_LOCATION.mapsUrl,
     ...(sameAs.length ? { sameAs } : {}),
     ...(phone || email || whatsapp
       ? {
@@ -52,6 +70,7 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
           },
         }
       : {}),
+    ...(addressText ? { foundingLocation: addressText } : {}),
   };
 }
 

@@ -7,6 +7,7 @@ import { Container } from "@/components/layout/container";
 import { pickNavLabel } from "@/components/layout/site-header";
 import type { NavigationSettings, SiteSettings } from "@/lib/admin/cms-types";
 import { useTranslation } from "@/lib/i18n/language-provider";
+import { BUSINESS_LOCATION } from "@/lib/seo/business-location";
 import { localizedPath } from "@/lib/seo/locale";
 import { TOURIST_HUB_PATH } from "@/lib/seo/tourist-hub";
 
@@ -70,6 +71,13 @@ export function SiteFooter({
   const whatsappDigits = (settings?.whatsapp ?? "212642370050").replace(/\D/g, "");
   const phone = settings?.phone || "+212 642 370 050";
   const brandName = settings?.brandName || "Tazarzit Bio";
+  const addressLine =
+    settings?.address?.trim() ||
+    (locale === "ar"
+      ? BUSINESS_LOCATION.addressDisplayAr
+      : locale === "en"
+        ? BUSINESS_LOCATION.addressDisplayEn
+        : BUSINESS_LOCATION.addressDisplayFr);
 
   const socials = [
     { label: "Instagram", href: settings?.instagram },
@@ -161,6 +169,16 @@ export function SiteFooter({
                   dir="ltr"
                 >
                   {phone}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={BUSINESS_LOCATION.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-accent"
+                >
+                  {addressLine}
                 </a>
               </li>
               {settings?.email && (

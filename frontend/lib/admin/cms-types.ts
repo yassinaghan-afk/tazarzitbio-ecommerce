@@ -108,7 +108,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   instagram: "",
   tiktok: "",
   facebook: "",
-  address: "",
+  address: "Avenue Abderrahim Bouabid, Sidi Youssef, Agadir 80033",
   currency: "MAD",
   country: "Morocco",
   seoTitle: "",

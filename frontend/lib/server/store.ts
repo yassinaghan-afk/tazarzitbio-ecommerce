@@ -156,6 +156,9 @@ function normalizeSiteSettings(raw?: SiteSettings | null): SiteSettings {
   if (!phoneDigits || phoneDigits === "212600000000") {
     merged.phone = DEFAULT_SITE_SETTINGS.phone;
   }
+  if (!merged.address?.trim()) {
+    merged.address = DEFAULT_SITE_SETTINGS.address;
+  }
   return merged;
 }
 
