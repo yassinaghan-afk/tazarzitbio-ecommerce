@@ -143,7 +143,21 @@ const DEFAULT_STORE: PersistedStore = {
   delivery: structuredClone(DEFAULT_DELIVERY_STATE),
 };
 
-function normalizeHomeSections(raw: unknown): HomeSectionConfig[] {
+function normalizeSiteSettings(raw?: SiteSettings | null): SiteSettings {
+  const merged = {
+    ...DEFAULT_SITE_SETTINGS,
+    ...(raw ?? {}),
+  };
+  const wa = merged.whatsapp?.replace(/\D/g, "") ?? "";
+  if (!wa || wa === "212600000000") {
+    merged.whatsapp = DEFAULT_SITE_SETTINGS.whatsapp;
+  }
+  const phoneDigits = merged.phone?.replace(/\D/g, "") ?? "";
+  if (!phoneDigits || phoneDigits === "212600000000") {
+    merged.phone = DEFAULT_SITE_SETTINGS.phone;
+  }
+  return merged;
+}
   if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_HOME_SECTIONS;
   const known = new Set(DEFAULT_HOME_SECTIONS.map((s) => s.id));
   const byId = new Map<string, HomeSectionConfig>();
@@ -219,10 +233,9 @@ export async function readStore(): Promise<PersistedStore> {
         ...DEFAULT_NAVIGATION,
         ...((parsed.navigation as NavigationSettings | undefined) ?? {}),
       },
-      siteSettings: {
-        ...DEFAULT_SITE_SETTINGS,
-        ...((parsed.siteSettings as SiteSettings | undefined) ?? {}),
-      },
+      siteSettings: normalizeSiteSettings(
+        parsed.siteSettings as SiteSettings | undefined,
+      ),
       promotions: Array.isArray(parsed.promotions)
         ? (parsed.promotions as Promotion[])
         : [],
