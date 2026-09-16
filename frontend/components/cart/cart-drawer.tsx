@@ -16,6 +16,7 @@ import {
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
 import { getProductShopPath } from "@/lib/products/amlou-royal";
+import { cn } from "@/lib/utils";
 
 export function CartDrawer() {
   const { t, locale } = useTranslation();
@@ -91,7 +92,10 @@ export function CartDrawer() {
                 <Link
                   href={productHref}
                   onClick={closeCart}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#3d2818] to-[#2a1810]"
+                  className={cn(
+                    "relative h-20 w-20 shrink-0 overflow-hidden rounded-xl",
+                    item.slug === "amlou-royal" ? "bg-white" : "bg-[#faf8f5]",
+                  )}
                 >
                   <Image
                     src={item.image}

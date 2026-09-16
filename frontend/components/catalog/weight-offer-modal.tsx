@@ -178,7 +178,12 @@ export function WeightOfferModal({
               </div>
 
               <div className="relative mt-4 flex items-center gap-3 rounded-2xl bg-white/10 p-3 ring-1 ring-white/15">
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white/10">
+                <div
+                  className={cn(
+                    "relative size-16 shrink-0 overflow-hidden rounded-xl",
+                    product.slug === "amlou-royal" ? "bg-white" : "bg-[#faf8f5]",
+                  )}
+                >
                   <Image
                     src={product.image}
                     alt={titleName}

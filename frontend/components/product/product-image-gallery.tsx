@@ -13,12 +13,15 @@ interface ProductImageGalleryProps {
   images: string[];
   alt: string;
   className?: string;
+  /** Image stage background — default soft white, use pure white for jar shots */
+  surfaceClassName?: string;
 }
 
 export function ProductImageGallery({
   images,
   alt,
   className,
+  surfaceClassName = "bg-[#faf8f5]",
 }: ProductImageGalleryProps) {
   const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
@@ -33,7 +36,12 @@ export function ProductImageGallery({
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      <div className="frame-premium relative aspect-square overflow-hidden rounded-3xl bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810] shadow-warm-xl">
+      <div
+        className={cn(
+          "relative aspect-square overflow-hidden rounded-3xl",
+          surfaceClassName,
+        )}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={active}
@@ -43,17 +51,13 @@ export function ProductImageGallery({
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0"
           >
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_25%,hsl(45_80%_55%/0.2)_0%,transparent_55%)]"
-            />
             <Image
               src={active}
               alt={alt}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-contain object-center p-5 sm:p-8"
+              className="object-contain object-center p-4 sm:p-6"
               quality={90}
             />
           </motion.div>
@@ -66,7 +70,7 @@ export function ProductImageGallery({
               size="icon-sm"
               onClick={prev}
               aria-label={t("gallery.prev")}
-              className="absolute start-3 top-1/2 z-10 -translate-y-1/2 bg-white/85 text-foreground shadow-warm-sm"
+              className="absolute start-3 top-1/2 z-10 -translate-y-1/2 bg-white/90 text-foreground shadow-warm-sm"
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -75,7 +79,7 @@ export function ProductImageGallery({
               size="icon-sm"
               onClick={next}
               aria-label={t("gallery.next")}
-              className="absolute end-3 top-1/2 z-10 -translate-y-1/2 bg-white/85 text-foreground shadow-warm-sm"
+              className="absolute end-3 top-1/2 z-10 -translate-y-1/2 bg-white/90 text-foreground shadow-warm-sm"
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -92,10 +96,11 @@ export function ProductImageGallery({
               onClick={() => setActiveIdx(i)}
               aria-label={t("gallery.thumb", { n: i + 1 })}
               className={cn(
-                "relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all",
+                "relative h-16 w-16 shrink-0 overflow-hidden rounded-xl ring-2 transition-all",
                 i === activeIdx
-                  ? "border-accent shadow-gold"
-                  : "border-transparent hover:border-border",
+                  ? "ring-accent"
+                  : "ring-transparent hover:ring-border/60",
+                surfaceClassName,
               )}
             >
               <Image
@@ -103,7 +108,7 @@ export function ProductImageGallery({
                 alt=""
                 fill
                 sizes="64px"
-                className="object-contain bg-gradient-to-br from-[#3d2818] to-[#2a1810] p-1"
+                className="object-contain p-1"
               />
             </button>
           ))}

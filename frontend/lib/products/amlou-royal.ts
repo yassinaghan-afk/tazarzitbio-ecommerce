@@ -82,9 +82,6 @@ export const AMLOU_ROYAL_LP_IMAGES = [
 
 export const AMLOU_ROYAL_IMAGES = [
   "/images/products/amlou-royal-jar.jpg",
-  "/images/products/amlou-royal-hero.jpg",
-  "/images/products/amlou-royal-ingredients.jpg",
-  "/images/products/amlou-royal-benefits.jpg",
 ] as const;
 
 export type AmlouRoyalVersionId = "honey" | "no-honey";

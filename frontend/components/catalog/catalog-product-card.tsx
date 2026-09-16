@@ -95,24 +95,23 @@ export function CatalogProductCard({
       <motion.article
         {...cardHoverProps}
         className={cn(
-          "group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-warm-md",
+          "group flex flex-col overflow-hidden rounded-2xl bg-card",
           className,
         )}
       >
         <Link
           href={productHref}
-          className="relative block aspect-square overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#4a3020] to-[#2a1810] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className={cn(
+            "relative block aspect-square overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+            product.slug === "amlou-royal" ? "bg-white" : "bg-[#faf8f5]",
+          )}
         >
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,hsl(45_80%_55%/0.18)_0%,transparent_55%)]"
-          />
           <Image
             src={product.image}
             alt={displayName}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-            className="object-contain object-center p-4 transition-transform duration-500 group-hover:scale-[1.02]"
+            className="object-contain object-center p-3 transition-transform duration-500 group-hover:scale-[1.02] sm:p-4"
             quality={88}
           />
           <div className="absolute start-3 top-3 z-[2] flex flex-wrap gap-1.5">

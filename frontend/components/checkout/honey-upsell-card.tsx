@@ -84,7 +84,8 @@ export function HoneyUpsellCard({
         <Link
           href={productHref}
           className={cn(
-            "relative block shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#1a120c] to-[#2a1810] ring-1 ring-foreground/10 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            "relative block shrink-0 overflow-hidden rounded-xl ring-1 ring-foreground/5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            product.slug === "amlou-royal" ? "bg-white" : "bg-[#faf8f5]",
             compact ? "h-16 w-16" : "mx-auto h-20 w-20 sm:mx-0 sm:h-24 sm:w-24",
           )}
         >

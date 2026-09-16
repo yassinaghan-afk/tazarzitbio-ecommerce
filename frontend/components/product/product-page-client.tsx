@@ -156,6 +156,9 @@ export function ProductPageClient({
             <ProductImageGallery
               images={product.images}
               alt={displayName}
+              surfaceClassName={
+                product.slug === "amlou-royal" ? "bg-white" : "bg-[#faf8f5]"
+              }
               className="order-1 min-w-0 w-full max-w-full shrink-0 lg:col-start-1 lg:row-span-2 lg:sticky lg:top-[calc(var(--site-top-offset)+1rem)] lg:self-start"
             />
 
