@@ -7,7 +7,7 @@ import {
   organizationJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/json-ld";
-import { getRequestLocale } from "@/lib/seo/locale";
+import { getRequestLocale } from "@/lib/seo/request-locale";
 
 /**
  * Public storefront layout — header, announcement, cart, footer.

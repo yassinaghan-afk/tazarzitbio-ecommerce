@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 
-import { getRequestLocale, localeHtmlAttrs } from "@/lib/seo/locale";
+import { localeHtmlAttrs } from "@/lib/seo/locale";
+import { getRequestLocale } from "@/lib/seo/request-locale";
 
 import "./globals.css";
 

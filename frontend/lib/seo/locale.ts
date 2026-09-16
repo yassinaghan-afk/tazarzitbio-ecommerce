@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 
 import {
   DEFAULT_LANGUAGE,
@@ -60,17 +59,16 @@ export function hreflangLanguages(path: string): NonNullable<
   };
 }
 
-export async function getRequestLocale(): Promise<Language> {
-  const h = await headers();
-  const raw = h.get("x-locale") ?? DEFAULT_LANGUAGE;
-  return isLanguage(raw) ? raw : DEFAULT_LANGUAGE;
-}
-
 export function localeHtmlAttrs(locale: Language) {
   return {
     lang: locale === "ar" ? "ar" : locale,
     dir: languageDir(locale),
   };
+}
+
+export function parseLocale(value: string | null | undefined): Language {
+  if (value && isLanguage(value)) return value;
+  return DEFAULT_LANGUAGE;
 }
 
 export const MOROCCO_PRODUCT_KEYWORDS = {
