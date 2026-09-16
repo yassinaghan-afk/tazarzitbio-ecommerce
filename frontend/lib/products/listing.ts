@@ -2,11 +2,11 @@ import { AMLOU_ROYAL_SLUG } from "./amlou-royal";
 import { FAMILY_PACK_SLUG } from "@/lib/brand";
 import type { PublicProduct } from "./types";
 
-/** Dedicated landing pages — keep shop/home grids unchanged */
-export const LANDING_ONLY_SLUGS = [AMLOU_ROYAL_SLUG] as const;
-
 /** Removed from storefront catalog and shop grids */
 export const REMOVED_PRODUCT_SLUGS = [FAMILY_PACK_SLUG] as const;
+
+/** No longer landing-only — Amlou Royal appears in shop/home with dedicated /amlouroyal PDP */
+export const LANDING_ONLY_SLUGS = [] as const;
 
 export function isLandingOnlyProduct(
   product: Pick<PublicProduct, "slug">,
@@ -45,4 +45,15 @@ export function getListingProducts(
       p.category !== "bundles" &&
       !exclude.has(p.slug),
   );
+}
+
+/** Prefer Amlou Royal first in home “best sellers” grids */
+export function sortListingForHome(
+  products: PublicProduct[],
+): PublicProduct[] {
+  return [...products].sort((a, b) => {
+    if (a.slug === AMLOU_ROYAL_SLUG) return -1;
+    if (b.slug === AMLOU_ROYAL_SLUG) return 1;
+    return 0;
+  });
 }

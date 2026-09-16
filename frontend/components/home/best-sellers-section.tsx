@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
-import { getListingProducts } from "@/lib/products/listing";
+import { getListingProducts, sortListingForHome } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
 
 const HOME_CATEGORIES: ProductCategory[] = ["all", "honey", "amlou"];
@@ -24,7 +24,7 @@ export function BestSellersSection() {
   const [category, setCategory] = useState<ProductCategory>("all");
 
   const listingProducts = useMemo(
-    () => getListingProducts(allProducts),
+    () => sortListingForHome(getListingProducts(allProducts)),
     [allProducts],
   );
 

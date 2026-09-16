@@ -4,13 +4,18 @@ export const AMLOU_ROYAL_ID = "amlou-royal";
 export const AMLOU_ROYAL_SLUG = "amlou-royal";
 export const AMLOU_ROYAL_NAME_AR = "أملو ملكي";
 export const AMLOU_ROYAL_NAME_EN = "AMLOU ROYAL";
+/** Ads / campaign landing */
 export const AMLOU_ROYAL_CANONICAL = "https://www.tazarzitbio.com/royal";
 export const AMLOU_ROYAL_PATH = "/royal";
+/** Storefront product page */
+export const AMLOU_ROYAL_SHOP_PATH = "/amlouroyal";
+export const AMLOU_ROYAL_SHOP_CANONICAL =
+  "https://www.tazarzitbio.com/amlouroyal";
 
 /** Bottle size for all Amlou Royal offers */
 export const AMLOU_ROYAL_BOTTLE_WEIGHT_G = 500;
 
-export const AMLOU_ROYAL_IMAGE = "/images/products/amlou-royal-hero.jpg";
+export const AMLOU_ROYAL_IMAGE = "/images/products/amlou-royal-jar.jpg";
 export const AMLOU_ROYAL_TRUST_IMAGE = "/images/products/amlou-royal-trust.jpg";
 export const AMLOU_ROYAL_INGREDIENTS_IMAGE =
   "/images/products/amlou-royal-ingredients.jpg";
@@ -76,9 +81,10 @@ export const AMLOU_ROYAL_LP_IMAGES = [
 ] as const;
 
 export const AMLOU_ROYAL_IMAGES = [
+  "/images/products/amlou-royal-jar.jpg",
   "/images/products/amlou-royal-hero.jpg",
-  "/images/products/mixed-nuts.png",
-  "/images/products/almond-amlou.png",
+  "/images/products/amlou-royal-ingredients.jpg",
+  "/images/products/amlou-royal-benefits.jpg",
 ] as const;
 
 export type AmlouRoyalVersionId = "honey" | "no-honey";
@@ -162,18 +168,23 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
 
 export const AMLOU_ROYAL_DEFAULT_OFFER_ID = "royal-2" as const;
 
+/** Exact label ingredients (AR) — French names on jar */
 export const AMLOU_ROYAL_INGREDIENTS = [
-  "اللوز المحمص",
-  "الفستق",
-  "البندق المحمص",
-  "الكاجو",
-  "الكركاع",
-  "جوز البرازيل",
-  "بذور اليقطين المحمصة",
-  "غذاء ملكات النحل",
-  "زيت أركان غذائي",
-  "عسل طبيعي",
+  "لوز",
+  "فستق",
+  "بندق",
+  "جوز (كركاع)",
+  "كاجو",
+  "زيت أركان",
+  "بذور اليقطين",
+  "بذور السمسم",
+  "حبوب لقاح النحل",
 ] as const;
+
+export function getProductShopPath(slug: string): string {
+  if (slug === AMLOU_ROYAL_SLUG) return AMLOU_ROYAL_SHOP_PATH;
+  return `/products/${slug}`;
+}
 
 export function getAmlouRoyalOffer(
   offerId: string,

@@ -8,7 +8,7 @@ import { CategoryFilters } from "@/components/catalog/category-filters";
 import { Container, Section } from "@/components/layout/container";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
 import { useCatalogProducts } from "@/hooks/use-catalog";
-import { getListingProducts } from "@/lib/products/listing";
+import { getListingProducts, sortListingForHome } from "@/lib/products/listing";
 import type { ProductCategory } from "@/lib/products";
 import { useTranslation } from "@/lib/i18n/language-provider";
 
@@ -18,7 +18,7 @@ export function ProductsCatalog() {
   const allProducts = useCatalogProducts();
 
   const listingProducts = useMemo(
-    () => getListingProducts(allProducts),
+    () => sortListingForHome(getListingProducts(allProducts)),
     [allProducts],
   );
 

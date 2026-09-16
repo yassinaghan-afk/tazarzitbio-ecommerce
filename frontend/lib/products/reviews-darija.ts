@@ -227,3 +227,39 @@ export const HOMEPAGE_REVIEWS_DARIJA = [
     avatar: "ل",
   },
 ];
+
+export const REVIEWS_AMLOU_ROYAL: ProductReview[] = [
+  {
+    id: "roy-1",
+    author: "نادية",
+    city: "الدار البيضاء",
+    rating: 5,
+    date: "شتنبر 2026",
+    content:
+      "أملو ملكي فاخر بزاف، المكسرات باينة وزيت الأركان كيعطي قومة زوينة للفطور.",
+  },
+  {
+    id: "roy-2",
+    author: "كريم",
+    city: "الرباط",
+    rating: 5,
+    date: "غشت 2026",
+    content: "طلبت قنينتين، العائلة كلها عجبتها، طبيعي بلا مواد حافظة.",
+  },
+  {
+    id: "roy-3",
+    author: "سعاد",
+    city: "مراكش",
+    rating: 5,
+    date: "يوليوز 2026",
+    content: "التغليف مرتب والطعم غني، مثالي للضيافة مع الشاي.",
+  },
+  {
+    id: "roy-4",
+    author: "هشام",
+    city: "أكادير",
+    rating: 5,
+    date: "يونيو 2026",
+    content: "منتج مغربي أصيل، الوزن 500غ والقوام كثيف كما فالعلبة.",
+  },
+];

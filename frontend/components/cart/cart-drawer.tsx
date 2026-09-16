@@ -15,6 +15,7 @@ import {
   localizeLineName,
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
+import { getProductShopPath } from "@/lib/products/amlou-royal";
 
 export function CartDrawer() {
   const { t, locale } = useTranslation();
@@ -81,13 +82,14 @@ export function CartDrawer() {
                 item.offerLabel,
                 locale,
               );
+              const productHref = getProductShopPath(item.slug);
               return (
               <li
                 key={item.lineId}
                 className="flex gap-3 rounded-2xl border border-border/60 bg-background/50 p-3"
               >
                 <Link
-                  href={`/products/${item.slug}`}
+                  href={productHref}
                   onClick={closeCart}
                   className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#3d2818] to-[#2a1810]"
                 >
@@ -102,7 +104,7 @@ export function CartDrawer() {
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <div>
                     <Link
-                      href={`/products/${item.slug}`}
+                      href={productHref}
                       onClick={closeCart}
                       className="line-clamp-2 text-sm font-bold text-foreground hover:text-accent"
                     >

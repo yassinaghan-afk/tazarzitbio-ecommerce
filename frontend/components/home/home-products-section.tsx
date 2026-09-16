@@ -11,7 +11,7 @@ import { SectionHeader } from "@/components/sections/section-header";
 import { Button } from "@/components/ui/button";
 import { useCatalogProducts } from "@/hooks/use-catalog";
 import { staggerContainer, staggerItem, VIEWPORT } from "@/lib/animations";
-import { getListingProducts } from "@/lib/products/listing";
+import { getListingProducts, sortListingForHome } from "@/lib/products/listing";
 
 /**
  * Home catalog grid — same data path as /products
@@ -20,7 +20,7 @@ import { getListingProducts } from "@/lib/products/listing";
 export function HomeProductsSection() {
   const allProducts = useCatalogProducts();
   const products = useMemo(
-    () => getListingProducts(allProducts),
+    () => sortListingForHome(getListingProducts(allProducts)),
     [allProducts],
   );
 

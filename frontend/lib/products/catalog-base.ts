@@ -11,6 +11,7 @@ import {
 } from "./amlou-royal";
 import {
   REVIEWS_ALMOND,
+  REVIEWS_AMLOU_ROYAL,
   REVIEWS_ARGAN,
   REVIEWS_DAGHMOUS,
   REVIEWS_EUCALYPTUS,
@@ -117,6 +118,62 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
 
   const catalog: Product[] = [
     {
+      id: AMLOU_ROYAL_ID,
+      slug: AMLOU_ROYAL_SLUG,
+      nameAr: AMLOU_ROYAL_NAME_AR,
+      shortDescription:
+        "خليط فاخر من المكسرات المختارة وزيت أركان — منتوج مغربي طبيعي 100%.",
+      description:
+        "أملو ملكي من تازارزيت بيو: خليط فاخر من المكسرات المختارة وزيت أركان، محضّر بدون مواد حافظة. قوام غني وكثيف مثالي للفطور والضيافة. الوزن الصافي للقنينة 500 غ — متوفر بعروض قنينة واحدة أو أكثر مع توصيل مجاني والدفع عند الاستلام.",
+      price: lowestPrice(royalOffers),
+      image: AMLOU_ROYAL_IMAGE,
+      images: [...AMLOU_ROYAL_IMAGES],
+      category: "amlou",
+      badges: ["bestseller", "natural"],
+      weight: "500 غ — 1.5 كغ",
+      ingredients: [...AMLOU_ROYAL_INGREDIENTS],
+      benefits: [
+        "خليط فاخر من 8 مكسرات وبذور مختارة",
+        "زيت أركان مغربي بكر",
+        "100% طبيعي — بدون مواد حافظة",
+        "حبوب لقاح النحل لتغذية أغنى",
+        "منتوج مغربي أصيل من تازارزيت بيو",
+      ],
+      usageSuggestions: [
+        "على خبز البيت أو الملوي في الفطور",
+        "مع الشاي المغربي والضيافة",
+        "وجبة خفيفة غنية بالطاقة خلال اليوم",
+        "يُحفظ في مكان جاف وبارد بعد الفتح",
+      ],
+      offers: royalOffers,
+      faq: [
+        {
+          q: "ما هي مكونات أملو ملكي؟",
+          a: "لوز، فستق، بندق، جوز (كركاع)، كاجو، زيت أركان، بذور اليقطين، بذور السمسم، وحبوب لقاح النحل — كما هو مكتوب على العلبة.",
+        },
+        {
+          q: "هل يحتوي على مواد حافظة؟",
+          a: "لا. المنتج 100% طبيعي وبدون مواد حافظة.",
+        },
+        {
+          q: "ما هو الوزن الصافي؟",
+          a: "كل قنينة 500 غ. عروض القنينتين والثلاث قنينات تعادل 1 كغ و1.5 كغ.",
+        },
+        {
+          q: "كيف أحفظه؟",
+          a: "يُحفظ في مكان جاف وبارد، بعيداً عن الحرارة والرطوبة.",
+        },
+        {
+          q: "كيف يتم الدفع والتوصيل؟",
+          a: "الدفع عند الاستلام لجميع المدن. التوصيل مجاناً لجميع عروض أملو ملكي.",
+        },
+      ],
+      reviews: REVIEWS_AMLOU_ROYAL,
+      rating: 4.9,
+      reviewCount: 186,
+      relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
+    },
+    {
       id: "almond-amlou",
       slug: "almond-amlou",
       nameAr: "أملو باللوز",
@@ -157,7 +214,7 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviews: REVIEWS_ALMOND,
       rating: 4.9,
       reviewCount: 312,
-      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey"],
+      relatedSlugs: ["pistachio-amlou", "mixed-nuts-honey", AMLOU_ROYAL_SLUG],
     },
     {
       id: "pistachio-amlou",
@@ -421,52 +478,6 @@ export function buildCatalog(overrides?: PricingOverrides): Product[] {
       reviewCount: 41,
       relatedSlugs: ["almond-amlou", "pistachio-amlou", "daghmous-honey"],
     },
-    {
-      id: AMLOU_ROYAL_ID,
-      slug: AMLOU_ROYAL_SLUG,
-      nameAr: AMLOU_ROYAL_NAME_AR,
-      shortDescription:
-        "خليطة فاخرة من المكسرات المختارة بعناية، زيت أركان الغذائي والعسل الطبيعي، بمذاق غني وقوام كريمي مميز.",
-      description:
-        "أملو ملكي من تازارزيت بيو: أملو مغربي فاخر من مكسرات مختارة وزيت أركان غذائي. متوفر بنسخة بالعسل الطبيعي وبنسخة بدون عسل وبدون سكر مضاف.",
-      price: lowestPrice(royalOffers),
-      image: AMLOU_ROYAL_IMAGE,
-      images: [...AMLOU_ROYAL_IMAGES],
-      category: "amlou",
-      badges: ["new", "natural"],
-      weight: "500 غ — 1.5 كغ",
-      ingredients: [...AMLOU_ROYAL_INGREDIENTS],
-      benefits: [
-        "خليطة فاخرة من المكسرات المختارة",
-        "قوام كريمي ومذاق غني",
-        "100% طبيعي — بدون سكر مضاف",
-      ],
-      usageSuggestions: [
-        "على خبز البيت أو الملوي",
-        "مع الشاي المغربي والضيافة",
-        "فطور عائلي فاخر",
-      ],
-      offers: royalOffers,
-      faq: [
-        {
-          q: "مما يتكوّن أملو ملكي؟",
-          a: "خليطة مكسرات مختارة (لوز، فستق، بندق، كاجو، كركاع، جوز البرازيل، بذور يقطين)، غذاء ملكات النحل، وزيت أركان غذائي، مع عسل طبيعي في النسخة المحلّاة.",
-        },
-        {
-          q: "هل يوجد سكر مضاف؟",
-          a: "لا يوجد سكر مضاف. النسخة بالعسل تستمد حلاوتها من العسل الطبيعي، والنسخة بدون عسل بدون سكر مضاف.",
-        },
-        {
-          q: "كيف يتم الدفع والتوصيل؟",
-          a: "الدفع عند الاستلام لجميع المدن. التوصيل مجاناً لجميع العروض.",
-        },
-      ],
-      reviews: [],
-      rating: 0,
-      reviewCount: 0,
-      relatedSlugs: ["almond-amlou", "pistachio-amlou", "mixed-nuts-honey"],
-    }
-
   ];
 
   return expandCatalogWithVariants(catalog);

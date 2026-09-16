@@ -706,39 +706,137 @@ const PRODUCT_COPY: Record<
       en: "Amlou Royal",
     },
     shortDescription: {
-      ar: "خليط فاخر من المكسرات المختارة وزيت أركان — بدون سكر مضاف.",
-      fr: "Mélange premium de fruits à coque sélectionnés et d'huile d'argan — sans sucre ajouté.",
-      en: "Premium blend of selected nuts and argan oil — no added sugar.",
+      ar: "خليط فاخر من المكسرات المختارة وزيت أركان — منتوج مغربي طبيعي 100%.",
+      fr: "Mélange premium de fruits à coque sélectionnés et d'huile d'argan — produit marocain 100% naturel.",
+      en: "Premium blend of selected nuts and argan oil — 100% natural Moroccan product.",
     },
     description: {
-      ar: "أملو ملكي من تازارزيت بيو: مزيج فاخر من المكسرات المختارة وزيت أركان الغذائي.",
-      fr: "Amlou Royal de Tazarzit Bio : mélange premium de fruits à coque sélectionnés et d'huile d'argan alimentaire.",
-      en: "Amlou Royal by Tazarzit Bio: a premium blend of selected nuts and food-grade argan oil.",
+      ar: "أملو ملكي من تازارزيت بيو: خليط فاخر من المكسرات المختارة وزيت أركان، محضّر بدون مواد حافظة. قوام غني وكثيف مثالي للفطور والضيافة. الوزن الصافي للقنينة 500 غ — متوفر بعروض قنينة واحدة أو أكثر مع توصيل مجاني والدفع عند الاستلام.",
+      fr: "Amlou Royal de Tazarzit Bio : mélange premium de fruits à coque sélectionnés et d'huile d'argan, sans conservateurs. Texture riche idéale pour le petit-déjeuner et pour recevoir. Poids net 500 g par pot — packs 1, 2 ou 3 pots, livraison gratuite et paiement à la livraison.",
+      en: "Amlou Royal by Tazarzit Bio: a premium blend of selected nuts and argan oil, made without preservatives. Rich texture perfect for breakfast and hosting. Net weight 500 g per jar — available in 1, 2 or 3-jar packs with free shipping and cash on delivery.",
     },
     ingredients: [
-      { ar: "مكسرات مختارة", fr: "Fruits à coque sélectionnés", en: "Selected nuts" },
+      { ar: "لوز", fr: "Amandes", en: "Almonds" },
+      { ar: "فستق", fr: "Pistaches", en: "Pistachios" },
+      { ar: "بندق", fr: "Noisettes", en: "Hazelnuts" },
+      { ar: "جوز (كركاع)", fr: "Noix (cerneaux)", en: "Walnuts" },
+      { ar: "كاجو", fr: "Noix de cajou", en: "Cashews" },
       { ar: "زيت أركان", fr: "Huile d'argan", en: "Argan oil" },
+      { ar: "بذور اليقطين", fr: "Graines de courge", en: "Pumpkin seeds" },
+      { ar: "بذور السمسم", fr: "Graines de sésame", en: "Sesame seeds" },
+      { ar: "حبوب لقاح النحل", fr: "Pollen d'abeille", en: "Bee pollen" },
     ],
     benefits: [
       {
-        ar: "خليط فاخر 100% طبيعي",
-        fr: "Mélange premium 100% naturel",
-        en: "100% natural premium blend",
+        ar: "خليط فاخر من 8 مكسرات وبذور مختارة",
+        fr: "Mélange premium de 8 fruits à coque et graines sélectionnés",
+        en: "Premium blend of 8 selected nuts and seeds",
       },
       {
-        ar: "بدون سكر مضاف",
-        fr: "Sans sucre ajouté",
-        en: "No added sugar",
+        ar: "زيت أركان مغربي بكر",
+        fr: "Huile d'argan marocaine vierge",
+        en: "Virgin Moroccan argan oil",
+      },
+      {
+        ar: "100% طبيعي — بدون مواد حافظة",
+        fr: "100% naturel — sans conservateurs",
+        en: "100% natural — no preservatives",
+      },
+      {
+        ar: "حبوب لقاح النحل لتغذية أغنى",
+        fr: "Pollen d'abeille pour une nutrition plus riche",
+        en: "Bee pollen for richer nutrition",
+      },
+      {
+        ar: "منتوج مغربي أصيل من تازارزيت بيو",
+        fr: "Produit marocain authentique de Tazarzit Bio",
+        en: "Authentic Moroccan product by Tazarzit Bio",
       },
     ],
     usageSuggestions: [
       {
-        ar: "للفطور والضيافة",
-        fr: "Pour le petit-déjeuner et recevoir",
-        en: "For breakfast and hosting",
+        ar: "على خبز البيت أو الملوي في الفطور",
+        fr: "Sur du pain maison ou msemen au petit-déjeuner",
+        en: "On homemade bread or msemen for breakfast",
+      },
+      {
+        ar: "مع الشاي المغربي والضيافة",
+        fr: "Avec le thé marocain et pour recevoir",
+        en: "With Moroccan tea and hosting",
+      },
+      {
+        ar: "وجبة خفيفة غنية بالطاقة خلال اليوم",
+        fr: "En collation énergisante dans la journée",
+        en: "As an energizing snack during the day",
+      },
+      {
+        ar: "يُحفظ في مكان جاف وبارد بعد الفتح",
+        fr: "Conserver au sec et au frais après ouverture",
+        en: "Store in a cool, dry place after opening",
       },
     ],
-    faq: [],
+    faq: [
+      {
+        q: {
+          ar: "ما هي مكونات أملو ملكي؟",
+          fr: "Quels sont les ingrédients de l'Amlou Royal ?",
+          en: "What are the ingredients of Amlou Royal?",
+        },
+        a: {
+          ar: "لوز، فستق، بندق، جوز (كركاع)، كاجو، زيت أركان، بذور اليقطين، بذور السمسم، وحبوب لقاح النحل — كما هو مكتوب على العلبة.",
+          fr: "Amandes, pistaches, noisettes, noix, noix de cajou, huile d'argan, graines de courge, graines de sésame et pollen d'abeille — comme sur l'étiquette.",
+          en: "Almonds, pistachios, hazelnuts, walnuts, cashews, argan oil, pumpkin seeds, sesame seeds and bee pollen — as listed on the label.",
+        },
+      },
+      {
+        q: {
+          ar: "هل يحتوي على مواد حافظة؟",
+          fr: "Contient-il des conservateurs ?",
+          en: "Does it contain preservatives?",
+        },
+        a: {
+          ar: "لا. المنتج 100% طبيعي وبدون مواد حافظة.",
+          fr: "Non. Le produit est 100% naturel et sans conservateurs.",
+          en: "No. The product is 100% natural with no preservatives.",
+        },
+      },
+      {
+        q: {
+          ar: "ما هو الوزن الصافي؟",
+          fr: "Quel est le poids net ?",
+          en: "What is the net weight?",
+        },
+        a: {
+          ar: "كل قنينة 500 غ. عروض القنينتين والثلاث قنينات تعادل 1 كغ و1.5 كغ.",
+          fr: "Chaque pot pèse 500 g. Les packs 2 et 3 pots équivalent à 1 kg et 1,5 kg.",
+          en: "Each jar is 500 g. Two- and three-jar packs equal 1 kg and 1.5 kg.",
+        },
+      },
+      {
+        q: {
+          ar: "كيف أحفظه؟",
+          fr: "Comment le conserver ?",
+          en: "How should I store it?",
+        },
+        a: {
+          ar: "يُحفظ في مكان جاف وبارد، بعيداً عن الحرارة والرطوبة.",
+          fr: "Conserver dans un endroit sec et frais, à l'abri de la chaleur et de l'humidité.",
+          en: "Keep in a cool, dry place, away from heat and humidity.",
+        },
+      },
+      {
+        q: {
+          ar: "كيف يتم الدفع والتوصيل؟",
+          fr: "Comment se passent le paiement et la livraison ?",
+          en: "How do payment and delivery work?",
+        },
+        a: {
+          ar: "الدفع عند الاستلام لجميع المدن. التوصيل مجاناً لجميع عروض أملو ملكي.",
+          fr: "Paiement à la livraison dans toutes les villes. Livraison gratuite sur toutes les offres Amlou Royal.",
+          en: "Cash on delivery nationwide. Free shipping on all Amlou Royal offers.",
+        },
+      },
+    ],
   },
 };
 
@@ -752,6 +850,21 @@ const HINTS: Record<string, L10n> = {
     ar: "قيمة عائلية",
     fr: "Valeur familiale",
     en: "Family value",
+  },
+  "عناية وتجربة أولى": {
+    ar: "عناية وتجربة أولى",
+    fr: "Pour découvrir",
+    en: "Try it first",
+  },
+  "اختيار الأكثر طلباً": {
+    ar: "اختيار الأكثر طلباً",
+    fr: "Le plus demandé",
+    en: "Most popular choice",
+  },
+  "أفضل قيمة": {
+    ar: "أفضل قيمة",
+    fr: "Meilleure valeur",
+    en: "Best value",
   },
 };
 

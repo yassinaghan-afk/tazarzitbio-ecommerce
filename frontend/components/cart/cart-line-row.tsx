@@ -12,6 +12,7 @@ import {
   localizeLineName,
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
+import { getProductShopPath } from "@/lib/products/amlou-royal";
 
 interface CartLineRowProps {
   item: CartLineItem;
@@ -31,6 +32,7 @@ export function CartLineRow({
   const imageSize = compact ? "h-12 w-12" : "h-16 w-16";
   const displayName = localizeLineName(item.slug, item.nameAr, locale);
   const displayOffer = localizeWeightLabel(item.offerLabel, locale);
+  const productHref = getProductShopPath(item.slug);
 
   const imageBlock = (
     <div
@@ -49,7 +51,7 @@ export function CartLineRow({
   return (
     <li className="flex gap-3">
       {linkToProduct ? (
-        <Link href={`/products/${item.slug}`} className="shrink-0">
+        <Link href={productHref} className="shrink-0">
           {imageBlock}
         </Link>
       ) : (
@@ -59,7 +61,7 @@ export function CartLineRow({
       <div className="min-w-0 flex-1">
         {linkToProduct ? (
           <Link
-            href={`/products/${item.slug}`}
+            href={productHref}
             className="line-clamp-2 text-sm font-bold text-foreground hover:text-accent"
           >
             {displayName}

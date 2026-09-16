@@ -13,6 +13,7 @@ import {
   localizeProductName,
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
+import { getProductShopPath } from "@/lib/products/amlou-royal";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products/types";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ export function HoneyUpsellCard({
 }: HoneyUpsellCardProps) {
   const { t, locale } = useTranslation();
   const { addToCart, orderNow } = useCommerce();
-  const productHref = `/products/${product.slug}`;
+  const productHref = getProductShopPath(product.slug);
   const [selectedOfferId, setSelectedOfferId] = useState(
     () => product.offers[0]?.id ?? "",
   );
