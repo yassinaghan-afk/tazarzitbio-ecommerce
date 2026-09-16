@@ -29,9 +29,24 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   openGraph: {
     type: "website",
     locale: "ar_MA",
+    title: "تازارزيت بيو | 100% طبيعي من قلب سوس",
+    description:
+      "أملو، زيت أركان، عسل، ومكسرات مختارة من سوس — الدفع عند الاستلام.",
+    images: [
+      {
+        url: "/brand/tazarzitbio-logo.png",
+        alt: "تازارزيت بيو",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
     title: "تازارزيت بيو | 100% طبيعي من قلب سوس",
     description:
       "أملو، زيت أركان، عسل، ومكسرات مختارة من سوس — الدفع عند الاستلام.",

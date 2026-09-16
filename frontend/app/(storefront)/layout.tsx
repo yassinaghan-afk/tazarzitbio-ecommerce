@@ -2,6 +2,11 @@ import { CommerceShell } from "@/components/commerce/commerce-shell";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import {
+  JsonLd,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo/json-ld";
 
 /**
  * Public storefront layout — header, announcement, cart, footer.
@@ -14,6 +19,8 @@ export default async function StorefrontLayout({
   const store = await readStore();
   return (
     <CommerceShell>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
       <SiteHeader cmsNav={store.navigation.header} />
       <AnnouncementBar />
       <main className="max-w-full overflow-x-hidden pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">
