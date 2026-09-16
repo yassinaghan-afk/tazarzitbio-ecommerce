@@ -1,8 +1,10 @@
-/** Public storefront pin — Agadir (visible on Google Maps / GBP). */
+/** Public storefront pin — Agadir (visible on Google Maps / GBP).
+ * Source: 30°24'41.9"N 9°34'45.5"W
+ */
 export const BUSINESS_LOCATION = {
   mapsUrl: "https://maps.app.goo.gl/SzzRmwz9iD1UMTVz9",
-  latitude: 30.4116359,
-  longitude: -9.5793147,
+  latitude: 30.4116389,
+  longitude: -9.5793056,
   streetAddress: "Avenue Abderrahim Bouabid",
   addressLocality: "Agadir",
   addressRegion: "Souss-Massa",
