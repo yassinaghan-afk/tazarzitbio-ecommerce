@@ -54,6 +54,15 @@ export function SiteFooter({
                   : "أدلة",
             href: "/guide",
           },
+          {
+            label:
+              locale === "fr"
+                ? "Produits pour touristes"
+                : locale === "en"
+                  ? "For tourists"
+                  : "للسيّاح",
+            href: "/authentic-moroccan-products",
+          },
         ];
 
   const whatsappDigits = (settings?.whatsapp ?? "212642370050").replace(/\D/g, "");

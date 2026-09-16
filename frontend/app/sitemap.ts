@@ -12,6 +12,7 @@ import { getMergedCatalog } from "@/lib/products/cms-catalog";
 import { getListingProducts } from "@/lib/products/listing";
 import { AMLOU_CITIES, amlouCityPath } from "@/lib/seo/amlou-cities";
 import { SITE_URL, SEO_LOCALES, localizedPath } from "@/lib/seo/locale";
+import { TOURIST_HUB_PATH } from "@/lib/seo/tourist-hub";
 
 function entry(
   path: string,
@@ -39,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/products", priority: 0.9, freq: "daily" as const },
     { path: AMLOU_ROYAL_SHOP_PATH, priority: 0.95, freq: "weekly" as const },
     { path: "/amlou", priority: 0.95, freq: "weekly" as const },
+    { path: TOURIST_HUB_PATH, priority: 0.9, freq: "weekly" as const },
     { path: "/guide", priority: 0.75, freq: "monthly" as const },
     { path: "/guide/amlou", priority: 0.8, freq: "monthly" as const },
     { path: "/guide/huile-argan", priority: 0.75, freq: "monthly" as const },
