@@ -64,6 +64,11 @@ export function RoyalLandingPage() {
   }, []);
 
   function openOrderFlow() {
+    const order = document.getElementById("order");
+    if (order) {
+      order.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     setOrderOpen(true);
   }
 
