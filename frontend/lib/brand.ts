@@ -3,7 +3,7 @@ export const BRAND_LOGO_SVG = "/brand/tazarzitbio-logo.svg";
 export const BRAND_LOGO_PNG = "/brand/tazarzitbio-logo.png";
 /** Primary logo — PNG today; add public/brand/tazarzitbio-logo.svg to auto-upgrade */
 export const BRAND_LOGO_SRC = BRAND_LOGO_PNG;
-export const BRAND_NAME = "TazarzitBio";
+export const BRAND_NAME = "Tazarzit Bio";
 export const BRAND_TAGLINE_AR = "من قلب سوس";
 
 /** Intrinsic dimensions of logo asset (portrait) */

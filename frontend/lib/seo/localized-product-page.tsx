@@ -37,7 +37,7 @@ function shopPathForSlug(slug: string): string {
 export async function localizedProductStaticParams() {
   const catalog = await getMergedCatalog();
   return catalog
-    .filter((p) => p.slug !== FAMILY_PACK_SLUG)
+    .filter((p) => p.slug !== FAMILY_PACK_SLUG && p.slug !== AMLOU_ROYAL_SLUG)
     .map((p) => ({ slug: p.slug }));
 }
 
@@ -49,6 +49,14 @@ export async function localizedProductMetadata(
     return {
       title:
         locale === "fr" ? "Produits" : locale === "en" ? "Products" : "المنتجات",
+    };
+  }
+  if (slug === AMLOU_ROYAL_SLUG) {
+    return {
+      title: { absolute: "أملو ملكي | Tazarzit Bio" },
+      alternates: {
+        canonical: localizedPath(locale, AMLOU_ROYAL_SHOP_PATH),
+      },
     };
   }
   const product = await getMergedProductBySlug(slug);
@@ -71,6 +79,7 @@ export async function localizedProductMetadata(
     product: publicProduct,
     locale,
     path,
+    // CMS SEO fields are Arabic today; apply on AR, keep generated FR/EN
     seoTitle: locale === "ar" ? seoTitle : undefined,
     seoDescription: locale === "ar" ? seoDescription : undefined,
   });
@@ -86,6 +95,10 @@ export async function LocalizedProductPage({
   if (slug === FAMILY_PACK_SLUG) {
     redirect(localizedPath(locale, "/products"));
   }
+  // Soft-duplicate URL: always canonicalize to /amlouroyal
+  if (slug === AMLOU_ROYAL_SLUG) {
+    redirect(localizedPath(locale, AMLOU_ROYAL_SHOP_PATH));
+  }
   const product = await getMergedProductBySlug(slug);
   if (!product) notFound();
 
@@ -98,6 +111,18 @@ export async function LocalizedProductPage({
   const productsLabel =
     locale === "fr" ? "Produits" : locale === "en" ? "Products" : "المنتجات";
   const name = localizeProductName(publicProduct, locale);
+  const categoryLabel =
+    publicProduct.category === "amlou"
+      ? locale === "fr"
+        ? "Amlou"
+        : locale === "en"
+          ? "Amlou"
+          : "أملو"
+      : null;
+  const categoryPath =
+    publicProduct.category === "amlou"
+      ? localizedPath(locale, "/amlou")
+      : null;
 
   return (
     <>
@@ -106,6 +131,9 @@ export async function LocalizedProductPage({
         data={breadcrumbJsonLd([
           { name: homeLabel, path: localizedPath(locale, "/") },
           { name: productsLabel, path: localizedPath(locale, "/products") },
+          ...(categoryLabel && categoryPath
+            ? [{ name: categoryLabel, path: categoryPath }]
+            : []),
           { name, path: localizedPathForLd },
         ])}
       />

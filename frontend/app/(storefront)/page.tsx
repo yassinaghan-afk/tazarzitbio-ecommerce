@@ -13,12 +13,13 @@ import { ReviewSection } from "@/components/home/review-section";
 import { StorySection } from "@/components/home/story-section";
 import { TrustBadges } from "@/components/home/trust-badges";
 import type { HomeSectionId } from "@/lib/admin/cms-types";
-import { DEFAULT_HOME_FAQS_AR } from "@/lib/seo/default-faqs";
+import { getDefaultHomeFaqs } from "@/lib/seo/default-faqs";
 import { faqPageJsonLd, JsonLd } from "@/lib/seo/json-ld";
 import {
   hreflangLanguages,
   MOROCCO_PRODUCT_KEYWORDS,
 } from "@/lib/seo/locale";
+import { getRequestLocale } from "@/lib/seo/request-locale";
 import { readStore } from "@/lib/server/store";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -58,6 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const store = await readStore();
+  const locale = await getRequestLocale();
 
   const cmsReviews = store.reviews.filter((r) => r.isApproved && !r.productSlug);
   const cmsFaqs = store.faqs
@@ -66,8 +68,17 @@ export default async function HomePage() {
 
   const faqSchemaItems =
     cmsFaqs.length > 0
-      ? cmsFaqs.map((f) => ({ q: f.questionAr, a: f.answerAr }))
-      : [...DEFAULT_HOME_FAQS_AR];
+      ? cmsFaqs.map((f) => ({
+          q:
+            (locale === "fr" || locale === "en") && f.questionFr
+              ? f.questionFr
+              : f.questionAr,
+          a:
+            (locale === "fr" || locale === "en") && f.answerFr
+              ? f.answerFr
+              : f.answerAr,
+        }))
+      : getDefaultHomeFaqs(locale);
 
   const sections: Record<HomeSectionId, ReactNode> = {
     hero: <HeroSection />,
@@ -79,7 +90,12 @@ export default async function HomePage() {
     reviews: <ReviewSection cmsReviews={cmsReviews} />,
     ingredients: <IngredientsSection />,
     lifestyle: <LifestyleSection />,
-    faq: <FaqSection cmsFaqs={cmsFaqs} whatsappDigits={store.siteSettings.whatsapp} />,
+    faq: (
+      <FaqSection
+        cmsFaqs={cmsFaqs}
+        whatsappDigits={store.siteSettings.whatsapp}
+      />
+    ),
     cta: <CtaSection />,
   };
 

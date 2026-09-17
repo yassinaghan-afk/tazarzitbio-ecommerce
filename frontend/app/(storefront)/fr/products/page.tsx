@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 
+import { CatalogFaqSection } from "@/components/catalog/catalog-faq-section";
 import { ProductsCatalog } from "@/components/catalog/products-catalog";
 import { ProductsPageHero } from "@/components/catalog/products-page-hero";
+import { getCatalogFaqs } from "@/lib/seo/default-faqs";
+import { faqPageJsonLd, JsonLd } from "@/lib/seo/json-ld";
 import {
   hreflangLanguages,
   MOROCCO_PRODUCT_KEYWORDS,
 } from "@/lib/seo/locale";
 
 export const metadata: Metadata = {
-  title: "Nos produits | Amlou, miel, argan — Maroc",
+  title: {
+    absolute: "Nos produits | Amlou, miel, argan — Maroc | Tazarzit Bio",
+  },
   description:
     "Achetez Amlou, miel naturel, huile d'argan et fruits à coque du Souss. Livraison au Maroc et paiement à la livraison — Tazarzit Bio.",
   keywords: [...MOROCCO_PRODUCT_KEYWORDS.fr],
@@ -28,8 +33,10 @@ export const metadata: Metadata = {
 export default function FrProductsPage() {
   return (
     <>
+      <JsonLd data={faqPageJsonLd(getCatalogFaqs("fr"))} />
       <ProductsPageHero />
       <ProductsCatalog />
+      <CatalogFaqSection />
     </>
   );
 }

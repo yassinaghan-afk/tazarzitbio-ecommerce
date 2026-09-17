@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Container, Section } from "@/components/layout/container";
-import { breadcrumbJsonLd, JsonLd } from "@/lib/seo/json-ld";
+import { getGuideIndexFaqs } from "@/lib/seo/default-faqs";
+import { breadcrumbJsonLd, faqPageJsonLd, JsonLd } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "أدلة تازارزيت بيو | أملو، أركان، عسل",
+  title: { absolute: "أدلة تازارزيت بيو | أملو، أركان، عسل" },
   description:
     "أدلة مختصرة عن الأملو وزيت الأركان والعسل الطبيعي من سوس — لفهم المنتج قبل الشراء، مع التوصيل والدفع عند الاستلام في المغرب.",
   alternates: { canonical: "/guide" },
@@ -46,6 +47,7 @@ const GUIDES = [
 ] as const;
 
 export default function GuideIndexPage() {
+  const guideFaqs = getGuideIndexFaqs("ar");
   return (
     <>
       <JsonLd
@@ -54,6 +56,7 @@ export default function GuideIndexPage() {
           { name: "أدلة", path: "/guide" },
         ])}
       />
+      <JsonLd data={faqPageJsonLd(guideFaqs)} />
       <Section spacing="lg" className="relative overflow-hidden">
         <div
           aria-hidden
@@ -88,6 +91,22 @@ export default function GuideIndexPage() {
               </li>
             ))}
           </ul>
+
+          <section className="mt-16 border-t border-border/70 pt-10" aria-labelledby="guide-faq">
+            <h2 id="guide-faq" className="text-xl font-bold text-foreground">
+              أسئلة شائعة عن الأدلة
+            </h2>
+            <dl className="mt-6 space-y-6">
+              {guideFaqs.map((faq) => (
+                <div key={faq.q}>
+                  <dt className="font-semibold text-foreground">{faq.q}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {faq.a}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         </Container>
       </Section>
     </>

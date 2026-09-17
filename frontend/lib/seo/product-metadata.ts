@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import {
+  localizeProductDescription,
   localizeProductFaq,
   localizeProductName,
   localizeProductShortDescription,
@@ -15,10 +16,35 @@ import {
   ogLocale,
 } from "@/lib/seo/locale";
 
+const META_DESC_MAX = 158;
+
 function moroccoSuffix(locale: Language): string {
-  if (locale === "fr") return "Livraison Maroc · Paiement à la livraison";
-  if (locale === "en") return "Morocco delivery · Cash on delivery";
-  return "توصيل المغرب · الدفع عند الاستلام";
+  if (locale === "fr") return "Livraison Maroc · Paiement à la livraison.";
+  if (locale === "en") return "Morocco delivery · Cash on delivery.";
+  return "توصيل المغرب · الدفع عند الاستلام.";
+}
+
+/** Prefer unique long copy for SERP; fall back to short + Morocco intent. */
+export function buildProductMetaDescription(
+  product: PublicProduct,
+  locale: Language,
+  seoDescription?: string,
+): string {
+  const custom = seoDescription?.trim();
+  if (custom) return clipMeta(custom);
+
+  const long = localizeProductDescription(product, locale).trim();
+  const short = localizeProductShortDescription(product, locale).trim();
+  const base = long.length >= 80 ? long : `${short} ${moroccoSuffix(locale)}`.trim();
+  return clipMeta(base);
+}
+
+function clipMeta(text: string): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= META_DESC_MAX) return clean;
+  const sliced = clean.slice(0, META_DESC_MAX - 1);
+  const cut = sliced.lastIndexOf(" ");
+  return `${(cut > 80 ? sliced.slice(0, cut) : sliced).trim()}…`;
 }
 
 export function buildProductSeoMetadata(input: {
@@ -31,7 +57,6 @@ export function buildProductSeoMetadata(input: {
 }): Metadata {
   const { product, locale, path, seoTitle, seoDescription } = input;
   const name = localizeProductName(product, locale);
-  const short = localizeProductShortDescription(product, locale);
   const title =
     seoTitle?.trim() ||
     (locale === "fr"
@@ -39,14 +64,17 @@ export function buildProductSeoMetadata(input: {
       : locale === "en"
         ? `${name} — Buy in Morocco | Tazarzit Bio`
         : `${name} — شراء أونلاين المغرب | تازارزيت بيو`);
-  const description =
-    seoDescription?.trim() ||
-    `${short} ${moroccoSuffix(locale)}`.trim();
+  const description = buildProductMetaDescription(
+    product,
+    locale,
+    seoDescription,
+  );
 
   const canonical = localizedPath(locale, path);
 
   return {
-    title,
+    // absolute avoids double brand from root layout template `%s | تازارزيت بيو`
+    title: { absolute: title },
     description,
     keywords: [...MOROCCO_PRODUCT_KEYWORDS[locale], name],
     alternates: {

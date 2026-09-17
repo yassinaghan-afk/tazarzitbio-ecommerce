@@ -1,5 +1,6 @@
 import type { SiteSettings } from "@/lib/admin/cms-types";
 import {
+  localizeProductDescription,
   localizeProductName,
   localizeProductShortDescription,
 } from "@/lib/i18n/product-locale";
@@ -21,11 +22,12 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
     BUSINESS_LOCATION.mapsUrl,
   ].filter((url): url is string => Boolean(url?.trim()));
 
-  const phone = settings?.phone?.trim();
+  const phone = settings?.phone?.trim() || "+212 642 370 050";
   const email = settings?.email?.trim();
-  const whatsapp = settings?.whatsapp?.replace(/\D/g, "");
+  const whatsapp = (settings?.whatsapp || "212642370050").replace(/\D/g, "");
   const addressText =
     settings?.address?.trim() || BUSINESS_LOCATION.addressDisplayFr;
+  const hours = settings?.supportHours?.trim();
 
   return {
     "@context": "https://schema.org",
@@ -37,6 +39,9 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
     description:
       settings?.seoDescription?.trim() ||
       "منتجات مغربية طبيعية فاخرة من قلب سوس — أملو، زيت أركان، عسل ومكسرات. الدفع عند الاستلام.",
+    telephone: phone,
+    priceRange: "$$",
+    ...(hours ? { openingHours: hours } : {}),
     areaServed: {
       "@type": "Country",
       name: settings?.country?.trim() || "Morocco",
@@ -56,32 +61,90 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
     },
     hasMap: BUSINESS_LOCATION.mapsUrl,
     ...(sameAs.length ? { sameAs } : {}),
-    ...(phone || email || whatsapp
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      availableLanguage: ["ar", "fr", "en"],
+      telephone: phone,
+      ...(email ? { email } : {}),
+      url: `https://wa.me/${whatsapp}`,
+    },
+    ...(addressText
       ? {
-          contactPoint: {
-            "@type": "ContactPoint",
-            contactType: "customer service",
-            availableLanguage: ["ar", "fr", "en"],
-            ...(phone ? { telephone: phone } : {}),
-            ...(email ? { email } : {}),
-            ...(whatsapp
-              ? { url: `https://wa.me/${whatsapp}` }
-              : {}),
+          foundingLocation: {
+            "@type": "Place",
+            name: addressText,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: BUSINESS_LOCATION.addressLocality,
+              addressRegion: BUSINESS_LOCATION.addressRegion,
+              addressCountry: BUSINESS_LOCATION.addressCountry,
+            },
           },
         }
       : {}),
-    ...(addressText ? { foundingLocation: addressText } : {}),
   };
 }
 
-export function websiteJsonLd() {
+export function websiteJsonLd(settings?: SiteSettings | null) {
+  const brand = settings?.brandName?.trim() || "Tazarzit Bio";
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Tazarzit Bio",
+    name: brand,
     alternateName: "تازارزيت بيو",
     url: SITE_URL,
     inLanguage: ["ar-MA", "fr-MA", "en"],
+    publisher: {
+      "@type": "Organization",
+      name: brand,
+      url: SITE_URL,
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_URL}/products?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+export function aboutPageJsonLd(input: {
+  name: string;
+  description: string;
+  path: string;
+  locale: Language;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: input.name,
+    description: input.description,
+    url: absoluteUrl(input.path),
+    inLanguage:
+      input.locale === "ar" ? "ar-MA" : input.locale === "fr" ? "fr-MA" : "en",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Tazarzit Bio",
+      url: SITE_URL,
+    },
+    mainEntity: {
+      "@type": "Organization",
+      name: "Tazarzit Bio",
+      alternateName: "تازارزيت بيو",
+      url: SITE_URL,
+      telephone: "+212 642 370 050",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: BUSINESS_LOCATION.streetAddress,
+        addressLocality: BUSINESS_LOCATION.addressLocality,
+        addressRegion: BUSINESS_LOCATION.addressRegion,
+        postalCode: BUSINESS_LOCATION.postalCode,
+        addressCountry: BUSINESS_LOCATION.addressCountry,
+      },
+    },
   };
 }
 
@@ -125,13 +188,21 @@ export function productJsonLd(
   locale: Language = "ar",
 ) {
   const name = localizeProductName(product, locale);
-  const description = localizeProductShortDescription(product, locale);
+  const longDescription = localizeProductDescription(product, locale).trim();
+  const shortDescription = localizeProductShortDescription(product, locale).trim();
+  const description =
+    longDescription.length >= 40 ? longDescription : shortDescription;
+  const materialJoin = locale === "ar" ? "، " : ", ";
+  const hasOffers = product.offers.length > 0;
+  const availability = hasOffers
+    ? "https://schema.org/InStock"
+    : "https://schema.org/OutOfStock";
   const offers = product.offers.map((offer) => ({
     "@type": "Offer",
     url: absoluteUrl(path),
     priceCurrency: "MAD",
     price: offer.price,
-    availability: "https://schema.org/InStock",
+    availability,
     itemCondition: "https://schema.org/NewCondition",
     name: offer.label,
     areaServed: {
@@ -175,7 +246,7 @@ export function productJsonLd(
       name: "Morocco",
     },
     ...(product.ingredients.length
-      ? { material: product.ingredients.join("، ") }
+      ? { material: product.ingredients.join(materialJoin) }
       : {}),
     offers:
       offers.length === 1

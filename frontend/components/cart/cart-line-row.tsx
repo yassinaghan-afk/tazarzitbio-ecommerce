@@ -13,6 +13,7 @@ import {
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
 import { getProductShopPath } from "@/lib/products/amlou-royal";
+import { localizedPath } from "@/lib/seo/locale";
 import { cn } from "@/lib/utils";
 
 interface CartLineRowProps {
@@ -33,7 +34,7 @@ export function CartLineRow({
   const imageSize = compact ? "h-12 w-12" : "h-16 w-16";
   const displayName = localizeLineName(item.slug, item.nameAr, locale);
   const displayOffer = localizeWeightLabel(item.offerLabel, locale);
-  const productHref = getProductShopPath(item.slug);
+  const productHref = localizedPath(locale, getProductShopPath(item.slug));
 
   const imageBlock = (
     <div

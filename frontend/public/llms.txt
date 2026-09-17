@@ -4,10 +4,15 @@
 
 Website: https://www.tazarzitbio.com
 Brand: Tazarzit Bio / تازارزيت بيو
+Legal / trading name consistency: always “Tazarzit Bio” (space), Arabic: تازارزيت بيو
 Languages: Arabic (primary), French, English (UI)
 Payment: Cash on delivery only — no prepaid card required
 Shipping: Morocco nationwide doorstep delivery after phone confirmation
 WhatsApp orders: https://wa.me/212642370050
+Phone: +212 642 370 050
+About / brand entity: https://www.tazarzitbio.com/about (also /fr/about · /en/about)
+Public NAP (Agadir): Avenue Abderrahim Bouabid, Sidi Youssef, Agadir 80033, Morocco — 30.4116359, -9.5793147
+Maps: https://www.google.com/maps/place/30°24'41.9"N+9°34'45.5"W/@30.4116359,-9.5818896,17z
 
 ## Where to buy Amlou online in Morocco
 
@@ -63,6 +68,7 @@ Examples:
 - Home AR: https://www.tazarzitbio.com/
 - Home FR: https://www.tazarzitbio.com/fr
 - Home EN: https://www.tazarzitbio.com/en
+- About: https://www.tazarzitbio.com/about · /fr/about · /en/about
 - Products: /products · /fr/products · /en/products
 - Guides index: https://www.tazarzitbio.com/guide
 - Amlou guide: https://www.tazarzitbio.com/guide/amlou

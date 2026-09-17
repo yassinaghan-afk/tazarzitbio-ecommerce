@@ -25,6 +25,7 @@ import {
   localizeProductShortDescription,
   localizeWeightLabel,
 } from "@/lib/i18n/product-locale";
+import { localizedPath } from "@/lib/seo/locale";
 import { cn } from "@/lib/utils";
 
 interface CatalogProductCardProps {
@@ -48,7 +49,7 @@ export function CatalogProductCard({
   const [weightMode, setWeightMode] = useState<"order" | "cart">("order");
   const startingOffer = getStartingOffer(product);
   const fromPrice = startingOffer.price;
-  const productHref = getProductShopPath(product.slug);
+  const productHref = localizedPath(locale, getProductShopPath(product.slug));
   const hasVariants = product.offers.length > 1;
   const orderOnlyCard = !showAddToCart;
   const displayName = localizeProductName(product, locale);

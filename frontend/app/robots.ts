@@ -14,6 +14,20 @@ const disallow = [
   "/royalfr/thank-you",
 ];
 
+const aiAllow = ["/", "/about", "/guide", "/amlou", "/llms.txt", "/sitemap.xml"];
+
+const aiAgents = [
+  "GPTBot",
+  "ChatGPT-User",
+  "PerplexityBot",
+  "Google-Extended",
+  "ClaudeBot",
+  "anthropic-ai",
+  "Amazonbot",
+  "Bytespider",
+  "CCBot",
+] as const;
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -22,26 +36,11 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow,
       },
-      {
-        userAgent: "GPTBot",
-        allow: ["/", "/guide", "/llms.txt", "/sitemap.xml"],
+      ...aiAgents.map((userAgent) => ({
+        userAgent,
+        allow: aiAllow,
         disallow,
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: ["/", "/guide", "/llms.txt", "/sitemap.xml"],
-        disallow,
-      },
-      {
-        userAgent: "PerplexityBot",
-        allow: ["/", "/guide", "/llms.txt", "/sitemap.xml"],
-        disallow,
-      },
-      {
-        userAgent: "Google-Extended",
-        allow: ["/", "/guide", "/llms.txt", "/sitemap.xml"],
-        disallow,
-      },
+      })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

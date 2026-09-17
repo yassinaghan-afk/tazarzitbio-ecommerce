@@ -44,10 +44,10 @@ export function SiteFooter({
     cmsInfo.length > 0
       ? cmsInfo.map((l) => ({ label: pickNavLabel(l, locale), href: l.href }))
       : [
-          { label: t("footer.about"), href: "/#story" },
-          { label: t("footer.delivery"), href: "/products" },
-          { label: t("footer.returns"), href: "/products" },
-          { label: t("nav.faq"), href: "/#faq" },
+          { label: t("footer.about"), href: localizedPath(locale, "/about") },
+          { label: t("footer.delivery"), href: localizedPath(locale, "/products") },
+          { label: t("footer.returns"), href: localizedPath(locale, "/products") },
+          { label: t("nav.faq"), href: localizedPath(locale, "/#faq") },
           {
             label:
               locale === "fr"
@@ -55,7 +55,7 @@ export function SiteFooter({
                 : locale === "en"
                   ? "Guides"
                   : "أدلة",
-            href: "/guide",
+            href: localizedPath(locale, "/guide"),
           },
           {
             label:

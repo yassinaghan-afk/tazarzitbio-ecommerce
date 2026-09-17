@@ -33,9 +33,9 @@ const PRODUCT_COPY: Record<
       en: "Hand-ground almond paste with pure honey and argan oil — authentic Souss taste.",
     },
     description: {
-      ar: "أملو باللوز من تازارزيت بيو يُحضّر بطريقة تقليدية من لوز محلي وعسل طبيعي وزيت أركان بكر. متوفر بعدة أحجام لتناسب الفرد والعائلة.",
-      fr: "L'Amlou aux amandes de Tazarzit Bio est préparé traditionnellement avec des amandes locales, du miel naturel et de l'huile d'argan vierge. Plusieurs formats pour vous ou toute la famille.",
-      en: "Tazarzit Bio almond amlou is traditionally made with local almonds, natural honey and virgin argan oil. Available in several sizes for individuals and families.",
+      ar: "أملو باللوز من تازارزيت بيو يُحضّر بطريقة تقليدية من لوز محلي مطحون وعسل طبيعي وزيت أركان بكر من سوس. قوام كريمي غني مناسب للفطور والضيافة، بدون مواد حافظة. متوفر بأحجام 250 غ و500 غ و750 غ مع توصيل لجميع مدن المغرب والدفع عند الاستلام.",
+      fr: "L'Amlou aux amandes de Tazarzit Bio est préparé traditionnellement avec des amandes locales moulues, du miel naturel et de l'huile d'argan vierge du Souss. Texture crémeuse idéale au petit-déjeuner et pour recevoir, sans conservateurs. Formats 250 g, 500 g et 750 g — livraison partout au Maroc, paiement à la livraison.",
+      en: "Tazarzit Bio almond amlou is traditionally made with ground local almonds, natural honey and virgin Souss argan oil. A rich creamy texture for breakfast and hosting, with no preservatives. Available in 250 g, 500 g and 750 g — nationwide Morocco delivery and cash on delivery.",
     },
     ingredients: [
       { ar: "لوز محلي", fr: "Amandes locales", en: "Local almonds" },
@@ -139,9 +139,9 @@ const PRODUCT_COPY: Record<
       en: "Premium green pistachios with honey and argan oil — refined taste and natural color.",
     },
     description: {
-      ar: "أملو بالفستق يجمع حبات الفستق المغربي مع عسل سوس وزيت أركان. تحضير حرفي يحافظ على النكهة واللون الطبيعي.",
-      fr: "L'Amlou à la pistache allie pistaches marocaines, miel du Souss et huile d'argan. Une préparation artisanale qui préserve le goût et la couleur naturelle.",
-      en: "Pistachio amlou combines Moroccan pistachios with Souss honey and argan oil. Artisanal preparation that preserves natural taste and color.",
+      ar: "أملو بالفستق من تازارزيت بيو يجمع حبات الفستق الفاخرة مع عسل سوس وزيت أركان بكر. تحضير حرفي يحافظ على اللون الأخضر والنكهة الراقية، بدون مواد حافظة. مثالي لمن يبحث عن أملو فستق طبيعي للشراء أونلاين في المغرب مع الدفع عند الاستلام.",
+      fr: "L'Amlou à la pistache de Tazarzit Bio allie pistaches premium, miel du Souss et huile d'argan vierge. Préparation artisanale qui préserve la couleur verte et le goût raffiné, sans conservateurs. Idéal pour acheter de l'amlou pistache authentique en ligne au Maroc avec paiement à la livraison.",
+      en: "Tazarzit Bio pistachio amlou combines premium pistachios with Souss honey and virgin argan oil. Artisanal preparation that keeps the green color and refined taste, with no preservatives. Ideal if you want to buy authentic pistachio amlou online in Morocco with cash on delivery.",
     },
     ingredients: [
       { ar: "فستق طبيعي", fr: "Pistaches naturelles", en: "Natural pistachios" },
@@ -233,9 +233,9 @@ const PRODUCT_COPY: Record<
       en: "Cold-pressed virgin argan oil — for face, body and hair.",
     },
     description: {
-      ar: "زيت أركان تازارزيت بيو معصور على البارد من لوز الأركان المغربي. مناسب للعناية اليومية بالبشرة والشعر، بجودة غذائية/تجميلية حسب الاستخدام.",
-      fr: "L'huile d'argan Tazarzit Bio est pressée à froid à partir d'amandons d'argan marocains. Idéale pour le soin quotidien de la peau et des cheveux.",
-      en: "Tazarzit Bio argan oil is cold-pressed from Moroccan argan kernels. Ideal for daily skin and hair care.",
+      ar: "زيت أركان تازارزيت بيو معصور على البارد من لوز الأركان المغربي الأصيل. غني بفيتامين E ومناسب للعناية اليومية بالبشرة والشعر والجسم. منتج طبيعي 100% من سوس، يمكن طلبه أونلاين مع توصيل لجميع المدن والدفع عند الاستلام.",
+      fr: "L'huile d'argan Tazarzit Bio est pressée à froid à partir d'amandons d'argan marocains authentiques. Riche en vitamine E, idéale pour le soin quotidien de la peau, des cheveux et du corps. Produit 100% naturel du Souss — commande en ligne, livraison nationale et paiement à la livraison.",
+      en: "Tazarzit Bio argan oil is cold-pressed from authentic Moroccan argan kernels. Rich in vitamin E and ideal for daily face, hair and body care. A 100% natural Souss product you can order online with nationwide delivery and cash on delivery.",
     },
     ingredients: [
       {
@@ -317,9 +317,9 @@ const PRODUCT_COPY: Record<
       en: "Almonds, walnuts and pistachios with dense natural honey — crunch and golden honey.",
     },
     description: {
-      ar: "مزيج مكسرات مختار يدوياً مع عسل طبيعي من سوس. مثالي للضيافة والوجبات الخفيفة.",
-      fr: "Mélange de fruits secs sélectionnés à la main avec du miel naturel du Souss. Idéal pour recevoir et grignoter.",
-      en: "Hand-selected nut mix with natural Souss honey. Ideal for hosting and snacking.",
+      ar: "مكسرات بالعسل من تازارزيت بيو: لوز وجوز وفستق مختار يدوياً مع عسل طبيعي كثيف من سوس. بدون سكر مضاف — قرمشة وعسل ذهبي مثالي للضيافة والفطور. اطلب أونلاين مع توصيل لجميع مدن المغرب والدفع عند الاستلام.",
+      fr: "Fruits secs au miel Tazarzit Bio : amandes, noix et pistaches sélectionnées à la main avec un miel naturel dense du Souss. Sans sucre ajouté — croquant et miel doré pour recevoir et le petit-déjeuner. Commande en ligne, livraison nationale, paiement à la livraison.",
+      en: "Tazarzit Bio honey nuts: hand-selected almonds, walnuts and pistachios with dense natural Souss honey. No added sugar — crunch and golden honey for hosting and breakfast. Order online with nationwide Morocco delivery and cash on delivery.",
     },
     ingredients: [
       { ar: "لوز", fr: "Amandes", en: "Almonds" },

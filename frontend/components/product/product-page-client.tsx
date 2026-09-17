@@ -33,6 +33,7 @@ import { useCatalogProduct } from "@/hooks/use-catalog";
 import { fadeUp } from "@/lib/animations";
 import type { PublicProduct, PublicProductOffer } from "@/lib/products";
 import { getBadgeLabel } from "@/lib/i18n/badges";
+import { getCategoryLabel } from "@/lib/i18n/category-labels";
 import { useTranslation } from "@/lib/i18n/language-provider";
 import {
   localizeOfferHint,
@@ -47,6 +48,7 @@ import {
 import { localizeReviewFields } from "@/lib/i18n/review-locale";
 import { getRelatedProducts } from "@/lib/products";
 import { AMLOU_ROYAL_SLUG } from "@/lib/products/amlou-royal";
+import { localizedPath } from "@/lib/seo/locale";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/tracking/events";
 
@@ -139,19 +141,37 @@ export function ProductPageClient({
     product.relatedSlugs.filter((s) => s !== product.slug),
   );
   const showSizePicker = product.offers.length > 1;
+  const homeHref = localizedPath(locale, "/");
+  const productsHref = localizedPath(locale, "/products");
+  const showCategoryCrumb = product.category === "amlou";
+  const categoryHref = showCategoryCrumb
+    ? localizedPath(locale, "/amlou")
+    : productsHref;
+  const categoryLabel = getCategoryLabel(product.category, locale);
 
   return (
     <>
       <Section spacing="md" className="texture-grain pb-28 lg:pb-16">
         <Container>
-          <nav className="mb-8 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-accent">
+          <nav
+            className="mb-8 text-sm text-muted-foreground"
+            aria-label="Breadcrumb"
+          >
+            <Link href={homeHref} className="hover:text-accent">
               {t("product.home")}
             </Link>
             <span className="mx-2">{t("common.breadcrumbSep")}</span>
-            <Link href="/products" className="hover:text-accent">
+            <Link href={productsHref} className="hover:text-accent">
               {t("product.products")}
             </Link>
+            {showCategoryCrumb ? (
+              <>
+                <span className="mx-2">{t("common.breadcrumbSep")}</span>
+                <Link href={categoryHref} className="hover:text-accent">
+                  {categoryLabel}
+                </Link>
+              </>
+            ) : null}
             <span className="mx-2">{t("common.breadcrumbSep")}</span>
             <span className="text-foreground">{displayName}</span>
           </nav>

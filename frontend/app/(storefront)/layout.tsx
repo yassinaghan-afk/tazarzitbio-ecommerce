@@ -23,7 +23,7 @@ export default async function StorefrontLayout({
   return (
     <CommerceShell initialLocale={locale}>
       <JsonLd data={organizationJsonLd(store.siteSettings)} />
-      <JsonLd data={websiteJsonLd()} />
+      <JsonLd data={websiteJsonLd(store.siteSettings)} />
       <SiteHeader cmsNav={store.navigation.header} />
       <AnnouncementBar />
       <main className="max-w-full overflow-x-hidden pt-[var(--site-top-offset,8rem)] lg:pt-[var(--site-top-offset,9.75rem)]">

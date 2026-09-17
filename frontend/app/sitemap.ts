@@ -38,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const bareStatic = [
     { path: "/", priority: 1, freq: "daily" as const },
     { path: "/products", priority: 0.9, freq: "daily" as const },
+    { path: "/about", priority: 0.85, freq: "monthly" as const },
     { path: AMLOU_ROYAL_SHOP_PATH, priority: 0.95, freq: "weekly" as const },
     { path: "/amlou", priority: 0.95, freq: "weekly" as const },
     { path: TOURIST_HUB_PATH, priority: 0.9, freq: "weekly" as const },

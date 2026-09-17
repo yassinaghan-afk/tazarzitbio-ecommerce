@@ -22,6 +22,41 @@ export {
   type AmlouCity,
 } from "@/lib/seo/amlou-cities";
 
+/** GEO: unique local hooks for high-traffic / tourist cities */
+const CITY_EXTRA: Record<string, { ar: string; fr: string; en: string }> = {
+  casablanca: {
+    ar: " الدار البيضاء أكبر سوق حضري في المغرب — مناسب لطلب أملو للعمل أو العائلة مع توصيل سريع للأحياء والمكاتب.",
+    fr: " Casablanca est le plus grand marché urbain du Maroc — idéal pour commander de l’Amlou pour le bureau ou la famille avec livraison rapide.",
+    en: " Casablanca is Morocco’s largest urban market — ideal for ordering Amlou for home or office with fast city delivery.",
+  },
+  marrakech: {
+    ar: " مراكش وجهة ضيافة وسياحة — أملو هدية تقليدية أو فطور في الرياض والفنادق مع الدفع عند الاستلام.",
+    fr: " Marrakech, destination d’hospitalité — l’Amlou convient en cadeau traditionnel ou au petit-déjeuner en riad/hôtel avec COD.",
+    en: " Marrakech is a hospitality hub — Amlou works as a traditional gift or riad/hotel breakfast with cash on delivery.",
+  },
+  agadir: {
+    ar: " أكادير قلب سوس وقرب مصدر الأركان واللوز — توصيل محلي سريع من تازارزيت بيو.",
+    fr: " Agadir, cœur du Souss près de l’argan et des amandes — livraison locale rapide depuis Tazarzit Bio.",
+    en: " Agadir sits at the heart of Souss near argan and almond sources — fast local delivery from Tazarzit Bio.",
+  },
+  taghazout: {
+    ar: " تغازوت منطقة سيرف وسياح — اطلب أملو طبيعي للفطور أو كهدية بدون مواد حافظة، مع توصيل للسكن السياحي.",
+    fr: " Taghazout, spot surf et voyageurs — commandez un Amlou naturel pour le petit-déjeuner ou en cadeau, livraison hébergements touristiques.",
+    en: " Taghazout is a surf and traveler hub — order natural Amlou for breakfast or gifts, delivered to tourist stays.",
+  },
+  essaouira: {
+    ar: " الصويرة مدينة رياح وثقافة — أملو سوس يناسب الضيافة والهدايا مع توصيل للمدينة القديمة والفنادق.",
+    fr: " Essaouira, ville de vent et de culture — l’Amlou du Souss convient à l’hospitalité et aux cadeaux, livraison médina et hôtels.",
+    en: " Essaouira is a wind-and-culture city — Souss Amlou fits hosting and gifts, with delivery to the medina and hotels.",
+  },
+};
+
+function cityExtra(slug: string, locale: Language): string {
+  const row = CITY_EXTRA[slug];
+  if (!row) return "";
+  return locale === "fr" ? row.fr : locale === "en" ? row.en : row.ar;
+}
+
 export function getAmlouCityMetadata(
   city: AmlouCity,
   locale: Language,
@@ -96,6 +131,7 @@ export function AmlouCityGuidePage({
         ? ` ${name} is a tourist destination — perfect for authentic Souss Amlou during your stay or as a gift.`
         : ` ${name} وجهة سياحية — مناسبة لأملو أصيل من سوس أثناء الإقامة أو كهدية.`
     : "";
+  const localHook = cityExtra(city.slug, locale);
 
   if (locale === "fr") {
     return (
@@ -106,7 +142,7 @@ export function AmlouCityGuidePage({
         secondaryLabel="Voir l’Amlou"
         label={`Amlou · ${name}`}
         title={`Amlou à ${name} — livraison et paiement à la livraison`}
-        intro={`Vous cherchez de l’Amlou à ${name} ? Tazarzit Bio livre l’Amlou traditionnel et l’Amlou Royal du Souss à domicile à ${name}, après confirmation téléphonique, avec paiement à la livraison.${touristNote} WhatsApp : +212 642 370 050.`}
+        intro={`Vous cherchez de l’Amlou à ${name} ? Tazarzit Bio livre l’Amlou traditionnel et l’Amlou Royal du Souss à domicile à ${name}, après confirmation téléphonique, avec paiement à la livraison.${touristNote}${localHook} WhatsApp : +212 642 370 050.`}
         ctaHref={ctaHref}
         ctaLabel="Commander Amlou Royal"
         sections={[
@@ -156,7 +192,7 @@ export function AmlouCityGuidePage({
         secondaryLabel="Shop Amlou"
         label={`Amlou · ${name}`}
         title={`Amlou in ${name} — delivery & cash on delivery`}
-        intro={`Looking for Amlou in ${name}? Tazarzit Bio delivers traditional Souss Amlou and Amlou Royal to your door in ${name} after phone confirmation, with cash on delivery.${touristNote} WhatsApp: +212 642 370 050.`}
+        intro={`Looking for Amlou in ${name}? Tazarzit Bio delivers traditional Souss Amlou and Amlou Royal to your door in ${name} after phone confirmation, with cash on delivery.${touristNote}${localHook} WhatsApp: +212 642 370 050.`}
         ctaHref={ctaHref}
         ctaLabel="Order Amlou Royal"
         sections={[
@@ -205,7 +241,7 @@ export function AmlouCityGuidePage({
       secondaryLabel="تسوق الأملو"
       label={`أملو · ${name}`}
       title={`أملو في ${name} — توصيل والدفع عند الاستلام`}
-      intro={`تبحث عن أملو في ${name}؟ تازارزيت بيو توصّل أملو تقليدي وأملو ملكي من سوس إلى باب منزلك في ${name}، مع تأكيد الطلب هاتفياً والدفع عند الاستلام.${touristNote} واتساب: +212 642 370 050.`}
+      intro={`تبحث عن أملو في ${name}؟ تازارزيت بيو توصّل أملو تقليدي وأملو ملكي من سوس إلى باب منزلك في ${name}، مع تأكيد الطلب هاتفياً والدفع عند الاستلام.${touristNote}${localHook} واتساب: +212 642 370 050.`}
       ctaHref={ctaHref}
       ctaLabel="اطلب أملو ملكي الآن"
       sections={[
