@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, Eye, RefreshCw, Search, Trash2 } from "lucide-react";
+import { Download, Eye, RefreshCw, Search, Send, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,7 +163,7 @@ export function OrdersTable({
             ? "✓ Synced successfully"
             : data.alreadyExists
               ? "الشحنة موجودة مسبقاً — لم يتم إنشاء شحنة مكررة"
-              : "✓ تم الإرسال وربط طرد Elite",
+              : "✓ تم إنشاء Nouveau colis على Elite Delivery",
         );
         await onRefresh();
         const detail = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}`);
@@ -303,6 +303,14 @@ export function OrdersTable({
       </div>
 
       {/* Table */}
+      {deliveryMsg && (
+        <p
+          className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900"
+          role="status"
+        >
+          {deliveryMsg}
+        </p>
+      )}
       <div className="overflow-hidden rounded-3xl border border-border/60 bg-card/60 shadow-warm-md">
         <div className="overflow-x-auto">
           <table className="min-w-[1100px] w-full text-sm">
@@ -376,22 +384,41 @@ export function OrdersTable({
                     {formatMAD(o.total)}
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      className={cn(
-                        "h-9 rounded-xl border border-border bg-card/80 px-2 text-xs font-semibold",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        STATUS_COLORS[o.orderStatus],
+                    <div className="flex flex-col items-start gap-1.5">
+                      <select
+                        className={cn(
+                          "h-9 rounded-xl border border-border bg-card/80 px-2 text-xs font-semibold",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          STATUS_COLORS[o.orderStatus],
+                        )}
+                        value={o.orderStatus}
+                        disabled={busyId === o.orderId}
+                        onChange={(e) => updateStatus(o.orderId, e.target.value as OrderStatus)}
+                      >
+                        {ORDER_STATUSES.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {STATUS_LABELS[s.id]}
+                          </option>
+                        ))}
+                      </select>
+                      {o.shipment?.externalShipmentId ? (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                          Elite · Nouveau colis ✓
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="gold"
+                          className="h-8 rounded-full px-2.5 text-[11px]"
+                          disabled={busyId === o.orderId}
+                          onClick={() => void deliveryAction(o.orderId, "send")}
+                          title="إرسال الطرد إلى Elite Delivery (Nouveau colis)"
+                        >
+                          <Send className="size-3.5" aria-hidden />
+                          إرسال Elite
+                        </Button>
                       )}
-                      value={o.orderStatus}
-                      disabled={busyId === o.orderId}
-                      onChange={(e) => updateStatus(o.orderId, e.target.value as OrderStatus)}
-                    >
-                      {ORDER_STATUSES.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {STATUS_LABELS[s.id]}
-                        </option>
-                      ))}
-                    </select>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-bold", dBadge)}>
@@ -467,6 +494,27 @@ export function OrdersTable({
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Address</p>
                 <p className="mt-1 text-sm leading-relaxed text-foreground">{selected.address}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase">
+                  المدينة (Elite)
+                </p>
+                <Input
+                  className="mt-1 h-9 rounded-xl text-sm"
+                  dir="rtl"
+                  placeholder="مثال: أكادير / Casablanca"
+                  defaultValue={selected.city ?? ""}
+                  key={`city-${selected.orderId}-${selected.city ?? ""}`}
+                  disabled={busyId === selected.orderId}
+                  onBlur={(e) => {
+                    const next = e.target.value.trim();
+                    if (next === (selected.city ?? "").trim()) return;
+                    void patchOrder(selected.orderId, { city: next });
+                  }}
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  ضرورية لإنشاء Nouveau colis — يمكن استخراجها من العنوان تلقائياً عند الإرسال.
+                </p>
               </div>
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Confirmation</p>
@@ -633,7 +681,7 @@ export function OrdersTable({
                     disabled={busyId === selected.orderId}
                     onClick={() => void deliveryAction(selected.orderId, "send")}
                   >
-                    إرسال إلى Elite Delivery
+                    إرسال Elite · Nouveau colis
                   </Button>
                   <Button
                     size="sm"

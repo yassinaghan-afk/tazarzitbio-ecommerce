@@ -159,6 +159,8 @@ export interface CreateShipmentResult {
   errorMessage?: string;
   /** True when shipment already existed — no duplicate create */
   alreadyExists?: boolean;
+  /** Elite-matched city name when inferred/resolved during send */
+  resolvedCityName?: string;
 }
 
 export interface RefreshShipmentResult {

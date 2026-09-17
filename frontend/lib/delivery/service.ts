@@ -235,6 +235,7 @@ export async function sendOrderToDelivery(
       ].slice(0, 100);
       return {
         ...o,
+        city: o.city?.trim() || result.resolvedCityName || o.city,
         shipment,
         deliveryHistory,
         timeline,

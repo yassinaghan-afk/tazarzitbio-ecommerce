@@ -4,7 +4,7 @@
  */
 
 import type { DeliveryStatus } from "@/lib/admin/ops-types";
-import { resolveEliteCityId } from "@/lib/delivery/elite/cities";
+import { resolveEliteCityForOrder } from "@/lib/delivery/elite/cities";
 import {
   ELITE_DEFAULT_BASE_URL,
   eliteCreateBatch,
@@ -66,7 +66,6 @@ function validateOrderForElite(order: OrderRecord): string | null {
   if (!order.customerName?.trim()) return "اسم الزبون مطلوب";
   if (!order.phone?.trim()) return "رقم الهاتف مطلوب";
   if (!order.address?.trim()) return "العنوان مطلوب";
-  if (!order.city?.trim()) return "المدينة مطلوبة لإرسال الشحنة إلى Elite";
   if (!(order.total > 0)) return "مبلغ الطلب غير صالح";
   if (!order.products?.length) return "الطلب بدون منتجات";
   return null;
@@ -194,15 +193,15 @@ export class EliteDeliveryProvider implements DeliveryProvider {
       };
     }
 
-    const cityMatch = resolveEliteCityId(order.city, cities);
+    const cityMatch = resolveEliteCityForOrder(order.city, order.address, cities);
     if (!cityMatch.ok) {
       return {
         ok: false,
         errorCode: "CITY_NOT_MAPPED",
         errorMessage:
           cityMatch.reason === "EMPTY"
-            ? "المدينة مطلوبة"
-            : `تعذر مطابقة المدينة "${cityMatch.input}" مع مدن Elite Delivery. اختر مدينة مدعومة أو صحّح اسم المدينة.`,
+            ? "المدينة مطلوبة — أضف المدينة في الطلب أو داخل العنوان"
+            : `تعذر مطابقة المدينة "${cityMatch.input}" مع مدن Elite Delivery. صحّح حقل المدينة ثم أعد الإرسال.`,
       };
     }
 
@@ -299,7 +298,11 @@ export class EliteDeliveryProvider implements DeliveryProvider {
       idempotencyKey: input.idempotencyKey,
     };
 
-    return { ok: true, shipment };
+    return {
+      ok: true,
+      shipment,
+      resolvedCityName: cityMatch.matchedName,
+    };
   }
 
   /**
