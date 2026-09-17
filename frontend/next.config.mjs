@@ -40,6 +40,22 @@ const nextConfig = {
         destination: "/amlouroyal",
         permanent: true,
       },
+      // Google Ads display path cosmetic URL → shop catalog
+      {
+        source: "/amlou/order",
+        destination: "/products",
+        permanent: false,
+      },
+      {
+        source: "/fr/amlou/order",
+        destination: "/fr/products",
+        permanent: false,
+      },
+      {
+        source: "/en/amlou/order",
+        destination: "/en/products",
+        permanent: false,
+      },
     ];
   },
 };
