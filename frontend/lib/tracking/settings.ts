@@ -16,7 +16,12 @@ export const DEFAULT_TRACKING_SETTINGS: TrackingSettings = {
   tiktok: platform(trackingConfig.tiktokPixelId),
   snapchat: platform(trackingConfig.snapchatPixelId),
   googleAnalytics: platform(trackingConfig.googleAnalyticsId),
-  googleAds: platform(trackingConfig.googleAdsId),
+  googleAds: {
+    ...platform(trackingConfig.googleAdsId),
+    ...(trackingConfig.googleAdsConversionLabel
+      ? { conversionLabel: trackingConfig.googleAdsConversionLabel }
+      : {}),
+  },
   googleTagManager: platform(trackingConfig.googleTagManagerId),
   microsoftClarity: platform(trackingConfig.microsoftClarityId),
   testMode: false,
@@ -76,9 +81,14 @@ function normalizePlatform(
   const id = typeof raw?.id === "string" ? raw.id.trim() : fallback.id;
   const enabled =
     typeof raw?.enabled === "boolean" ? raw.enabled : fallback.enabled;
+  const conversionLabel =
+    typeof raw?.conversionLabel === "string"
+      ? raw.conversionLabel.trim()
+      : fallback.conversionLabel?.trim() || undefined;
   return {
     id,
     enabled: enabled && id.length > 0,
+    ...(conversionLabel ? { conversionLabel } : {}),
   };
 }
 
@@ -123,7 +133,13 @@ function mergePlatform(
   const id = saved.id || env.id;
   if (!id) return { id: "", enabled: false };
   const enabled = saved.id ? saved.enabled : env.enabled;
-  return { id, enabled: enabled && id.length > 0 };
+  const conversionLabel =
+    saved.conversionLabel?.trim() || env.conversionLabel?.trim() || undefined;
+  return {
+    id,
+    enabled: enabled && id.length > 0,
+    ...(conversionLabel ? { conversionLabel } : {}),
+  };
 }
 
 /** Admin-saved IDs override env defaults when non-empty. */

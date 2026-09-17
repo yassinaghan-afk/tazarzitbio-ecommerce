@@ -12,6 +12,11 @@ export type TrackingPlatformKey =
 export interface TrackingPlatformConfig {
   id: string;
   enabled: boolean;
+  /**
+   * Google Ads Purchase conversion label only (the part after AW-xxx/).
+   * Used as send_to: `${id}/${conversionLabel}` on thank-you.
+   */
+  conversionLabel?: string;
 }
 
 export interface TrackingSettings {

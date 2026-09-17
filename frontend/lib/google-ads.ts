@@ -1,4 +1,5 @@
 import { TRACKING_CURRENCY } from "@/lib/tracking/types";
+import type { TrackingProduct } from "@/lib/tracking/types";
 import {
   getActiveTrackingSettings,
   isTrackingPlatformActive,
@@ -19,7 +20,10 @@ function getAdsId(): string {
 }
 
 function getConversionLabel(): string {
-  return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL?.trim() || "";
+  const fromSettings =
+    getActiveTrackingSettings().googleAds.conversionLabel?.trim() || "";
+  const fromEnv = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL?.trim() || "";
+  return fromSettings || fromEnv;
 }
 
 function gtag(...args: unknown[]): void {
@@ -42,20 +46,40 @@ export function initGoogleAds(adsId?: string): void {
   const id = adsId ?? getAdsId();
   if (!id || initialized) return;
   gtag("js", new Date());
-  gtag("config", id, { conversion_linker: true });
+  gtag("config", id, {
+    conversion_linker: true,
+    allow_enhanced_conversions: true,
+  });
   initialized = true;
 }
 
 /**
- * Fire Ads conversion on thank-you when a conversion label is configured.
- * Base AW- config still loads sitewide without a label (remarketing + linker).
+ * Fire Ads purchase measurement on thank-you.
+ * - Always sends ecommerce `purchase` (detectable as a Google tag event in Ads).
+ * - Also sends classic `conversion` when a Purchase conversion label is set.
  */
 export function trackPurchase(params: {
   orderId: string;
   total: number;
+  products?: TrackingProduct[];
 }): void {
   const id = getAdsId();
   if (!id) return;
+
+  const items = (params.products ?? []).map((p) => ({
+    item_id: p.productId || p.slug,
+    item_name: p.name,
+    price: p.price,
+    quantity: p.quantity,
+  }));
+
+  gtag("event", "purchase", {
+    send_to: id,
+    transaction_id: params.orderId,
+    value: params.total,
+    currency: TRACKING_CURRENCY,
+    items,
+  });
 
   const label = getConversionLabel();
   if (!label) return;

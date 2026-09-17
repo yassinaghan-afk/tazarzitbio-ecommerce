@@ -256,6 +256,7 @@ export function trackPurchase(payload: PurchaseTrackingPayload): void {
     googleAds.trackPurchase({
       orderId: normalized.orderId,
       total: normalized.total,
+      products: normalized.products,
     });
   }
 

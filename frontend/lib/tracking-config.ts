@@ -17,6 +17,9 @@ export const trackingConfig = {
   googleAnalyticsId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "",
   /** Google Ads tag (AW-…) — also accepts GT-… */
   googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "",
+  /** Purchase conversion label from Ads → Goals → Conversions → Tag setup */
+  googleAdsConversionLabel:
+    process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL ?? "",
   googleTagManagerId: process.env.NEXT_PUBLIC_GTM_ID ?? "",
   microsoftClarityId: process.env.NEXT_PUBLIC_CLARITY_ID ?? "",
 };

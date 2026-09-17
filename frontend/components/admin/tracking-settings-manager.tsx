@@ -74,7 +74,7 @@ const PLATFORMS: {
     labelAr: "Google Ads (بيكسل التحويل)",
     labelEn: "Google Ads Tag ID",
     placeholder: "AW-XXXXXXXXXX",
-    hint: "تتبع تحويلات وإعادة استهداف Google Ads",
+    hint: "تتبع تحويلات الشراء (Purchase) وإعادة الاستهداف — أضف Conversion Label أسفله",
     icon: Tag,
   },
   {
@@ -131,13 +131,16 @@ export function TrackingSettingsManager({
 
   const updatePlatform = (
     key: TrackingPlatformKey,
-    patch: Partial<{ id: string; enabled: boolean }>,
+    patch: Partial<{ id: string; enabled: boolean; conversionLabel: string }>,
   ) => {
     setSettings((prev) => {
       const next = { ...prev[key], ...patch };
       if (patch.id !== undefined) {
         next.id = patch.id.trim();
         if (!next.id) next.enabled = false;
+      }
+      if (patch.conversionLabel !== undefined) {
+        next.conversionLabel = patch.conversionLabel.trim() || undefined;
       }
       return {
         ...prev,
@@ -339,6 +342,36 @@ export function TrackingSettingsManager({
                   value={platform.id}
                   onChange={(e) => updatePlatform(key, { id: e.target.value })}
                 />
+                {key === "googleAds" && (
+                  <div className="mt-3 space-y-1.5">
+                    <Label
+                      htmlFor="google-ads-conversion-label"
+                      className="text-xs font-bold text-foreground"
+                    >
+                      Conversion Label (Purchase)
+                    </Label>
+                    <Input
+                      id="google-ads-conversion-label"
+                      dir="ltr"
+                      className="font-mono text-sm"
+                      placeholder="AbC-D_efG-h12_34-567"
+                      value={platform.conversionLabel ?? ""}
+                      onChange={(e) =>
+                        updatePlatform(key, {
+                          conversionLabel: e.target.value,
+                        })
+                      }
+                    />
+                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                      من Google Ads → Goals → Conversions → Purchase → Tag setup.
+                      الجزء بعد الشرطة المائلة في{" "}
+                      <span className="font-mono" dir="ltr">
+                        AW-…/LABEL
+                      </span>
+                      . ضروري لهدف Conversions (purchases).
+                    </p>
+                  </div>
+                )}
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {hint}
                 </p>
