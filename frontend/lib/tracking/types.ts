@@ -5,6 +5,7 @@ export type TrackingPlatformKey =
   | "tiktok"
   | "snapchat"
   | "googleAnalytics"
+  | "googleAds"
   | "googleTagManager"
   | "microsoftClarity";
 
@@ -18,6 +19,7 @@ export interface TrackingSettings {
   tiktok: TrackingPlatformConfig;
   snapchat: TrackingPlatformConfig;
   googleAnalytics: TrackingPlatformConfig;
+  googleAds: TrackingPlatformConfig;
   googleTagManager: TrackingPlatformConfig;
   microsoftClarity: TrackingPlatformConfig;
   /** Log all events to browser console (dev debugging + production verification). */
@@ -30,12 +32,14 @@ export interface LegacyTrackingSettings {
   tiktokPixelId?: string;
   snapchatPixelId?: string;
   googleAnalyticsId?: string;
+  googleAdsId?: string;
   googleTagManagerId?: string;
   microsoftClarityId?: string;
   facebookEnabled?: boolean;
   tiktokEnabled?: boolean;
   snapchatEnabled?: boolean;
   googleAnalyticsEnabled?: boolean;
+  googleAdsEnabled?: boolean;
   googleTagManagerEnabled?: boolean;
   microsoftClarityEnabled?: boolean;
   testMode?: boolean;

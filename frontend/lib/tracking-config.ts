@@ -15,6 +15,8 @@ export const trackingConfig = {
     process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID?.trim() || TIKTOK_PIXEL_DATASET_ID,
   snapchatPixelId: process.env.NEXT_PUBLIC_SNAPCHAT_PIXEL_ID ?? "",
   googleAnalyticsId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "",
+  /** Google Ads tag (AW-…) — also accepts GT-… */
+  googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "",
   googleTagManagerId: process.env.NEXT_PUBLIC_GTM_ID ?? "",
   microsoftClarityId: process.env.NEXT_PUBLIC_CLARITY_ID ?? "",
 };

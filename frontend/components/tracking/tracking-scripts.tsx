@@ -16,6 +16,11 @@ import {
   initGoogleAnalytics,
 } from "@/lib/google-analytics";
 import {
+  GOOGLE_ADS_BOOTSTRAP,
+  googleAdsScriptSrc,
+  initGoogleAds,
+} from "@/lib/google-ads";
+import {
   SNAPCHAT_PIXEL_BOOTSTRAP,
   initSnapchatPixel,
 } from "@/lib/snapchat-pixel";
@@ -146,6 +151,10 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
   const gaId = isPlatformActive(settings, "googleAnalytics")
     ? settings.googleAnalytics.id
     : "";
+  const googleAdsId = isPlatformActive(settings, "googleAds")
+    ? settings.googleAds.id
+    : "";
+  const gtagPrimaryId = googleAdsId || gaId;
   const gtmId = isPlatformActive(settings, "googleTagManager")
     ? settings.googleTagManager.id
     : "";
@@ -205,19 +214,30 @@ export function TrackingScripts({ initialSettings }: TrackingScriptsProps) {
         </>
       )}
 
-      {gaId && (
+      {gtagPrimaryId && (
         <>
           <Script
-            id="ga4-bootstrap"
+            id="gtag-bootstrap"
             strategy="afterInteractive"
-            dangerouslySetInnerHTML={{ __html: GA4_BOOTSTRAP }}
+            dangerouslySetInnerHTML={{
+              __html: googleAdsId ? GOOGLE_ADS_BOOTSTRAP : GA4_BOOTSTRAP,
+            }}
           />
           <Script
-            id="ga4-script"
+            id="gtag-script"
             strategy="afterInteractive"
-            src={ga4ScriptSrc(gaId)}
+            src={
+              googleAdsId
+                ? googleAdsScriptSrc(googleAdsId)
+                : ga4ScriptSrc(gaId)
+            }
             onLoad={() => {
-              if (!isScriptLoaded("ga4")) {
+              if (googleAdsId && !isScriptLoaded("googleAds")) {
+                markScriptLoaded("googleAds");
+                initGoogleAds(googleAdsId);
+                logTrackingScript("GoogleAds", "loaded");
+              }
+              if (gaId && !isScriptLoaded("ga4")) {
                 markScriptLoaded("ga4");
                 initGoogleAnalytics(gaId);
                 logTrackingScript("GA4", "loaded");

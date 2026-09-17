@@ -3,6 +3,7 @@ import * as openaiPixel from "@/lib/openai-pixel";
 import * as tiktokPixel from "@/lib/tiktok-pixel";
 import * as snapchatPixel from "@/lib/snapchat-pixel";
 import * as googleAnalytics from "@/lib/google-analytics";
+import * as googleAds from "@/lib/google-ads";
 import { createMetaEventId, getMetaBrowserIds } from "@/lib/meta/browser";
 import { logTracking } from "@/lib/tracking/logger";
 import { isTrackingPlatformActive } from "@/lib/tracking/runtime";
@@ -249,6 +250,13 @@ export function trackPurchase(payload: PurchaseTrackingPayload): void {
   if (isTrackingPlatformActive("googleAnalytics")) {
     logTracking("Purchase", normalized, "GA4");
     googleAnalytics.trackPurchase(normalized);
+  }
+  if (isTrackingPlatformActive("googleAds")) {
+    logTracking("Purchase", normalized, "GoogleAds");
+    googleAds.trackPurchase({
+      orderId: normalized.orderId,
+      total: normalized.total,
+    });
   }
 
   markPurchaseTracked(payload.orderId);

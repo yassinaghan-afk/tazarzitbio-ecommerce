@@ -70,6 +70,14 @@ const PLATFORMS: {
     icon: BarChart3,
   },
   {
+    key: "googleAds",
+    labelAr: "Google Ads (بيكسل التحويل)",
+    labelEn: "Google Ads Tag ID",
+    placeholder: "AW-XXXXXXXXXX",
+    hint: "تتبع تحويلات وإعادة استهداف Google Ads",
+    icon: Tag,
+  },
+  {
     key: "googleTagManager",
     labelAr: "Google Tag Manager",
     labelEn: "GTM Container ID",

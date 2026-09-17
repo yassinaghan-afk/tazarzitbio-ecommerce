@@ -16,6 +16,7 @@ export const DEFAULT_TRACKING_SETTINGS: TrackingSettings = {
   tiktok: platform(trackingConfig.tiktokPixelId),
   snapchat: platform(trackingConfig.snapchatPixelId),
   googleAnalytics: platform(trackingConfig.googleAnalyticsId),
+  googleAds: platform(trackingConfig.googleAdsId),
   googleTagManager: platform(trackingConfig.googleTagManagerId),
   microsoftClarity: platform(trackingConfig.microsoftClarityId),
   testMode: false,
@@ -51,6 +52,10 @@ function migrateLegacy(raw: LegacyTrackingSettings): TrackingSettings {
     googleAnalytics: {
       id: id(raw.googleAnalyticsId),
       enabled: on(raw.googleAnalyticsEnabled, id(raw.googleAnalyticsId)),
+    },
+    googleAds: {
+      id: id(raw.googleAdsId),
+      enabled: on(raw.googleAdsEnabled, id(raw.googleAdsId)),
     },
     googleTagManager: {
       id: id(raw.googleTagManagerId),
@@ -95,6 +100,10 @@ export function normalizeTrackingSettings(
       base.googleAnalytics,
       DEFAULT_TRACKING_SETTINGS.googleAnalytics,
     ),
+    googleAds: normalizePlatform(
+      base.googleAds,
+      DEFAULT_TRACKING_SETTINGS.googleAds,
+    ),
     googleTagManager: normalizePlatform(
       base.googleTagManager,
       DEFAULT_TRACKING_SETTINGS.googleTagManager,
@@ -129,6 +138,7 @@ export function resolveTrackingSettings(
     tiktok: mergePlatform(saved.tiktok, env.tiktok),
     snapchat: mergePlatform(saved.snapchat, env.snapchat),
     googleAnalytics: mergePlatform(saved.googleAnalytics, env.googleAnalytics),
+    googleAds: mergePlatform(saved.googleAds, env.googleAds),
     googleTagManager: mergePlatform(saved.googleTagManager, env.googleTagManager),
     microsoftClarity: mergePlatform(saved.microsoftClarity, env.microsoftClarity),
     testMode: saved.testMode,
@@ -149,6 +159,7 @@ export function countActivePlatforms(settings: TrackingSettings): number {
     "tiktok",
     "snapchat",
     "googleAnalytics",
+    "googleAds",
     "googleTagManager",
     "microsoftClarity",
   ];
