@@ -3,9 +3,11 @@ import { AmlouHubPage } from "@/lib/seo/amlou-hub-page";
 import { absoluteUrl } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "أملو طبيعي من سوس — شراء أونلاين في المغرب | تازارزيت بيو",
+  title: {
+    absolute: "شراء أملو طبيعي أونلاين في المغرب | تازارزيت بيو",
+  },
   description:
-    "شراء أملو تقليدي وأملو ملكي أونلاين في المغرب. مكونات طبيعية من سوس، توصيل لكل المدن، والدفع عند الاستلام.",
+    "أملو تقليدي وأملو ملكي من سوس — طبيعي 100٪، توصيل لكل المدن، والدفع عند الاستلام من تازارزيت بيو.",
   alternates: {
     canonical: absoluteUrl("/amlou"),
     languages: {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "أملو طبيعي من سوس — تازارزيت بيو",
+    title: "شراء أملو طبيعي أونلاين | تازارزيت بيو",
     description:
       "أملو تقليدي وأملو ملكي من سوس مع توصيل داخل المغرب والدفع عند الاستلام.",
     url: absoluteUrl("/amlou"),

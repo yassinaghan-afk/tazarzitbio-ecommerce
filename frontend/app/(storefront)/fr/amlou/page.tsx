@@ -3,9 +3,11 @@ import { AmlouHubPage } from "@/lib/seo/amlou-hub-page";
 import { absoluteUrl } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Amlou du Souss — acheter en ligne au Maroc | Tazarzit Bio",
+  title: {
+    absolute: "Acheter Amlou naturel en ligne au Maroc | Tazarzit Bio",
+  },
   description:
-    "Achetez Amlou traditionnel et Amlou Royal en ligne au Maroc. Ingrédients naturels du Souss, livraison nationale et paiement à la livraison.",
+    "Amlou traditionnel et Amlou Royal du Souss — 100% naturel, livraison nationale et paiement à la livraison chez Tazarzit Bio.",
   alternates: {
     canonical: absoluteUrl("/fr/amlou"),
     languages: {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Amlou du Souss — Tazarzit Bio",
+    title: "Acheter Amlou naturel en ligne | Tazarzit Bio",
     description:
       "Amlou traditionnel et Amlou Royal du Souss, livraison au Maroc, paiement à la livraison.",
     url: absoluteUrl("/fr/amlou"),

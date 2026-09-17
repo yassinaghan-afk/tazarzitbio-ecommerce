@@ -3,9 +3,11 @@ import { AmlouHubPage } from "@/lib/seo/amlou-hub-page";
 import { absoluteUrl } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Natural Souss Amlou — buy online in Morocco | Tazarzit Bio",
+  title: {
+    absolute: "Buy natural Amlou online in Morocco | Tazarzit Bio",
+  },
   description:
-    "Buy traditional Amlou and Amlou Royal online in Morocco. Natural Souss ingredients, nationwide delivery, cash on delivery.",
+    "Traditional Amlou and Amlou Royal from Souss — 100% natural, nationwide delivery, cash on delivery from Tazarzit Bio.",
   alternates: {
     canonical: absoluteUrl("/en/amlou"),
     languages: {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Natural Souss Amlou — Tazarzit Bio",
+    title: "Buy natural Amlou online | Tazarzit Bio",
     description:
       "Traditional Amlou and Amlou Royal from Souss with Moroccan delivery and cash on delivery.",
     url: absoluteUrl("/en/amlou"),

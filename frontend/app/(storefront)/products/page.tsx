@@ -11,18 +11,18 @@ import {
 } from "@/lib/seo/locale";
 
 export const metadata: Metadata = {
-  title: { absolute: "منتجاتنا | أملو، عسل، أركان — المغرب | تازارزيت بيو" },
+  title: { absolute: "شراء أملو وعسل وزيت أركان أونلاين | تازارزيت بيو" },
   description:
-    "تسوق أملو، عسل طبيعي، زيت أركان ومكسرات من سوس. توصيل داخل المغرب والدفع عند الاستلام من تازارزيت بيو.",
+    "تسوق أملو طبيعي، عسل، وزيت أركان من سوس. توصيل لكل مدن المغرب والدفع عند الاستلام — تازارزيت بيو.",
   keywords: [...MOROCCO_PRODUCT_KEYWORDS.ar],
   alternates: {
     canonical: "/products",
     languages: hreflangLanguages("/products"),
   },
   openGraph: {
-    title: "منتجات تازارزيت بيو",
+    title: "شراء أملو وعسل وزيت أركان | تازارزيت بيو",
     description:
-      "أملو، عسل، زيت أركان ومكسرات — الدفع عند الاستلام في المغرب.",
+      "أملو، عسل، وزيت أركان من سوس — توصيل والدفع عند الاستلام في المغرب.",
     url: "/products",
     locale: "ar_MA",
   },

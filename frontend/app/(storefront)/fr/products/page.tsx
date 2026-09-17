@@ -12,19 +12,19 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Nos produits | Amlou, miel, argan — Maroc | Tazarzit Bio",
+    absolute: "Acheter Amlou, miel et argan en ligne | Tazarzit Bio",
   },
   description:
-    "Achetez Amlou, miel naturel, huile d'argan et fruits à coque du Souss. Livraison au Maroc et paiement à la livraison — Tazarzit Bio.",
+    "Boutique Amlou, miel naturel et huile d'argan du Souss. Livraison partout au Maroc et paiement à la livraison — Tazarzit Bio.",
   keywords: [...MOROCCO_PRODUCT_KEYWORDS.fr],
   alternates: {
     canonical: "/fr/products",
     languages: hreflangLanguages("/products"),
   },
   openGraph: {
-    title: "Produits Tazarzit Bio",
+    title: "Acheter Amlou, miel et argan | Tazarzit Bio",
     description:
-      "Amlou, miel, argan — paiement à la livraison partout au Maroc.",
+      "Amlou, miel et argan du Souss — livraison et paiement à la livraison au Maroc.",
     url: "/fr/products",
     locale: "fr_MA",
   },

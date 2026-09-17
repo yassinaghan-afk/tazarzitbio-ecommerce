@@ -12,19 +12,19 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Our products | Amlou, honey, argan — Morocco | Tazarzit Bio",
+    absolute: "Buy Amlou, honey & argan online | Tazarzit Bio",
   },
   description:
-    "Shop Amlou, natural honey, argan oil and nuts from Souss. Morocco-wide delivery with cash on delivery — Tazarzit Bio.",
+    "Shop natural Souss Amlou, honey and argan oil. Delivery across Morocco with cash on delivery — Tazarzit Bio.",
   keywords: [...MOROCCO_PRODUCT_KEYWORDS.en],
   alternates: {
     canonical: "/en/products",
     languages: hreflangLanguages("/products"),
   },
   openGraph: {
-    title: "Tazarzit Bio products",
+    title: "Buy Amlou, honey & argan | Tazarzit Bio",
     description:
-      "Amlou, honey, argan — cash on delivery across Morocco.",
+      "Natural Souss Amlou, honey and argan — cash on delivery across Morocco.",
     url: "/en/products",
     locale: "en_MA",
   },
