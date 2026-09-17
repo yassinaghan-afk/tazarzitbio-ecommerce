@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
@@ -10,7 +11,6 @@ import { getMetaBrowserIds } from "@/lib/meta/browser";
 import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
-  AMLOU_ROYAL_IMAGE,
   AMLOU_ROYAL_NAME_AR,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
@@ -199,7 +199,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
           productId: AMLOU_ROYAL_ID,
           slug: AMLOU_ROYAL_SLUG,
           nameAr: AMLOU_ROYAL_NAME_AR,
-          image: AMLOU_ROYAL_IMAGE,
+          image: offer.image,
           offerId: offer.id,
           offerLabel,
           unitPrice: offer.price,
@@ -296,7 +296,7 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
         <span>⚠️ آخر فرصة للطلب! السعر الحالي متاح لفترة محدودة</span>
       </p>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2.5">
         {AMLOU_ROYAL_OFFERS.map((item) => {
           const selected = item.id === offer.id;
 
@@ -307,84 +307,90 @@ export function RoyalOrderSection({ embedded = false }: { embedded?: boolean }) 
               onClick={() => setOfferId(item.id)}
               aria-pressed={selected}
               className={cn(
-                "relative w-full rounded-xl border bg-white px-3 py-2.5 text-start transition-colors",
+                "relative flex min-w-0 flex-col items-center rounded-xl border bg-white px-1 pb-2 pt-2 text-center transition-colors sm:px-2 sm:pb-2.5 sm:pt-2.5",
                 selected && item.recommended
                   ? "border-red-500 bg-red-50/40 ring-1 ring-red-500"
                   : selected
                     ? "border-[#1a2744] ring-1 ring-[#1a2744]"
                     : "border-[#e5d9c8]",
-                (item.recommended || item.bestValue) && "pt-5",
               )}
             >
-              {item.recommended && (
-                <span className="absolute end-3 top-0 -translate-y-1/2 rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                  🔥 الأكثر طلباً
-                </span>
-              )}
-              {item.bestValue && (
-                <span className="absolute end-3 top-0 flex -translate-y-1/2 items-center gap-1.5">
-                  <span className="rounded-md bg-[#1a2744] px-2 py-0.5 text-[10px] font-bold text-white">
+              <span
+                className={cn(
+                  "absolute end-1.5 top-1.5 z-[1] flex size-3.5 items-center justify-center rounded-full border-2 sm:size-4",
+                  selected
+                    ? item.recommended
+                      ? "border-red-600"
+                      : "border-[#1a2744]"
+                    : "border-neutral-300 bg-white",
+                )}
+                aria-hidden
+              >
+                {selected && (
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full sm:size-2",
+                      item.recommended ? "bg-red-600" : "bg-[#1a2744]",
+                    )}
+                  />
+                )}
+              </span>
+
+              <div className="relative mx-auto mt-0.5 aspect-square w-full max-w-[5.75rem] overflow-hidden rounded-lg bg-[#faf6f0] sm:max-w-[7.25rem]">
+                <Image
+                  src={item.image}
+                  alt={`${AMLOU_ROYAL_NAME_AR} — ${item.titleAr}`}
+                  fill
+                  sizes="(max-width: 640px) 30vw, 116px"
+                  className="object-contain object-center p-0.5"
+                  priority={item.recommended}
+                />
+              </div>
+
+              <p className="mt-1 text-[11px] font-extrabold leading-tight text-[#1a2744] sm:text-sm">
+                {item.titleAr}
+              </p>
+              <p className="mt-0.5 text-[10px] font-bold tabular-nums text-[#8a6a3a] sm:text-xs">
+                {item.weightAr}
+              </p>
+              <p
+                className={cn(
+                  "mt-0.5 text-[9px] font-semibold leading-tight sm:text-[11px]",
+                  item.freeShipping ? "text-emerald-600" : "text-neutral-500",
+                )}
+              >
+                {item.freeShipping
+                  ? "🎁 توصيل مجاني"
+                  : `+ ${item.shippingFee} DH`}
+              </p>
+
+              <div className="mt-1.5 leading-none">
+                <p className="whitespace-nowrap text-[15px] font-extrabold tabular-nums tracking-tight text-[#1a2744] sm:text-lg">
+                  {formatRoyalDh(item.price)}
+                </p>
+                {item.originalPrice != null && (
+                  <p className="mt-0.5 whitespace-nowrap text-[11px] font-semibold tabular-nums text-neutral-400 line-through decoration-neutral-400/90 sm:text-sm">
+                    {formatRoyalDh(item.originalPrice)}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-1.5 flex min-h-[2.1rem] w-full flex-col items-center justify-end gap-0.5">
+                {item.recommended && (
+                  <span className="w-full rounded-md bg-red-600 px-1 py-0.5 text-[9px] font-bold leading-tight text-white sm:text-[10px]">
+                    🔥 الأكثر طلباً
+                  </span>
+                )}
+                {item.bestValue && (
+                  <span className="w-full rounded-md bg-[#1a2744] px-1 py-0.5 text-[9px] font-bold leading-tight text-white sm:text-[10px]">
                     🏆 أفضل قيمة
                   </span>
-                  {item.giftAr && (
-                    <span className="royal-gift-badge rounded-md bg-gradient-to-l from-amber-400 via-yellow-300 to-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-[#5c3d0a] shadow-[0_0_12px_rgba(251,191,36,0.85)]">
-                      {item.giftAr}
-                    </span>
-                  )}
-                </span>
-              )}
-
-              <div className="flex items-start gap-2.5">
-                <span
-                  className={cn(
-                    "mt-0.5 flex size-[18px] shrink-0 items-center justify-center rounded-full border-2",
-                    selected
-                      ? item.recommended
-                        ? "border-red-600"
-                        : "border-[#1a2744]"
-                      : "border-neutral-300",
-                  )}
-                  aria-hidden
-                >
-                  {selected && (
-                    <span
-                      className={cn(
-                        "size-2 rounded-full",
-                        item.recommended ? "bg-red-600" : "bg-[#1a2744]",
-                      )}
-                    />
-                  )}
-                </span>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-extrabold leading-tight text-[#1a2744]">
-                    {item.titleAr}
-                  </p>
-                  <p className="mt-0.5 text-sm font-bold tabular-nums text-[#8a6a3a]">
-                    {item.weightAr}
-                  </p>
-                  <p
-                    className={cn(
-                      "mt-1 text-xs font-semibold",
-                      item.freeShipping ? "text-emerald-600" : "text-neutral-500",
-                    )}
-                  >
-                    {item.freeShipping
-                      ? "🎁 التوصيل مجاناً"
-                      : `+ ${item.shippingFee} DH توصيل`}
-                  </p>
-                </div>
-
-                <div className="shrink-0 text-end leading-none">
-                  <p className="whitespace-nowrap text-lg font-extrabold tabular-nums text-[#1a2744]">
-                    {formatRoyalDh(item.price)}
-                  </p>
-                  {item.originalPrice != null && (
-                    <p className="mt-0.5 whitespace-nowrap text-xs tabular-nums text-neutral-400 line-through">
-                      {formatRoyalDh(item.originalPrice)}
-                    </p>
-                  )}
-                </div>
+                )}
+                {item.giftAr && (
+                  <span className="royal-gift-badge w-full rounded-md bg-gradient-to-l from-amber-400 via-yellow-300 to-amber-400 px-1 py-0.5 text-[9px] font-extrabold leading-tight text-[#5c3d0a] sm:text-[10px]">
+                    {item.giftAr}
+                  </span>
+                )}
               </div>
             </button>
           );

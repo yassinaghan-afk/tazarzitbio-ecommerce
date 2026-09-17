@@ -26,7 +26,6 @@ import type { CreateOrderResponse } from "@/lib/orders/types";
 import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
   AMLOU_ROYAL_ID,
-  AMLOU_ROYAL_IMAGE,
   AMLOU_ROYAL_OFFERS,
   AMLOU_ROYAL_SLUG,
   getAmlouRoyalOffer,
@@ -100,13 +99,13 @@ function OfferCard({
       )}
 
       <div className="flex gap-3 p-3">
-        <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#f3ebe0]">
+        <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#f7f1e8]">
           <Image
-            src={AMLOU_ROYAL_IMAGE}
-            alt={AMLOU_ROYAL_FR_NAME}
+            src={item.image}
+            alt={`${AMLOU_ROYAL_FR_NAME} — ${fr.title}`}
             fill
             sizes="72px"
-            className="object-cover"
+            className="object-contain p-0.5"
           />
           {selected && (
             <span className="absolute inset-0 flex items-center justify-center bg-red-600/20">
@@ -288,7 +287,7 @@ export function RoyalFrOrderModal({
           productId: AMLOU_ROYAL_ID,
           slug: AMLOU_ROYAL_SLUG,
           nameAr: AMLOU_ROYAL_FR_NAME,
-          image: AMLOU_ROYAL_IMAGE,
+          image: offer.image,
           offerId: offer.id,
           offerLabel,
           unitPrice: offer.price,
@@ -441,13 +440,13 @@ export function RoyalFrOrderModal({
                 <form id="royalfr-order-form" onSubmit={onSubmit} noValidate>
                   <div className="mb-4 overflow-hidden rounded-2xl border border-[#e5d9c8] bg-white">
                     <div className="flex gap-3 p-3">
-                      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-[#f3ebe0]">
+                      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-[#f7f1e8]">
                         <Image
-                          src={AMLOU_ROYAL_IMAGE}
+                          src={offer.image}
                           alt={AMLOU_ROYAL_FR_NAME}
                           fill
                           sizes="64px"
-                          className="object-cover"
+                          className="object-contain p-0.5"
                         />
                       </div>
                       <div className="min-w-0 flex-1">

@@ -113,6 +113,8 @@ export interface AmlouRoyalOffer {
   titleAr: string;
   weightAr: string;
   subtitleAr: string;
+  /** Transparent product shot for offer cards (1 / 2 / 3 jars) */
+  image: string;
   price: number;
   originalPrice?: number;
   shippingFee: number;
@@ -130,6 +132,7 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
     titleAr: "قنينة واحدة",
     weightAr: "500 غ",
     subtitleAr: "عناية وتجربة أولى",
+    image: "/images/royal/offers/offer-1-jar.png",
     price: 249,
     originalPrice: 299,
     shippingFee: 0,
@@ -142,6 +145,7 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
     titleAr: "قنينتين",
     weightAr: "1 كغ",
     subtitleAr: "اختيار الأكثر طلباً",
+    image: "/images/royal/offers/offer-2-jars.png",
     price: 399,
     originalPrice: 498,
     shippingFee: 0,
@@ -155,6 +159,7 @@ export const AMLOU_ROYAL_OFFERS: AmlouRoyalOffer[] = [
     titleAr: "3 قنينات",
     weightAr: "1.5 كغ",
     subtitleAr: "أفضل قيمة",
+    image: "/images/royal/offers/offer-3-jars.png",
     price: 530,
     originalPrice: 747,
     shippingFee: 0,
