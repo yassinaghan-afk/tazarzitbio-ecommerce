@@ -11,6 +11,10 @@ import {
 } from "react";
 
 import {
+  LANGUAGE_PREF_COOKIE,
+  languagePrefCookieOptions,
+} from "./browser-locale";
+import {
   DEFAULT_LANGUAGE,
   isLanguage,
   languageDir,
@@ -18,6 +22,20 @@ import {
   type Language,
 } from "./types";
 import { translate, type TranslationKey } from "./translations";
+
+function persistLanguagePref(locale: Language) {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const { path, sameSite, maxAge } = languagePrefCookieOptions();
+    document.cookie = `${LANGUAGE_PREF_COOKIE}=${locale}; path=${path}; max-age=${maxAge}; samesite=${sameSite}`;
+  } catch {
+    /* ignore */
+  }
+}
 
 interface LanguageContextValue {
   locale: Language;
@@ -66,27 +84,20 @@ export function LanguageProvider({
     if (initialLocale) {
       setLocaleState(initialLocale);
       applyDocumentLanguage(initialLocale);
-      try {
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, initialLocale);
-      } catch {
-        /* ignore */
-      }
+      persistLanguagePref(initialLocale);
       setReady(true);
       return;
     }
     const stored = readStoredLanguage();
     setLocaleState(stored);
     applyDocumentLanguage(stored);
+    persistLanguagePref(stored);
     setReady(true);
   }, [initialLocale]);
 
   const setLocale = useCallback((next: Language) => {
     setLocaleState(next);
-    try {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
+    persistLanguagePref(next);
     applyDocumentLanguage(next);
   }, []);
 

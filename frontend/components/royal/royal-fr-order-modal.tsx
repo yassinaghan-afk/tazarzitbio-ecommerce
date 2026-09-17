@@ -382,6 +382,7 @@ export function RoyalFrOrderModal({
             onClick={onClose}
             className="fixed inset-0 z-[80] bg-[#1a2744]/55 backdrop-blur-[2px]"
           />
+          <div className="pointer-events-none fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6">
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -390,7 +391,7 @@ export function RoyalFrOrderModal({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 48 }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="fixed inset-x-0 bottom-0 z-[90] mx-auto flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-[#e5d9c8] bg-[#faf6ef] shadow-2xl sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:max-h-[90dvh] sm:-translate-y-1/2 sm:rounded-3xl"
+            className="pointer-events-auto flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-[#e5d9c8] bg-[#faf6ef] shadow-2xl sm:max-h-[90dvh] sm:rounded-3xl"
             dir="ltr"
             lang="fr"
           >
@@ -590,6 +591,7 @@ export function RoyalFrOrderModal({
               </div>
             )}
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

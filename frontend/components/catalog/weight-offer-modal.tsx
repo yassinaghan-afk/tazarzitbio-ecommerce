@@ -129,6 +129,9 @@ export function WeightOfferModal({
             className="fixed inset-0 z-[80] bg-[#1a120a]/55 backdrop-blur-[6px]"
           />
 
+          {/* Flex shell centers on desktop; keeps bottom-sheet on phone.
+              Avoid CSS translate centering — framer-motion overrides transform. */}
+          <div className="pointer-events-none fixed inset-0 z-[90] flex items-end justify-center p-3 sm:items-center sm:p-6">
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -139,7 +142,7 @@ export function WeightOfferModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 28, scale: 0.97 }}
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
-            className="fixed inset-x-3 bottom-3 z-[90] mx-auto flex max-h-[min(92dvh,720px)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border border-[#e8dcc8] bg-[#fffaf3] shadow-[0_28px_80px_-24px_rgba(40,24,8,0.55)] sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[28rem] sm:-translate-x-1/2 sm:-translate-y-1/2"
+            className="pointer-events-auto flex max-h-[min(92dvh,720px)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border border-[#e8dcc8] bg-[#fffaf3] shadow-[0_28px_80px_-24px_rgba(40,24,8,0.55)] sm:w-[28rem]"
           >
             <div className="relative overflow-hidden bg-gradient-to-br from-[#3d2818] via-[#5a3a1f] to-[#2a1810] px-5 pb-5 pt-4 text-white">
               <div
@@ -308,6 +311,7 @@ export function WeightOfferModal({
               </p>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
