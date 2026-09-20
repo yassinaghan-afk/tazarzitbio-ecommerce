@@ -81,8 +81,8 @@ export function RoyalLandingPage() {
       />
 
       {/* 1 — Hero */}
-      <section className="w-full bg-[#c9921a]" aria-label="أملو ملكي">
-        <h1 className="sr-only">أملو ملكي — مذاق فاخر من مكونات طبيعية</h1>
+      <section className="w-full bg-[#f5f0e6]" aria-label="أملو ملكي">
+        <h1 className="sr-only">أملو ملكي — مذاق أصيل من قلب المغرب</h1>
         <LpPanel
           src={HERO_IMAGE.src}
           alt={HERO_IMAGE.alt}

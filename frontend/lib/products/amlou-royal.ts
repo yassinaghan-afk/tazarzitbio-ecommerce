@@ -26,8 +26,8 @@ export const AMLOU_ROYAL_BENEFITS_IMAGE =
 export const AMLOU_ROYAL_LP_IMAGES = [
   {
     src: "/images/royal/01-hero.jpg",
-    alt: "استمتع بالطاقة الحقيقية مع أملو ملكي اللذيذ والصحي",
-    width: 637,
+    alt: "أملو ملكي — مذاق أصيل من قلب المغرب مع توصيل مجاني والدفع عند الاستلام",
+    width: 1024,
     height: 1024,
   },
   {
