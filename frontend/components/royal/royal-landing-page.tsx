@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { RoyalOrderModal } from "@/components/royal/royal-order-modal";
 import { RoyalOrderSection } from "@/components/royal/royal-order-section";
+import { WhatsappVoicePlayer } from "@/components/royal/whatsapp-voice-player";
 import { Button } from "@/components/ui/button";
 import {
   AMLOU_ROYAL_DEFAULT_OFFER_ID,
@@ -91,6 +92,25 @@ export function RoyalLandingPage() {
           priority
           quality={95}
         />
+      </section>
+
+      {/* Customer voice — directly under hero */}
+      <section
+        className="w-full bg-[#f5f0e6] px-4 pb-6 pt-2"
+        aria-labelledby="royal-customer-voice-title"
+      >
+        <div className="mx-auto w-full max-w-lg text-center">
+          <h2
+            id="royal-customer-voice-title"
+            className="text-xl font-extrabold tracking-tight text-[#5c3d1e] sm:text-2xl"
+          >
+            آراء زبنائنا
+          </h2>
+          <p className="mt-1 mb-4 text-sm text-[#7a5c3a]">
+            استمع لتجربة حقيقية من زبائننا
+          </p>
+          <WhatsappVoicePlayer src="/audio/royal/customer-review.m4a" />
+        </div>
       </section>
 
       {/* Order form right after hero */}
