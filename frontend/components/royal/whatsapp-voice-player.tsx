@@ -87,7 +87,7 @@ export function WhatsappVoicePlayer({
 
   return (
     <div
-      className="mx-auto flex w-full max-w-sm items-center gap-2.5 rounded-2xl rounded-tr-md bg-[#dcf8c6] px-3 py-2.5 shadow-sm"
+      className="mx-auto flex w-full max-w-sm items-center gap-2.5 rounded-2xl rounded-tr-md border border-neutral-200 bg-white px-3 py-2.5 shadow-md"
       role="group"
       aria-label={label}
       dir="ltr"
@@ -129,7 +129,7 @@ export function WhatsappVoicePlayer({
               <span
                 key={i}
                 className={`w-[3px] rounded-full transition-colors ${
-                  filled ? "bg-[#00a884]" : "bg-[#a8c5b0]"
+                  filled ? "bg-[#00a884]" : "bg-[#c5d1cb]"
                 }`}
                 style={{ height: `${Math.max(18, height * 100)}%` }}
               />

@@ -16,6 +16,11 @@ import { trackViewContent } from "@/lib/tracking/events";
 
 const [HERO_IMAGE, ...STORY_IMAGES] = AMLOU_ROYAL_LP_IMAGES;
 
+const CUSTOMER_VOICE_NOTES = [
+  "/audio/royal/customer-review-2.m4a",
+  "/audio/royal/customer-review.m4a",
+];
+
 function LpPanel({
   src,
   alt,
@@ -96,20 +101,32 @@ export function RoyalLandingPage() {
 
       {/* Customer voice — directly under hero */}
       <section
-        className="w-full bg-[#f5f0e6] px-4 pb-6 pt-2"
+        className="w-full bg-white px-4 pb-7 pt-5"
         aria-labelledby="royal-customer-voice-title"
       >
         <div className="mx-auto w-full max-w-lg text-center">
           <h2
             id="royal-customer-voice-title"
-            className="text-xl font-extrabold tracking-tight text-[#5c3d1e] sm:text-2xl"
+            className="flex items-center justify-center gap-2 text-2xl font-black tracking-tight sm:text-3xl"
           >
-            آراء زبنائنا
+            <span className="animate-bounce text-xl" aria-hidden>
+              ⭐
+            </span>
+            <span className="animate-shimmer bg-[linear-gradient(90deg,#b91c1c,#d97706,#b91c1c)] bg-[length:200%_auto] bg-clip-text text-transparent">
+              آراء زبنائنا
+            </span>
+            <span className="animate-bounce text-xl [animation-delay:150ms]" aria-hidden>
+              ⭐
+            </span>
           </h2>
-          <p className="mt-1 mb-4 text-sm text-[#7a5c3a]">
-            استمع لتجربة حقيقية من زبائننا
+          <p className="mt-1 mb-4 text-sm font-medium text-neutral-600">
+            استمع لتجارب حقيقية من زبائننا
           </p>
-          <WhatsappVoicePlayer src="/audio/royal/customer-review.m4a" />
+          <div className="space-y-3">
+            {CUSTOMER_VOICE_NOTES.map((src) => (
+              <WhatsappVoicePlayer key={src} src={src} />
+            ))}
+          </div>
         </div>
       </section>
 
