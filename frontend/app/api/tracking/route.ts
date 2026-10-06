@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getMetaPixelId } from "@/lib/meta/env";
+import { resolveMetaPixelId } from "@/lib/meta/pixel-id";
 import { resolveTikTokPixelId } from "@/lib/tiktok/pixel-id";
 import { readStore } from "@/lib/server/store";
 import { resolveTrackingSettings } from "@/lib/tracking/settings";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const store = await readStore();
   const tracking = resolveTrackingSettings(store.trackingSettings);
-  const envPixelId = getMetaPixelId();
+  const envPixelId = resolveMetaPixelId();
   const envTikTokId = resolveTikTokPixelId();
 
   // Always expose the production Meta Pixel ID (public dataset).
@@ -31,6 +31,7 @@ export async function GET() {
       enabled: tracking.facebook.enabled !== false,
     };
   }
+  tracking.facebook.id = resolveMetaPixelId(tracking.facebook.id);
 
   // Always expose the production TikTok Pixel ID (public).
   // Admin can disable via tiktok.enabled = false; empty admin id uses env/default.
