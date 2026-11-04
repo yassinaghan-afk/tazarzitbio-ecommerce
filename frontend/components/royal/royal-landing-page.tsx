@@ -99,7 +99,14 @@ export function RoyalLandingPage() {
         />
       </section>
 
-      {/* Customer voice — directly under hero */}
+      {/* Order form right after hero */}
+      <section id="order" className="scroll-mt-0 bg-[#faf6ef] px-3 py-5 sm:px-4">
+        <div className="mx-auto w-full max-w-md">
+          <RoyalOrderSection embedded />
+        </div>
+      </section>
+
+      {/* Customer voice — directly under the order form */}
       <section
         className="w-full bg-white px-4 pb-7 pt-5"
         aria-labelledby="royal-customer-voice-title"
@@ -127,13 +134,6 @@ export function RoyalLandingPage() {
               <WhatsappVoicePlayer key={src} src={src} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Order form right after hero */}
-      <section id="order" className="scroll-mt-0 bg-[#faf6ef] px-3 py-5 sm:px-4">
-        <div className="mx-auto w-full max-w-md">
-          <RoyalOrderSection embedded />
         </div>
       </section>
 
