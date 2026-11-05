@@ -257,6 +257,7 @@ export function trackPurchase(payload: PurchaseTrackingPayload): void {
       orderId: normalized.orderId,
       total: normalized.total,
       products: normalized.products,
+      customer: normalized.customer,
     });
   }
 

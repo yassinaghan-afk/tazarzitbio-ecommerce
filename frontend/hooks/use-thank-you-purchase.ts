@@ -33,6 +33,10 @@ export function useThankYouPurchase(order: PlacedOrder | null) {
       shipping: order.shippingFee,
       total: order.total,
       eventId,
+      customer: {
+        phone: order.customer?.phone,
+        fullName: order.customer?.fullName,
+      },
     });
 
     if (!order.upsellToken) return;

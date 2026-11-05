@@ -722,6 +722,15 @@ export function OrdersTable({
                 <p className="text-xs font-bold text-muted-foreground uppercase">Date</p>
                 <p className="mt-1 text-sm text-foreground">{formatDate(selected.createdAt)}</p>
               </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase">Source</p>
+                <p className="mt-1 text-sm text-foreground">
+                  {selected.attribution?.channel ?? "—"}
+                  {selected.attribution?.utmCampaign
+                    ? ` · ${selected.attribution.utmCampaign}`
+                    : ""}
+                </p>
+              </div>
             </div>
 
             <div>

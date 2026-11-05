@@ -28,6 +28,20 @@ export interface OrderLineItem {
   weight?: string;
 }
 
+/** Where the buyer came from (ad click ids / UTM), captured at order time. */
+export interface OrderAttribution {
+  channel: string;
+  gclid?: string;
+  gbraid?: string;
+  wbraid?: string;
+  fbclid?: string;
+  ttclid?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  landingPage?: string;
+}
+
 export interface OrderRecord {
   orderId: string;
   customerName: string;
@@ -49,6 +63,7 @@ export interface OrderRecord {
   customerNote?: string;
   /** page the order came from (referer) */
   source?: string;
+  attribution?: OrderAttribution;
   createdAt: string; // ISO
   updatedAt?: string;
   /** Secret token required to attach post-purchase upsell items */

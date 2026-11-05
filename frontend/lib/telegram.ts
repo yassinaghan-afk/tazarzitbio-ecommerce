@@ -37,6 +37,9 @@ export function formatOrderTelegramMessage(order: OrderRecord): string {
     `Name: ${order.customerName}`,
     `Phone: ${order.phone}`,
     `City: ${city}`,
+    `Source: ${order.attribution?.channel ?? "Direct"}${
+      order.attribution?.utmCampaign ? ` (${order.attribution.utmCampaign})` : ""
+    }`,
     "",
     "Products:",
     products,

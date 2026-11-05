@@ -93,6 +93,11 @@ export interface PurchaseTrackingPayload {
   currency?: typeof TRACKING_CURRENCY;
   /** Must match server CAPI Purchase event_id */
   eventId?: string;
+  /** First-party customer data for Google Ads enhanced conversions (hashed by gtag). */
+  customer?: {
+    phone?: string;
+    fullName?: string;
+  };
 }
 
 export const PURCHASE_TRACKED_PREFIX = "tazarzit-tracked-purchase-";

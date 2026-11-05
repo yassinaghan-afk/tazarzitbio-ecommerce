@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 
+import { attributionFromCookies } from "@/lib/orders/attribution";
 import type { CreateOrderInput, CreateOrderResponse, OrderRecord } from "@/lib/orders/types";
 import {
   notifyOrderCreated,
@@ -120,6 +121,7 @@ export async function POST(req: Request) {
     orderStatus: "pending",
     ...(customerNote ? { customerNote } : {}),
     source: req.headers.get("referer") ?? "",
+    attribution: attributionFromCookies(req.headers.get("cookie")),
     createdAt,
     upsellToken,
     upsellCompleted: false,

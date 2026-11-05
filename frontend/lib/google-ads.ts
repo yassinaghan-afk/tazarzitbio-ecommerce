@@ -58,13 +58,50 @@ export function initGoogleAds(adsId?: string): void {
  * - Always sends ecommerce `purchase` (detectable as a Google tag event in Ads).
  * - Also sends classic `conversion` when a Purchase conversion label is set.
  */
+/** Moroccan phone → E.164 (+212XXXXXXXXX), or "" when it can't be normalized. */
+function toE164Morocco(raw?: string): string {
+  const digits = (raw ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("212") && digits.length === 12) return `+${digits}`;
+  if (digits.startsWith("00212") && digits.length === 14) return `+${digits.slice(2)}`;
+  if (digits.startsWith("0") && digits.length === 10) return `+212${digits.slice(1)}`;
+  if (digits.length === 9 && /^[5-7]/.test(digits)) return `+212${digits}`;
+  return "";
+}
+
+function setEnhancedConversionData(customer?: {
+  phone?: string;
+  fullName?: string;
+}): void {
+  if (!customer) return;
+  const phone = toE164Morocco(customer.phone);
+  const [firstName, ...rest] = (customer.fullName ?? "").trim().split(/\s+/);
+  const lastName = rest.join(" ");
+  if (!phone && !firstName) return;
+  gtag("set", "user_data", {
+    ...(phone ? { phone_number: phone } : {}),
+    ...(firstName
+      ? {
+          address: {
+            first_name: firstName,
+            ...(lastName ? { last_name: lastName } : {}),
+            country: "MA",
+          },
+        }
+      : {}),
+  });
+}
+
 export function trackPurchase(params: {
   orderId: string;
   total: number;
   products?: TrackingProduct[];
+  customer?: { phone?: string; fullName?: string };
 }): void {
   const id = getAdsId();
   if (!id) return;
+
+  setEnhancedConversionData(params.customer);
 
   const items = (params.products ?? []).map((p) => ({
     item_id: p.productId || p.slug,
