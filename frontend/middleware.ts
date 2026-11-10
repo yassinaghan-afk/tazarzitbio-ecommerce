@@ -45,7 +45,9 @@ export async function middleware(req: NextRequest) {
   const isAdminPath =
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
-    pathname.startsWith("/api/admin/");
+    pathname.startsWith("/api/admin/") ||
+    pathname === "/vid" ||
+    pathname.startsWith("/vid/");
 
   if (isAdminPath) {
     if (
@@ -62,7 +64,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const res = NextResponse.redirect(new URL("/admin/login", req.url));
+    const loginUrl = new URL("/admin/login", req.url);
+    if (pathname.startsWith("/vid")) loginUrl.searchParams.set("next", pathname);
+    const res = NextResponse.redirect(loginUrl);
     res.cookies.set(ADMIN_COOKIE_NAME, "", { path: "/", maxAge: 0 });
     return res;
   }
@@ -119,7 +123,9 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/api/admin/:path*",
-    "/((?!_next/static|_next/image|.*\\..*).*)",
+    // Video uploads skip middleware (it buffers bodies up to 10MB); the route checks the admin session itself.
+    "/api/admin/((?!vid/upload).*)",
+    "/vid/:path*",
+    "/((?!_next/static|_next/image|api/admin/vid/upload|.*\\..*).*)",
   ],
 };

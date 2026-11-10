@@ -67,6 +67,7 @@ export function isLikelyBot(userAgent: string | null | undefined): boolean {
 export function shouldSkipBrowserLocaleRedirect(pathname: string): boolean {
   if (pathname.startsWith("/api/")) return true;
   if (pathname.startsWith("/admin")) return true;
+  if (pathname === "/vid" || pathname.startsWith("/vid/")) return true;
   if (pathname === "/royal" || pathname.startsWith("/royal/")) return true;
   if (pathname === "/royalfr" || pathname.startsWith("/royalfr/")) return true;
   if (pathname === "/upsell" || pathname.startsWith("/upsell/")) return true;

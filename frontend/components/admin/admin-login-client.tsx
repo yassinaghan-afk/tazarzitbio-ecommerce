@@ -47,7 +47,8 @@ export function AdminLoginClient() {
         }
         return;
       }
-      router.push("/admin");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next === "/vid" || next?.startsWith("/vid/") ? next : "/admin");
       router.refresh();
     } finally {
       setLoading(false);

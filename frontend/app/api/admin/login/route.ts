@@ -70,9 +70,13 @@ export async function POST(req: Request) {
   const provided = (body?.password ?? "").toString();
   const username = (body?.username ?? "").toString().trim().toLowerCase();
 
+  const store = username ? await readStore() : null;
+  const isMasterAlias =
+    username === "admin" &&
+    !store?.ops.adminUsers.some((u) => u.username.toLowerCase() === "admin");
+
   // Staff login
-  if (username) {
-    const store = await readStore();
+  if (username && store && !isMasterAlias) {
     const user = store.ops.adminUsers.find(
       (u) => u.username.toLowerCase() === username && u.isActive,
     );

@@ -59,6 +59,20 @@ Set backend `CORS_ORIGINS` to storefront origin.
 - Persistent volume enabled
 - Backups: enable EasyPanel/volume snapshots on schedule
 
+## Video studio service (`/vid`)
+
+A fourth service, **video**, renders captioned videos for the admin-only page `https://tazarzitbio.com/vid`.
+It is internal only: the storefront proxies to it, so it needs no public domain.
+
+1. EasyPanel → Create service → App → source: this repo, **Build path `video`**, Dockerfile `video/Dockerfile`.
+2. Name it `video` (internal host becomes `<project>_video`, port **8000**).
+3. Environment: `OPENAI_API_KEY`, `VIDEO_SERVICE_TOKEN` (generate with `openssl rand -hex 32`), optional `X264_PRESET=veryfast`.
+4. Optional: mount a volume at `/data` so finished videos survive redeploys.
+5. Frontend Environment: `VIDEO_SERVICE_URL=http://<project>_video:8000` and the same `VIDEO_SERVICE_TOKEN`, then redeploy the frontend.
+6. Check: log in at `/admin/login`, open `/vid`, upload a short clip.
+
+Rendering is CPU heavy (about 3× the video length on 4 cores) and runs one job at a time. Give the service at least 2 GB RAM.
+
 ## EasyPanel service checklist
 
 ### Postgres

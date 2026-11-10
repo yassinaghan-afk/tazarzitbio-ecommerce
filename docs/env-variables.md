@@ -39,6 +39,24 @@ Public vars must be prefixed with `NEXT_PUBLIC_`.
 | `NEXT_PUBLIC_META_PIXEL_ID` | No | | Meta ads pixel |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | No | `2126XXXXXXXX` | E.164 without + for wa.me links |
 | `NEXT_PUBLIC_SUPPORT_PHONE` | No | | Display phone |
+| `VIDEO_SERVICE_URL` | For `/vid` | `http://tazarzit_video:8000` | Internal URL of the video service (runtime, server only) |
+| `VIDEO_SERVICE_TOKEN` | For `/vid` | *(random 32+ chars)* | Shared secret; same value as on the video service |
+
+## Video service (`video/`)
+
+Powers the admin-only video studio at `/vid` (captions, zooms, sound effects, render).
+
+| Variable | Required | Example | Description |
+|----------|----------|---------|-------------|
+| `OPENAI_API_KEY` | Yes | `sk-...` | Transcription (`whisper-1` word timings + `OPENAI_TRANSCRIBE_MODEL`) and caption cleanup |
+| `VIDEO_SERVICE_TOKEN` | Yes | *(random 32+ chars)* | Must match the storefront value |
+| `OPENAI_TRANSCRIBE_MODEL` | No | `gpt-4o-transcribe` | Model for the accurate transcript text |
+| `OPENAI_TEXT_MODEL` | No | `gpt-6-astra` | Model that fixes Darija spelling, picks keywords, writes hook/CTA |
+| `MAX_DURATION_SECONDS` | No | `180` | Longest accepted video |
+| `MAX_UPLOAD_MB` | No | `500` | Largest accepted upload |
+| `JOB_TTL_HOURS` | No | `48` | Jobs and their files are deleted after this |
+| `X264_PRESET` | No | `medium` | Use `veryfast` on a small server |
+| `DATA_DIR` | No | `/data` | Mount a volume here to keep videos across redeploys |
 
 ## PostgreSQL (EasyPanel service)
 
@@ -100,6 +118,7 @@ frontend/.env.local
 |---------|------------|
 | postgres | `POSTGRES_*` |
 | backend | all Backend vars |
-| frontend | all `NEXT_PUBLIC_*` at **build** and runtime |
+| frontend | all `NEXT_PUBLIC_*` at **build** and runtime; `VIDEO_SERVICE_*` at runtime |
+| video | Video service vars |
 
 Document any new variable in this file in the same PR as code that uses it.
