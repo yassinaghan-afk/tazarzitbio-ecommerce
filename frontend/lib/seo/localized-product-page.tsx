@@ -88,15 +88,18 @@ export async function localizedProductMetadata(
 export async function LocalizedProductPage({
   slug,
   locale,
+  isShopRoute = false,
 }: {
   slug: string;
   locale: Language;
+  /** True when rendered from /amlouroyal itself — redirecting there would loop. */
+  isShopRoute?: boolean;
 }) {
   if (slug === FAMILY_PACK_SLUG) {
     redirect(localizedPath(locale, "/products"));
   }
-  // Soft-duplicate URL: always canonicalize to /amlouroyal
-  if (slug === AMLOU_ROYAL_SLUG) {
+  // Soft-duplicate /products/amlou-royal URL: canonicalize to /amlouroyal
+  if (slug === AMLOU_ROYAL_SLUG && !isShopRoute) {
     redirect(localizedPath(locale, AMLOU_ROYAL_SHOP_PATH));
   }
   const product = await getMergedProductBySlug(slug);

@@ -11,5 +11,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FrAmlouRoyalPage() {
-  return <LocalizedProductPage slug={AMLOU_ROYAL_SLUG} locale="fr" />;
+  return <LocalizedProductPage slug={AMLOU_ROYAL_SLUG} locale="fr" isShopRoute />;
 }
