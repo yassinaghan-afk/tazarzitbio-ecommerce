@@ -179,7 +179,7 @@ export function ProductFeatureSection({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 28rem"
           className="object-contain object-center p-4 sm:p-8"
-          quality={90}
+          quality={80}
         />
         <div
           aria-hidden

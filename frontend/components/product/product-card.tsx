@@ -77,7 +77,7 @@ export function ProductCard({
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
               className="object-contain object-center p-3 transition-transform duration-500 ease-out group-hover:scale-[1.02] sm:p-4"
-              quality={88}
+              quality={75}
             />
           </>
         ) : (

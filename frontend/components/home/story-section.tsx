@@ -39,7 +39,7 @@ export function StorySection() {
                 fill
                 className="object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 560px"
-                quality={90}
+                quality={75}
               />
               <div
                 aria-hidden

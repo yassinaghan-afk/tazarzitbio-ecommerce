@@ -50,7 +50,7 @@ export function PremiumImage({
         priority={priority}
         sizes={sizes}
         className={cn("object-contain object-center p-3 sm:p-5", imageClassName)}
-        quality={90}
+        quality={80}
       />
       {warmOverlay && (
         <div

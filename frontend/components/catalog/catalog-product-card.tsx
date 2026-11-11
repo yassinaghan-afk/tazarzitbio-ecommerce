@@ -113,7 +113,7 @@ export function CatalogProductCard({
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
             className="object-contain object-center p-3 transition-transform duration-500 group-hover:scale-[1.02] sm:p-4"
-            quality={88}
+            quality={75}
           />
           {product.badges.length > 0 && (
             <div className="absolute inset-x-2 top-2 z-[2] flex flex-col items-start gap-1.5 sm:inset-x-3 sm:top-3">

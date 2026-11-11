@@ -8,6 +8,9 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   outputFileTracingRoot: path.join(__dirname),
+  images: {
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+  },
   async redirects() {
     return [
       {

@@ -58,7 +58,7 @@ export function ProductImageGallery({
               priority
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-contain object-center p-4 sm:p-6"
-              quality={90}
+              quality={80}
             />
           </motion.div>
         </AnimatePresence>

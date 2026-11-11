@@ -40,7 +40,7 @@ export function HeroBundleImage({ className }: HeroBundleImageProps) {
           priority
           sizes="(max-width: 768px) 92vw, (max-width: 1200px) 45vw, 32rem"
           className="object-contain object-center p-4 sm:p-6"
-          quality={92}
+          quality={80}
         />
         <div
           aria-hidden
